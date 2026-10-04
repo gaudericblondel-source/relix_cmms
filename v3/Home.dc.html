@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" role="Maintenance Manager" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="home" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="min-height:0;overflow:hidden;padding:22px 28px 20px;display:flex;flex-direction:column;gap:18px" data-screen-label="Home">
+    <header style="flex:none;display:flex;align-items:flex-end;gap:14px">
+      <div style="flex:1;min-width:0">
+        <p style="margin:0 0 2px;color:#667085;font-size:13px">Tuesday, September 29 · Thourotte Plant</p>
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Good morning, Gaudéric</h1>
+      </div>
+      <div role="group" aria-label="Indicator scope" style="display:flex;padding:3px;background:#EEF1F4;border-radius:8px">
+        <sc-for list="{{ scopes }}" as="sc" hint-placeholder-count="2">
+          <button onClick="{{ sc.pick }}" aria-pressed="{{ sc.pressed }}" style="height:28px;padding:0 12px;border:0;border-radius:6px;background:{{ sc.bg }};color:{{ sc.fg }};font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;box-shadow:{{ sc.shadow }}">{{ sc.label }}</button>
+        </sc-for>
+      </div>
+      <button onClick="{{ quick }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:19px/1 'Material Symbols Outlined'">bolt</span>Quick intervention</button>
+    </header>
+
+    <section aria-label="Where my maintenance stands" style="flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+        <a href="{{ k.href }}" style="display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;color:#1E2430" style-hover="border-color:#C4CAD4">
+          <span style="font-size:12.5px;font-weight:500;color:#667085">{{ k.label }}</span>
+          <span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:36px;line-height:42px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</span><span style="font-size:18px;font-weight:600;color:#98A2B3">{{ k.suffix }}</span></span>
+          <sc-if value="{{ k.hasBar }}"><span style="display:block;height:5px;background:#EEF1F4;border-radius:3px;overflow:hidden;margin:2px 0 3px"><span style="display:block;height:100%;width:{{ k.pct }}%;background:#1E2430;border-radius:3px"></span></span></sc-if>
+          <span style="font-size:12px;font-weight:600;color:{{ k.noteColor }}">{{ k.note }}</span>
+        </a>
+      </sc-for>
+    </section>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:16px">
+      <section aria-labelledby="todo-h" style="min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #EEF0F3">
+          <h2 id="todo-h" style="margin:0;font-size:14px;font-weight:600">To do</h2>
+          <div role="tablist" style="display:flex;gap:2px;margin-left:8px">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+              <button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="height:30px;display:flex;align-items:center;gap:7px;padding:0 10px;border:0;border-radius:6px;background:{{ t.bg }};color:{{ t.fg }};font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ t.label }}<span style="min-width:20px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:9px;background:{{ t.cbg }};color:{{ t.cfg }};font-size:11px;font-weight:700">{{ t.count }}</span></button>
+            </sc-for>
+          </div>
+          <a href="Work Orders.dc.html" style="margin-left:auto;font-size:13px;font-weight:600">View all</a>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto">
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+            <a href="{{ r.woHref }}" style="display:grid;grid-template-columns:96px minmax(0,1fr) auto 104px;gap:14px;align-items:center;padding:12px 16px;border-bottom:1px solid #F2F4F7;color:#1E2430;background:{{ r.bg }}" style-hover="background:#F9FAFB">
+              <span style="font:{{ r.whenFont }};color:{{ r.whenColor }}">{{ r.when }}</span>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+                <span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.meta }}</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:8px">
+                <sc-if value="{{ r.showWho }}"><span title="{{ r.who }}" style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:{{ r.avBg }};color:{{ r.avFg }};font:600 10.5px 'IBM Plex Sans',sans-serif">{{ r.ini }}</span></sc-if>
+              </span>
+              <button onClick="{{ r.run }}" style="height:34px;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 12px;border-radius:6px;background:{{ r.btnBg }};border:1px solid {{ r.btnBd }};color:{{ r.btnFg }};font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">play_arrow</span>{{ r.btn }}</button>
+            </a>
+          </sc-for>
+        </div>
+        <div style="flex:none;padding:9px 16px;border-top:1px solid #EEF0F3;background:#FAFAFB;font-size:12px;color:#98A2B3">{{ footNote }}</div>
+      </section>
+
+      <section aria-labelledby="feed-h" style="min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px 8px">
+          <h2 id="feed-h" style="margin:0;font-size:14px;font-weight:600">Site activity</h2>
+          <span style="margin-left:auto;height:22px;display:inline-flex;align-items:center;padding:0 9px;border-radius:11px;background:#FDECEC;color:#B42318;font-size:11.5px;font-weight:600">3 new since yesterday 5 pm</span>
+        </div>
+        <div role="group" aria-label="Filter activity" style="flex:none;display:flex;gap:6px;padding:0 16px 10px;border-bottom:1px solid #EEF0F3">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+            <button onClick="{{ f.pick }}" aria-pressed="{{ f.pressed }}" style="height:28px;padding:0 11px;border-radius:14px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font:600 12px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ f.label }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto">
+          <sc-for list="{{ feed }}" as="e" hint-placeholder-count="6">
+            <a href="{{ e.href }}" style="display:grid;grid-template-columns:32px minmax(0,1fr);gap:11px;padding:11px 16px;border-bottom:1px solid #F2F4F7;background:{{ e.bg }};color:#1E2430" style-hover="background:#F9FAFB">
+              <span style="width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ e.ibg }};color:{{ e.ifg }};font:18px/1 'Material Symbols Outlined'">{{ e.icon }}</span>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="line-height:1.4"><b style="font-weight:600">{{ e.who }}</b> {{ e.what }}</span>
+                <span style="font-weight:600">{{ e.asset }}</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#98A2B3"><sc-if value="{{ e.isNew }}"><span style="width:7px;height:7px;border-radius:50%;background:#C00018"></span></sc-if>{{ e.when }}</span>
+              </span>
+            </a>
+          </sc-for>
+        </div>
+        <div style="flex:none;padding:9px 16px;border-top:1px solid #EEF0F3;background:#FAFAFB;font-size:12px;color:#98A2B3">Automatic feed · Thourotte Plant only</div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;defaultScope&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;team&quot;,&quot;site&quot;],&quot;default&quot;:&quot;team&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const PPL = { GD: ['Gaudéric Durand', '#FBE7EA', '#A30014'], MD: ['Marc Dupont', '#E6F4EE', '#0B6B4A'], PL: ['Pierre Leroy', '#E8EEF9', '#2456B8'], JM: ['Julie Martin', '#FEF3E2', '#B54708'], SB: ['Sofia Benali', '#E3F4F7', '#0E7490'], AM: ['Alex Martin', '#F3EEFC', '#6941C6'] };
+const wq = (wo, title, loc, type, prio, status) => { const [asset, task] = title.split(' — '); return new URLSearchParams({ wo, task: task || title, asset, loc, type, prio, status }).toString(); };
+// [wo, state, when, title, line, type, prio, who, extra]
+const MINE = [
+  ['WO-1339855', 'late', '1 d late', 'Tempering Furnace 2 — Bearing replacement', 'Tempering Line', 'Corrective', 'Critical', 'GD', 'Production stop'],
+  ['WO-1339836', 'run', 'In progress', 'Hydraulic Press PH-030 — Hydraulic leak repair', 'Workshop', 'Corrective', 'High', 'GD', 'Paused at step 3 of 6'],
+  ['WO-1339861', 'next', '10:30', 'Conveyor Line 3 — High motor temperature', 'Float Line', 'Inspection', 'High', 'GD', ''],
+  ['WO-1339848', 'next', '14:00', 'Conveyor Line 2 — 1000 h preventive service', 'Float Line', 'Preventive', 'Medium', 'GD', '']
+];
+const SITE = [
+  ['WO-1339859', 'late', '2 d late', 'Pump P-101 — Seal replacement', 'Tempering Line', 'Corrective', 'Critical', 'PL', 'Production stop'],
+  ['WO-1339855', 'late', '1 d late', 'Tempering Furnace 2 — Bearing replacement', 'Tempering Line', 'Corrective', 'Critical', 'GD', 'Production stop'],
+  ['WO-1339835', 'run', 'In progress', 'Conveyor Line 3 — Variable speed drive replacement', 'Float Line', 'Corrective', 'High', 'PL', ''],
+  ['WO-1339850', 'run', 'In progress', 'Fan V-12 — Abnormal fan noise', 'Float Line', 'Corrective', 'High', 'AM', ''],
+  ['WO-1339836', 'run', 'In progress', 'Hydraulic Press PH-030 — Hydraulic leak repair', 'Workshop', 'Corrective', 'High', 'GD', ''],
+  ['WO-1339861', 'next', '10:30', 'Conveyor Line 3 — High motor temperature', 'Float Line', 'Inspection', 'High', 'GD', ''],
+  ['WO-1339851', 'next', '11:00', 'Palletizing Robot 1 — Safety sensor check', 'Packaging Line', 'Inspection', 'Medium', 'PL', ''],
+  ['WO-1339848', 'next', '14:00', 'Conveyor Line 2 — 1000 h preventive service', 'Float Line', 'Preventive', 'Medium', 'SB', '']
+];
+const FEED = [
+  ['break', 'report', 'Pierre Leroy', 'reported a breakdown', 'Conveyor Line 3 · abnormal noise on drive', '35 min ago', true, 'Work Orders.dc.html'],
+  ['done', 'task_alt', 'Marc Dupont', 'completed a work order', 'Annealing Lehr · motor vibration check', '1 h ago', true, 'Work Orders.dc.html'],
+  ['done', 'restart_alt', 'Sofia Benali', 'put an asset back in service', 'Fan V-08', '2 h ago', true, 'Assets.dc.html'],
+  ['prev', 'event_available', 'Night shift', 'completed a preventive · 10/10 tasks', 'Hydraulic Press PH-030 · monthly service', 'Yesterday 11:40 pm', false, 'Maintenance Plans.dc.html'],
+  ['done', 'task_alt', 'Julie Martin', 'completed a work order', 'Tempering Furnace 1 · thermocouple zone 3', 'Yesterday 4:15 pm', false, 'Work Orders.dc.html'],
+  ['break', 'report', 'Pierre Leroy', 'reported a breakdown', 'Pump P-101 · seal leak', 'Yesterday 2:05 pm', false, 'Work Orders.dc.html']
+];
+const ICON = { break: ['#FDECEC', '#B42318'], done: ['#E6F4EE', '#0B6B4A'], prev: ['#EAF1FD', '#2456B8'] };
+class Component extends DCLogic {
+  state = { scope: null, tab: 'my', filter: 'all' };
+  renderVals() {
+    const s = this.state, scope = s.scope || (this.props.defaultScope ?? 'team');
+    const K = { team: [3, 6, 9, 82, '4 h 20', '1 h 10'], site: [7, 21, 34, 91, '11 h 45', '2 h 30'] }[scope];
+    const target = 90;
+    const kpis = [
+      { label: 'Overdue work orders', value: K[0], suffix: '', color: K[0] ? '#C00018' : '#1E2430', note: K[0] ? 'Needs action · view list' : 'All on track', noteColor: K[0] ? '#B42318' : '#0B6B4A', href: 'Work Orders.dc.html', hasBar: false },
+      { label: "Today's work orders done", value: K[1], suffix: '/ ' + K[2], color: '#1E2430', note: Math.round(K[1] / K[2] * 100) + '% of the day completed', noteColor: '#667085', href: 'Work Orders.dc.html', hasBar: true, pct: Math.round(K[1] / K[2] * 100) },
+      { label: 'Preventive on time · September', value: K[3], suffix: '%', color: '#1E2430', note: K[3] >= target ? 'On target (' + target + '%)' : (target - K[3]) + ' pts below target (' + target + '%)', noteColor: K[3] >= target ? '#0B6B4A' : '#B54708', href: 'Maintenance Plans.dc.html', hasBar: false },
+      { label: 'Production downtime · this week', value: K[4], suffix: '', color: '#1E2430', note: '↓ ' + K[5] + ' vs last week', noteColor: '#0B6B4A', href: 'Work Orders.dc.html', hasBar: false }
+    ];
+    const scopes = [['team', 'My team'], ['site', 'Whole site']].map(([id, label]) => ({ label, pressed: String(scope === id), bg: scope === id ? '#fff' : 'transparent', fg: scope === id ? '#1E2430' : '#667085', shadow: scope === id ? '0 1px 2px rgba(16,24,40,.12)' : 'none', pick: () => this.setState({ scope: id }) }));
+    const my = s.tab === 'my', list = my ? MINE : SITE;
+    const rows = list.map(([wo, st, when, title, line, type, prio, who, extra]) => {
+      const late = st === 'late', run = st === 'run', p = PPL[who];
+      const qs = wq(wo, title, line, type, prio, late ? 'Overdue' : run ? 'In progress' : 'Scheduled');
+      return { title, when, meta: [type, line, extra].filter(Boolean).join(' · '), who: p[0], ini: who, avBg: p[1], avFg: p[2], showWho: !my,
+        whenColor: late ? '#B42318' : run ? '#2456B8' : '#475467', whenFont: late || run ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Mono',monospace",
+        bg: late ? '#FEF8F8' : '#fff', btn: run ? 'Resume' : 'Start',
+        btnBg: late || run ? '#1E2430' : '#fff', btnBd: late || run ? '#1E2430' : '#D0D5DD', btnFg: late || run ? '#fff' : '#1E2430',
+        woHref: 'Work Order.dc.html?' + qs, run: e => { e.preventDefault(); e.stopPropagation(); window.location.href = 'Intervention.dc.html?' + qs; } };
+    });
+    const tabs = [['my', 'My tasks', MINE.length], ['all', 'All site today', 12]].map(([id, label, count]) => ({ label, count, sel: String(s.tab === id), bg: s.tab === id ? '#F2F4F7' : 'transparent', fg: s.tab === id ? '#1E2430' : '#667085', cbg: s.tab === id ? '#1E2430' : '#EEF1F4', cfg: s.tab === id ? '#fff' : '#475467', pick: () => this.setState({ tab: id }) }));
+    const f = s.filter;
+    const feed = FEED.filter(e => f === 'all' || (f === 'break' ? e[0] === 'break' : e[0] !== 'break')).map(([k, icon, who, what, asset, when, isNew, href]) => ({ icon, who, what, asset, when, isNew, href, ibg: ICON[k][0], ifg: ICON[k][1], bg: isNew ? '#FFFBFB' : '#fff' }));
+    const filters = [['all', 'All'], ['break', 'Breakdowns'], ['done', 'Completed']].map(([id, label]) => ({ label, pressed: String(f === id), bg: f === id ? '#1E2430' : '#fff', fg: f === id ? '#fff' : '#475467', bd: f === id ? '#1E2430' : '#E4E7EC', pick: () => this.setState({ filter: id }) }));
+    return { kpis, scopes, rows, tabs, feed, filters,
+      footNote: my ? MINE.length + ' tasks today · overdue first, then in progress, then upcoming' : '8 of 12 shown · overdue first, then in progress, then upcoming',
+      quick: () => window.CMMSQuickIntervention && window.CMMSQuickIntervention({}) };
+  }
+}
+</script>
+</body>
+</html>

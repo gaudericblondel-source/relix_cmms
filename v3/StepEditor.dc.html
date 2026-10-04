@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:14px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <input value="{{ title }}" onInput="{{ setTitle }}" placeholder="Step title" style="flex:1;min-width:200px;height:38px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:600 14px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" style-focus="border-color:#C00018" />
+    <div style="position:relative">
+      <button onClick="{{ toggleTypes }}" style="height:38px;display:flex;align-items:center;gap:8px;padding:0 8px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap">
+        <span style="width:22px;height:22px;border-radius:5px;background:{{ typeBg }};color:{{ typeFg }};display:grid;place-items:center;font:15px/1 'Material Symbols Outlined'">{{ typeIcon }}</span>{{ typeLabel }}<span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+      </button>
+      <sc-if value="{{ typesOpen }}">
+        <div onClick="{{ closeTypes }}" style="position:fixed;inset:0;z-index:40"></div>
+        <div style="position:absolute;right:0;top:42px;z-index:41;width:340px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.16);padding:8px;display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ typeGroups }}" as="g">
+            <div style="padding:4px 6px 0;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+              <sc-for list="{{ g.items }}" as="t">
+                <button onClick="{{ t.pick }}" style="height:34px;display:flex;align-items:center;gap:8px;padding:0 8px;background:{{ t.bg }};border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="width:22px;height:22px;border-radius:5px;background:{{ t.ibg }};color:{{ t.ifg }};display:grid;place-items:center;font:15px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <button onClick="{{ toggleRequired }}" style="height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer;white-space:nowrap">
+      <span style="position:relative;width:32px;height:18px;border-radius:9px;background:{{ reqTrack }}"><span style="position:absolute;top:2px;left:{{ reqKnob }};width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s"></span></span>Required
+    </button>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+    <span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#475467;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">engineering</span>Required skills</span>
+    <sc-for list="{{ stepSkills }}" as="k">
+      <span style="height:26px;display:inline-flex;align-items:center;gap:4px;padding:0 3px 0 7px;border-radius:13px;background:{{ k.bg }};color:{{ k.fg }};font-size:12px;font-weight:600;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}<button onClick="{{ k.remove }}" title="Remove skill" style="width:20px;height:20px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:10px;color:inherit;cursor:pointer;opacity:.7"><span style="font:14px/1 'Material Symbols Outlined'">close</span></button></span>
+    </sc-for>
+    <sc-if value="{{ noStepSkills }}"><span style="font-size:12px;color:#98A2B3">Any technician</span></sc-if>
+    <span style="position:relative;display:flex">
+      <select value="" onChange="{{ addSkill }}" style="appearance:none;-webkit-appearance:none;height:26px;padding:0 24px 0 8px;border:1px dashed #C4CAD4;border-radius:13px;font:600 12px 'IBM Plex Sans',sans-serif;color:#344054;background:#fff;outline:none;cursor:pointer">
+        <option value="">+ Skill</option>
+        <sc-for list="{{ skillChoices }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for>
+      </select>
+      <span style="position:absolute;right:4px;top:4px;pointer-events:none;font:16px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+    </span>
+    <span style="width:1px;height:20px;background:#E4E7EC;margin:0 4px"></span>
+    <span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#475467;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">timer</span>Duration</span>
+    <span style="display:flex;align-items:center;height:28px;border:1px solid #D0D5DD;border-radius:6px;background:#fff">
+      <input type="number" min="0" step="5" value="{{ minutes }}" onInput="{{ setMinutes }}" placeholder="—" style="width:52px;height:26px;padding:0 6px;border:0;outline:none;font:600 13px 'IBM Plex Mono',monospace;text-align:right;background:transparent" />
+      <span style="padding:0 8px 0 2px;font-size:12px;color:#667085">min</span>
+    </span>
+    <sc-if value="{{ hasSameAsPrev }}"><button onClick="{{ sameAsPrev }}" title="Copy skills from the previous step" style="height:26px;padding:0 8px;background:transparent;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#2456B8;cursor:pointer;white-space:nowrap">Same as previous step</button></sc-if>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:-6px;padding:8px 10px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+    <span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#475467;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">forklift</span>Mobile assets</span>
+    <sc-for list="{{ stepTools }}" as="k"><span title="Reserved while this work order is scheduled" style="height:26px;display:inline-flex;align-items:center;gap:4px;padding:0 3px 0 7px;border-radius:13px;background:#EAF1FD;color:#2456B8;font-size:12px;font-weight:600;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}<button onClick="{{ k.remove }}" style="width:20px;height:20px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:10px;color:inherit;cursor:pointer;opacity:.7"><span style="font:14px/1 'Material Symbols Outlined'">close</span></button></span></sc-for>
+    <sc-if value="{{ noTools }}"><span style="font-size:12px;color:#98A2B3">None needed</span></sc-if>
+    <span style="position:relative;display:flex"><select value="" onChange="{{ addTool }}" style="appearance:none;-webkit-appearance:none;height:26px;padding:0 24px 0 8px;border:1px dashed #C4CAD4;border-radius:13px;font:600 12px 'IBM Plex Sans',sans-serif;color:#344054;background:#fff;outline:none;cursor:pointer"><option value="">+ Mobile asset</option><sc-for list="{{ toolChoices }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for></select><span style="position:absolute;right:4px;top:4px;pointer-events:none;font:16px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+    <span style="font-size:11.5px;color:#98A2B3">reserved in Planning when the work order is scheduled</span>
+  </div>
+
+  <sc-if value="{{ hasOptions }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:12px;font-weight:600;color:#667085">{{ optionsLabel }}</span>
+      <sc-for list="{{ options }}" as="o">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:16px;height:16px;flex:none;border:1.5px solid #C4CAD4;border-radius:{{ optRadius }}"></span>
+          <input value="{{ o.value }}" onInput="{{ o.edit }}" onKeyDown="{{ o.key }}" placeholder="Option" style="flex:1;height:32px;padding:0 8px;border:1px solid #E4E7EC;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" style-focus="border-color:#C00018" />
+          <button onClick="{{ o.remove }}" title="Remove" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#F2F4F7;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+        </div>
+      </sc-for>
+      <button onClick="{{ addOption }}" style="align-self:flex-start;height:28px;display:flex;align-items:center;gap:4px;padding:0 8px 0 4px;background:transparent;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">add</span>{{ addOptionLabel }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isNumber }}">
+    <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+      <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:600;color:#667085">Unit</span><input value="{{ unit }}" onInput="{{ setUnit }}" placeholder="bar" style="width:90px;height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+      <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:600;color:#667085">Expected range</span>
+        <span style="display:flex;align-items:center;gap:6px"><input value="{{ min }}" onInput="{{ setMin }}" placeholder="Min" inputmode="decimal" style="width:80px;height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;outline:none" /><span style="color:#98A2B3">–</span><input value="{{ max }}" onInput="{{ setMax }}" placeholder="Max" inputmode="decimal" style="width:80px;height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;outline:none" /></span>
+      </label>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isParts }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:12px;font-weight:600;color:#667085">{{ partsLabel }}</span>
+      <sc-for list="{{ presetParts }}" as="p">
+        <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 4px 0 10px;border:1px solid #E4E7EC;border-radius:6px">
+          <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b style="font-weight:600">{{ p.name }}</b> <span style="font:11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ p.ref }}</span></span>
+          <button onClick="{{ p.dec }}" style="width:24px;height:24px;background:transparent;border:0;color:#475467;cursor:pointer;font:16px/1 'Material Symbols Outlined'">remove</button>
+          <span style="min-width:22px;text-align:center;font:600 12.5px 'IBM Plex Mono',monospace">{{ p.qty }}</span>
+          <button onClick="{{ p.inc }}" style="width:24px;height:24px;background:transparent;border:0;color:#475467;cursor:pointer;font:16px/1 'Material Symbols Outlined'">add</button>
+          <button onClick="{{ p.remove }}" style="width:26px;height:26px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">close</span></button>
+        </div>
+      </sc-for>
+      <span style="position:relative;display:flex;align-self:flex-start">
+        <select value="" onChange="{{ addPart }}" style="appearance:none;-webkit-appearance:none;height:30px;padding:0 28px 0 10px;border:1px dashed #C4CAD4;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#344054;background:#fff;outline:none;cursor:pointer">
+          <option value="">+ Suggest an item</option>
+          <sc-for list="{{ partChoices }}" as="c"><option value="{{ c.ref }}">{{ c.name }}</option></sc-for>
+        </select>
+        <span style="position:absolute;right:6px;top:6px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+      </span>
+      <span style="font-size:12px;color:#98A2B3">Suggested items are pre-filled for the technician, who can still change them.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showDesc }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">notes</span>{{ descLabel }}<button onClick="{{ clearDesc }}" title="Remove" style="margin-left:auto;width:22px;height:22px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></div>
+      <textarea value="{{ desc }}" onInput="{{ setDesc }}" rows="{{ descRows }}" placeholder="{{ descPh }}" style="padding:8px 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showExpected }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">task_alt</span>Expected result<button onClick="{{ clearExpected }}" style="margin-left:auto;width:22px;height:22px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></div>
+      <input value="{{ expected }}" onInput="{{ setExpected }}" placeholder="e.g. No visible leak" style="height:34px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showLogic }}">
+    <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#F7F9FD;border:1px solid #DCE6F8;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#2456B8"><span style="font:15px/1 'Material Symbols Outlined'">alt_route</span>{{ logicLabel }}<button onClick="{{ clearLogic }}" style="margin-left:auto;width:22px;height:22px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></div>
+      <sc-for list="{{ rules }}" as="r">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12.5px;color:#475467;white-space:nowrap">{{ r.ifLabel }}</span>
+          <span style="position:relative;display:flex"><select value="{{ r.when }}" onChange="{{ r.setWhen }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none;max-width:170px"><sc-for list="{{ whenOpts }}" as="w"><option value="{{ w.v }}">{{ w.l }}</option></sc-for></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          <span style="font:16px/1 'Material Symbols Outlined';color:#98A2B3">arrow_forward</span>
+          <span style="position:relative;display:flex"><select value="{{ r.action }}" onChange="{{ r.setAction }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="goto">Go to step</option><option value="require:photo">Require a photo</option><option value="require:comment">Require a comment</option><option value="finish">Finish the checklist</option></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          <sc-if value="{{ r.isGoto }}"><span style="position:relative;display:flex;flex:1;min-width:150px"><select value="{{ r.target }}" onChange="{{ r.setTarget }}" style="appearance:none;-webkit-appearance:none;width:100%;height:32px;padding:0 26px 0 8px;border:1px solid {{ r.targetBorder }};border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Choose a step…</option><sc-for list="{{ targets }}" as="t"><option value="{{ t.v }}">{{ t.l }}</option></sc-for></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></sc-if>
+          <button onClick="{{ r.remove }}" title="Remove condition" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#fff;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">delete</span></button>
+        </div>
+      </sc-for>
+      <sc-if value="{{ canAddRule }}"><button onClick="{{ addRule }}" style="align-self:flex-start;height:28px;display:flex;align-items:center;gap:4px;padding:0 8px 0 4px;background:transparent;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#2456B8;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">add</span>Add condition</button></sc-if>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:4px;border-top:{{ afterSep }}">
+        <span style="font-size:12.5px;color:#475467;white-space:nowrap">{{ afterLabel }}</span>
+        <span style="position:relative;display:flex"><select value="{{ after }}" onChange="{{ setAfter }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="next">{{ nextLabel }}</option><option value="goto">Go to step</option><option value="finish">Finish the checklist</option></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        <sc-if value="{{ afterIsGoto }}"><span style="position:relative;display:flex;flex:1;min-width:150px"><select value="{{ afterTarget }}" onChange="{{ setAfterTarget }}" style="appearance:none;-webkit-appearance:none;width:100%;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Choose a step…</option><sc-for list="{{ targets }}" as="t"><option value="{{ t.v }}">{{ t.l }}</option></sc-for></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></sc-if>
+      </div>
+      <button onClick="{{ toggleConditional }}" style="display:flex;align-items:center;gap:10px;padding:2px 0 0;background:transparent;border:0;text-align:left;cursor:pointer;font-family:inherit">
+        <span style="width:16px;height:16px;flex:none;border-radius:4px;border:1.5px solid {{ condBorder }};background:{{ condBg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ condIcon }}</span>
+        <span style="display:flex;flex-direction:column;gap:1px"><span style="font-size:12.5px;font-weight:600;color:#1E2430">Only when a condition leads here</span><span style="font-size:12px;color:#667085">Skipped in the normal flow — use it for branch steps like “Replace belt”.</span></span>
+      </button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showMedia }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">perm_media</span>Supporting content<span style="font-weight:400;color:#98A2B3">· the technician opens it on demand</span><button onClick="{{ clearMedia }}" style="margin-left:auto;width:22px;height:22px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></div>
+      <sc-for list="{{ media }}" as="m">
+        <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 4px 0 8px;border:1px solid #E4E7EC;border-radius:6px">
+          <span style="width:24px;height:24px;border-radius:5px;background:#F3EEFC;color:#6941C6;display:grid;place-items:center;font:15px/1 'Material Symbols Outlined'">{{ m.icon }}</span>
+          <input value="{{ m.name }}" onInput="{{ m.rename }}" style="flex:1;min-width:0;height:28px;padding:0 6px;border:1px solid transparent;border-radius:4px;font:13px 'IBM Plex Sans',sans-serif;outline:none;background:transparent" style-focus="border-color:#D0D5DD;background:#fff" />
+          <button onClick="{{ m.remove }}" style="width:26px;height:26px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">close</span></button>
+        </div>
+      </sc-for>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ mediaKinds }}" as="k">
+          <label style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;border:1px dashed #C4CAD4;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="border-color:#6941C6;color:#6941C6"><span style="font:16px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.label }}<input type="file" accept="{{ k.accept }}" onChange="{{ k.add }}" style="display:none" /></label>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showValid }}">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">verified</span>Validation<button onClick="{{ clearValid }}" style="margin-left:auto;width:22px;height:22px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></div>
+      <sc-if value="{{ vNumber }}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12.5px;color:#475467">If the value is out of range</span>
+          <span style="position:relative;display:flex"><select value="{{ outOfRange }}" onChange="{{ setOutOfRange }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><option value="warn">Warn and flag an anomaly</option><option value="comment">Require a comment</option><option value="block">Don't allow to continue</option></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vFlag }}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12.5px;color:#475467">Flag an anomaly when the answer is</span>
+          <span style="position:relative;display:flex"><select value="{{ flagWhen }}" onChange="{{ setFlag }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><option value="">Never</option><sc-for list="{{ whenOpts }}" as="w"><option value="{{ w.v }}">{{ w.l }}</option></sc-for></select><span style="position:absolute;right:4px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vPhotos }}">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12.5px;color:#475467">Minimum photos</span><input type="number" min="1" value="{{ minPhotos }}" onInput="{{ setMinPhotos }}" placeholder="1" style="width:70px;height:32px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;outline:none" /></div>
+      </sc-if>
+      <sc-if value="{{ vChars }}">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12.5px;color:#475467">Minimum characters</span><input type="number" min="1" value="{{ minChars }}" onInput="{{ setMinChars }}" placeholder="—" style="width:70px;height:32px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;outline:none" /></div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #F2F4F7">
+    <sc-for list="{{ chips }}" as="c">
+      <button onClick="{{ c.open }}" style="height:28px;display:flex;align-items:center;gap:4px;padding:0 10px 0 6px;background:#fff;border:1px solid #E4E7EC;border-radius:14px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer" style-hover="border-color:#98A2B3;color:#1E2430"><span style="font:15px/1 'Material Symbols Outlined'">add</span>{{ c.label }}</button>
+    </sc-for>
+    <span style="flex:1"></span>
+    <button onClick="{{ duplicate }}" title="Duplicate step" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined'">content_copy</span></button>
+    <button onClick="{{ remove }}" title="Delete step" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+  </div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:640,&quot;height&quot;:520},&quot;step&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;steps&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object[]&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(patch) =&gt; void&quot;},&quot;onRemove&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onDuplicate&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;focus&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;focusNonce&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = { open: {}, typesOpen: false };
+  componentDidUpdate(prev) {
+    if (this.props.focusNonce && this.props.focusNonce !== prev.focusNonce && this.props.focus) this.setState(s => ({ open: { ...s.open, [this.props.focus]: true } }));
+    if (prev.step && this.props.step && prev.step.id !== this.props.step.id) this.setState({ open: this.props.focus ? { [this.props.focus]: true } : {}, typesOpen: false });
+  }
+  componentDidMount() { if (this.props.focus) this.setState({ open: { [this.props.focus]: true } }); import('./people-model.js').then(PM => this.setState({ PM })); import('./plant-model.js').then(PL => this.setState({ PL })); this._sk = () => this.forceUpdate(); window.addEventListener('cmms-skills', this._sk); }
+  componentWillUnmount() { window.removeEventListener('cmms-skills', this._sk); }
+  renderVals() {
+    const M = window.CMMSChecklist, st = this.props.step;
+    if (!M || !st) return { ready: false };
+    const steps = this.props.steps || [], idx = steps.findIndex(x => x.id === st.id);
+    const ch = p => this.props.onChange && this.props.onChange(p);
+    const T = M.TYPES[st.type], [tbg, tfg] = M.GROUP_COLORS[T.group];
+    const open = this.state.open, op = k => this.setState(s => ({ open: { ...s.open, [k]: true } })), cl = k => this.setState(s => ({ open: { ...s.open, [k]: false } }));
+    const ans = T.answer, whenOpts = M.whenOptions(st).map(([v, l]) => ({ v, l }));
+    const validable = ['number', 'yesno', 'single', 'multi', 'photo', 'text', 'comment'].includes(st.type);
+    const has = {
+      desc: !!st.desc, expected: !!st.expected && st.type !== 'number',
+      logic: st.rules.length > 0 || st.after !== 'next' || st.conditional,
+      media: st.media.length > 0,
+      valid: !!(st.flagWhen || (st.type === 'number' && st.outOfRange !== 'warn') || st.minPhotos || st.minChars),
+    };
+    const show = k => has[k] || !!open[k];
+    const targets = steps.filter(x => x.id !== st.id).map(x => ({ v: x.id, l: `${steps.indexOf(x) + 1}. ${x.title || 'Untitled step'}` }));
+    const nextId = M.defaultNext({ steps }, st.id), nextS = steps.find(x => x.id === nextId);
+    const isOpt = ['confirm', 'single', 'multi'].includes(st.type), isParts = st.type === 'parts' || st.type === 'consumables';
+    const catKey = st.type === 'consumables' ? 'consumables' : 'parts';
+    const chips = [];
+    if (!show('desc')) chips.push(['desc', st.type === 'instruction' ? 'Instructions' : 'Description']);
+    if (!show('expected') && st.type !== 'number') chips.push(['expected', 'Expected result']);
+    if (!show('logic')) chips.push(['logic', ans ? 'Condition' : 'Next step']);
+    if (!show('media')) chips.push(['media', 'Supporting content']);
+    if (validable && !show('valid')) chips.push(['valid', 'Validation']);
+    const PM = this.state.PM, sk = st.skills || [], prev = idx > 0 ? steps[idx - 1] : null;
+    return {
+      stepSkills: PM ? sk.map(id => { const k = PM.skill(id); return { name: k.name, icon: k.icon, fg: k.fg, bg: k.bg, remove: () => ch({ skills: sk.filter(x => x !== id) }) }; }) : [],
+      ...(() => { const PL = this.state.PL, tl = st.tools || []; if (!PL) return { stepTools: [], noTools: true, toolChoices: [] };
+        return { stepTools: tl.map(id => { const a = PL.asset(id) || { name: id, type: '' }; return { name: a.name, icon: PL.typeIcon(a.type), remove: () => ch({ tools: tl.filter(x => x !== id) }) }; }), noTools: !tl.length,
+          toolChoices: PL.mobileAssets().filter(a => !tl.includes(a.id)).map(a => ({ id: a.id, name: a.name })), addTool: e => { const v = e.target.value; if (v) ch({ tools: [...tl, v] }); e.target.value = ''; } }; })(),
+      noStepSkills: !sk.length, skillChoices: PM ? PM.skills().filter(k => k.active && !sk.includes(k.id)).map(k => ({ id: k.id, name: k.name })) : [],
+      addSkill: e => { const v = e.target.value; if (v) ch({ skills: [...sk, v] }); e.target.value = ''; },
+      minutes: st.minutes ?? '', setMinutes: e => ch({ minutes: e.target.value === '' ? '' : Math.max(0, +e.target.value) }),
+      hasSameAsPrev: !!(prev && (prev.skills || []).length && (prev.skills || []).join() !== sk.join()), sameAsPrev: () => ch({ skills: [...(prev.skills || [])] }),
+      ready: true, title: st.title, setTitle: e => ch({ title: e.target.value }),
+      typeLabel: T.label, typeIcon: T.icon, typeBg: tbg, typeFg: tfg,
+      typesOpen: this.state.typesOpen, toggleTypes: () => this.setState({ typesOpen: !this.state.typesOpen }), closeTypes: () => this.setState({ typesOpen: false }),
+      typeGroups: M.GROUPS.map(([g, keys]) => ({ label: g, items: keys.map(k => { const t = M.TYPES[k], [ibg, ifg] = M.GROUP_COLORS[t.group]; return { label: t.label, icon: t.icon, ibg, ifg, bg: k === st.type ? '#FBF1F2' : 'transparent',
+        pick: () => { const p = { type: k }; const needOpts = ['confirm', 'single', 'multi'].includes(k); if (needOpts && !st.options.length) p.options = M.defaultsFor(k).options; if (!M.TYPES[k].answer || k !== st.type) { p.rules = M.TYPES[k].answer && k === st.type ? st.rules : st.rules.filter(r => false); p.flagWhen = ''; } this.setState({ typesOpen: false }); ch(p); } }; }) })),
+      reqTrack: st.required ? '#C00018' : '#D0D5DD', reqKnob: st.required ? '16px' : '2px', toggleRequired: () => ch({ required: !st.required }),
+      hasOptions: isOpt, optionsLabel: st.type === 'confirm' ? 'Items to confirm' : 'Answers', optRadius: st.type === 'single' ? '50%' : '4px', addOptionLabel: st.type === 'confirm' ? 'Add item' : 'Add answer',
+      options: st.options.map((o, i) => ({ value: o, edit: e => { const a = [...st.options]; a[i] = e.target.value; ch({ options: a }); },
+        key: e => { if (e.key === 'Enter') { e.preventDefault(); const a = [...st.options]; a.splice(i + 1, 0, ''); ch({ options: a }); setTimeout(() => { const ins = e.target.closest('div').parentElement.querySelectorAll('input'); ins[i + 1] && ins[i + 1].focus(); }, 30); } },
+        remove: () => ch({ options: st.options.filter((_, j) => j !== i), rules: st.rules.filter(r => r.when !== o), flagWhen: st.flagWhen === o ? '' : st.flagWhen }) })),
+      addOption: () => ch({ options: [...st.options, st.type === 'confirm' ? '' : `Option ${st.options.length + 1}`] }),
+      isNumber: st.type === 'number', unit: st.unit, min: st.min, max: st.max,
+      setUnit: e => ch({ unit: e.target.value }), setMin: e => ch({ min: e.target.value }), setMax: e => ch({ max: e.target.value }),
+      isParts, partsLabel: st.type === 'consumables' ? 'Suggested consumables' : 'Suggested spare parts',
+      presetParts: st.parts.map(p => { const c = M.CATALOG[catKey].find(x => x[0] === p.ref) || [p.ref, p.ref]; return { ref: p.ref, name: c[1], qty: p.qty,
+        inc: () => ch({ parts: st.parts.map(x => x.ref === p.ref ? { ...x, qty: x.qty + 1 } : x) }), dec: () => ch({ parts: st.parts.map(x => x.ref === p.ref ? { ...x, qty: Math.max(1, x.qty - 1) } : x) }), remove: () => ch({ parts: st.parts.filter(x => x.ref !== p.ref) }) }; }),
+      partChoices: M.CATALOG[catKey].filter(c => !st.parts.some(p => p.ref === c[0])).map(c => ({ ref: c[0], name: `${c[1]} · ${c[0]}` })),
+      addPart: e => { const v = e.target.value; if (v) ch({ parts: [...st.parts, { ref: v, qty: 1 }] }); e.target.value = ''; },
+      showDesc: show('desc'), desc: st.desc, setDesc: e => ch({ desc: e.target.value }), clearDesc: () => { ch({ desc: '' }); cl('desc'); },
+      descLabel: st.type === 'instruction' ? 'Instructions · one per line' : 'Description', descRows: st.type === 'instruction' ? 4 : 2,
+      descPh: st.type === 'instruction' ? 'Drain the casing\nRemove the coupling guard\n…' : 'What should the technician do or look at?',
+      showExpected: show('expected') && st.type !== 'number', expected: st.expected, setExpected: e => ch({ expected: e.target.value }), clearExpected: () => { ch({ expected: '' }); cl('expected'); },
+      showLogic: show('logic'), logicLabel: ans ? 'Conditions' : 'Next step', whenOpts, canAddRule: ans && whenOpts.length > 0, targets,
+      rules: st.rules.map((r, i) => {
+        const set = p => ch({ rules: st.rules.map((x, j) => j === i ? { ...x, ...p } : x) });
+        const actionVal = r.action === 'require' ? 'require:' + r.need : r.action;
+        return { when: r.when, action: actionVal, target: r.target || '', isGoto: r.action === 'goto', targetBorder: r.action === 'goto' && !r.target ? '#F04438' : '#D0D5DD',
+          ifLabel: i === 0 ? (st.type === 'number' ? 'If the value is' : 'If the answer is') : 'If',
+          setWhen: e => set({ when: e.target.value }), setTarget: e => set({ target: e.target.value }),
+          setAction: e => { const v = e.target.value; if (v.startsWith('require:')) set({ action: 'require', need: v.split(':')[1], target: '' }); else set({ action: v, need: '' }); },
+          remove: () => ch({ rules: st.rules.filter((_, j) => j !== i) }) };
+      }),
+      addRule: () => { const used = new Set(st.rules.map(r => r.when)); const w = (whenOpts.find(o => !used.has(o.v)) || whenOpts[0]).v; ch({ rules: [...st.rules, { when: w, action: 'goto', target: '' }] }); op('logic'); },
+      afterLabel: ans && st.rules.length ? 'Otherwise' : 'After this step', afterSep: ans && st.rules.length ? '1px solid #DCE6F8' : '0',
+      after: st.after, afterIsGoto: st.after === 'goto', afterTarget: st.afterTarget || '',
+      nextLabel: nextS ? `Continue to next step (${steps.indexOf(nextS) + 1}. ${nextS.title || 'Untitled'})` : 'Continue (end of checklist)',
+      setAfter: e => ch({ after: e.target.value, afterTarget: e.target.value === 'goto' ? st.afterTarget : '' }), setAfterTarget: e => ch({ afterTarget: e.target.value }),
+      toggleConditional: () => ch({ conditional: !st.conditional }), condBorder: st.conditional ? '#2456B8' : '#C4CAD4', condBg: st.conditional ? '#2456B8' : '#fff', condIcon: st.conditional ? 'check' : '',
+      clearLogic: () => { ch({ rules: [], after: 'next', afterTarget: '', conditional: false }); cl('logic'); },
+      showMedia: show('media'), clearMedia: () => { ch({ media: [] }); cl('media'); },
+      media: st.media.map((m, i) => ({ name: m.name, icon: M.MEDIA[m.kind][1], rename: e => ch({ media: st.media.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }), remove: () => ch({ media: st.media.filter((_, j) => j !== i) }) })),
+      mediaKinds: [['image', 'image/*'], ['video', 'video/*'], ['pdf', '.pdf,.doc,.docx,.xlsx']].map(([k, accept]) => ({ label: M.MEDIA[k][0], icon: M.MEDIA[k][1], accept,
+        add: e => { const f = e.target.files && e.target.files[0]; if (f) ch({ media: [...st.media, { kind: k, name: f.name }] }); e.target.value = ''; } })),
+      showValid: validable && show('valid'), clearValid: () => { ch({ flagWhen: '', outOfRange: 'warn', minPhotos: '', minChars: '' }); cl('valid'); },
+      vNumber: st.type === 'number', vFlag: ['yesno', 'single', 'multi'].includes(st.type), vPhotos: st.type === 'photo', vChars: st.type === 'text' || st.type === 'comment',
+      outOfRange: st.outOfRange, setOutOfRange: e => ch({ outOfRange: e.target.value }), flagWhen: st.flagWhen, setFlag: e => ch({ flagWhen: e.target.value }),
+      minPhotos: st.minPhotos, setMinPhotos: e => ch({ minPhotos: e.target.value }), minChars: st.minChars, setMinChars: e => ch({ minChars: e.target.value }),
+      chips: chips.map(([k, label]) => ({ label, open: () => op(k) })),
+      duplicate: () => this.props.onDuplicate && this.props.onDuplicate(), remove: () => this.props.onRemove && this.props.onRemove(),
+    };
+  }
+}
+</script>
+</body>
+</html>

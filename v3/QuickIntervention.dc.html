@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:0;z-index:120;background:rgba(16,24,40,.45)"></div>
+  <div style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:121;width:min(680px,calc(100vw - 32px));max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:#fff;border-radius:14px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;color:#1E2430;overflow:hidden">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 18px 14px 20px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:40px;height:40px;border-radius:10px;background:#C00018;color:#fff;display:grid;place-items:center;font:24px/1 'Material Symbols Outlined'">bolt</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:18px;font-weight:600">Quick intervention</h2><p style="margin:2px 0 0;font-size:13px;color:#667085">Start working now — the work order is created for you and can be completed later</p></div>
+      <button onClick="{{ close }}" title="Close" style="width:44px;height:44px;display:grid;place-items:center;background:transparent;border:0;border-radius:8px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:24px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+
+    <sc-if value="{{ isAsset }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:18px 20px 20px">
+        <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475467"><span style="width:22px;height:22px;border-radius:50%;background:#1E2430;color:#fff;display:grid;place-items:center;font-size:12px">1</span>Which equipment?</span>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px">
+          <label style="height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #D0D5DD;border-radius:10px"><span style="font:22px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input ref="{{ qRef }}" value="{{ q }}" onInput="{{ setQ }}" placeholder="Search equipment by name or line…" style="flex:1;min-width:0;border:0;outline:none;font:16px 'IBM Plex Sans',sans-serif;color:#1E2430" /></label>
+          <button onClick="{{ scan }}" style="height:56px;display:flex;align-items:center;gap:8px;padding:0 18px;background:#1E2430;border:0;border-radius:10px;color:#fff;font:600 15px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:24px/1 'Material Symbols Outlined'">qr_code_scanner</span>Scan</button>
+        </div>
+        <sc-if value="{{ scanning }}">
+          <div style="height:180px;border-radius:10px;background:repeating-linear-gradient(135deg,#2B3140 0 8px,#252A37 8px 16px);display:grid;place-items:center;color:#C4CAD4;position:relative">
+            <span style="position:absolute;inset:30px 120px;border:2px solid rgba(255,255,255,.7);border-radius:12px"></span>
+            <span style="font:12px 'IBM Plex Mono',monospace">camera · point at the asset QR code…</span>
+          </div>
+        </sc-if>
+        <span style="font-size:12.5px;font-weight:600;color:#98A2B3">{{ listLabel }}</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <sc-for list="{{ assets }}" as="a" hint-placeholder-count="6">
+            <button onClick="{{ a.pick }}" style="min-height:64px;display:flex;align-items:center;gap:12px;padding:10px 12px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430" style-hover="border-color:#98A2B3;background:#F9FAFB">
+              <span style="flex:none;width:40px;height:40px;border-radius:8px;background:#EEF1F4;color:#475467;display:grid;place-items:center;font:22px/1 'Material Symbols Outlined'">precision_manufacturing</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</span><span style="font-size:12.5px;color:#667085">{{ a.line }}</span></span>
+              <sc-if value="{{ a.hasNote }}"><span style="flex:none;height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:{{ a.noteBg }};color:{{ a.noteFg }};font-size:11.5px;font-weight:600;white-space:nowrap">{{ a.note }}</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isIssue }}">
+      <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;padding:18px 20px 20px">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#F6F7F9;border-radius:10px">
+          <span style="flex:none;width:40px;height:40px;border-radius:8px;background:#fff;color:#475467;display:grid;place-items:center;font:22px/1 'Material Symbols Outlined'">precision_manufacturing</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;font-size:15px">{{ asset.name }}</span><span style="font-size:12.5px;color:#667085">{{ asset.line }}</span></span>
+          <button onClick="{{ changeAsset }}" style="height:44px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:8px;font:500 14px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Change</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475467"><span style="width:22px;height:22px;border-radius:50%;background:#1E2430;color:#fff;display:grid;place-items:center;font-size:12px">2</span>What's the problem?</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ symptoms }}" as="y"><button onClick="{{ y.pick }}" style="height:44px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:{{ y.bg }};border:1px solid {{ y.border }};border-radius:22px;font:500 14px 'IBM Plex Sans',sans-serif;color:{{ y.color }};cursor:pointer"><span style="font:19px/1 'Material Symbols Outlined'">{{ y.icon }}</span>{{ y.label }}</button></sc-for>
+          </div>
+          <textarea ref="{{ issueRef }}" value="{{ issue }}" onInput="{{ setIssue }}" rows="2" placeholder="Short description, e.g. oil leaking under the pump" style="padding:12px 14px;border:1px solid {{ issueBorder }};border-radius:10px;font:16px/1.45 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:none"></textarea>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:600;color:#475467">Maintenance type</span>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+            <sc-for list="{{ types }}" as="t"><button onClick="{{ t.select }}" style="height:52px;display:flex;align-items:center;justify-content:center;gap:6px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:8px;font:{{ t.font }};color:{{ t.color }};cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for>
+          </div>
+        </div>
+        <button onClick="{{ toggleStop }}" style="align-self:flex-start;min-height:48px;display:flex;align-items:center;gap:12px;padding:0 14px 0 10px;background:{{ stopBg }};border:1px solid {{ stopBorder }};border-radius:10px;cursor:pointer;font:600 14px 'IBM Plex Sans',sans-serif;color:{{ stopColor }}">
+          <span style="width:24px;height:24px;border-radius:6px;border:2px solid {{ stopBox }};background:{{ stopBoxBg }};display:grid;place-items:center;color:#fff;font:18px/1 'Material Symbols Outlined'">{{ stopIcon }}</span>Production is stopped
+        </button>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 20px 18px;border-top:1px solid #EEF0F3">
+        <span style="flex:1;font-size:12.5px;color:#667085;line-height:1.45">Priority, checklist and details can be completed during or after the intervention. The work order is marked <b style="color:#B54708">Information incomplete</b>.</span>
+        <button onClick="{{ start }}" style="flex:none;height:60px;display:flex;align-items:center;gap:8px;padding:0 26px 0 20px;background:{{ startBg }};border:0;border-radius:12px;color:#fff;font:600 17px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:28px/1 'Material Symbols Outlined'">play_arrow</span>Start intervention</button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:760}}">
+const ASSETS = [['Conveyor Line 3', 'Float Line', 'Nearby'], ['Pump P-101', 'Tempering Line', 'Open WO'], ['Tin Bath', 'Float Line', 'Stopped'], ['Fan V-12', 'Float Line', ''], ['Hydraulic Press PH-030', 'Workshop', ''], ['Compressor C-01', 'Utilities', ''], ['Palletizing Robot 1', 'Packaging', ''], ['Tempering Furnace 2', 'Tempering Line', 'Stopped'], ['Bottero 548 Cutter', 'Cutting Line', ''], ['Mixer 02', 'Batch House', ''], ['Dryer S-01', 'Utilities', ''], ['Annealing Lehr', 'Float Line', '']];
+const NOTE = { Nearby: ['#EAF1FD', '#2456B8'], 'Open WO': ['#FEF3E2', '#B54708'], Stopped: ['#FDECEC', '#B42318'] };
+const SYM = [['Leak', 'water_drop'], ['Abnormal noise', 'graphic_eq'], ['Vibration', 'vibration'], ['Overheating', 'device_thermostat'], ["Won't start", 'power_off'], ['Electrical fault', 'bolt']];
+const TYPES = [['Corrective', 'build', '#B54708', '#FEF3E2'], ['Preventive', 'event_repeat', '#2456B8', '#EAF1FD'], ['Predictive', 'insights', '#6941C6', '#F3EEFC'], ['Inspection', 'visibility', '#0E7490', '#E3F4F7']];
+class Component extends DCLogic {
+  state = { open: false, step: 'asset', q: '', asset: null, issue: '', sym: '', type: 'Corrective', stop: false, scanning: false, tried: false };
+  qRef = React.createRef(); issueRef = React.createRef();
+  componentDidMount() {
+    this._open = e => { const d = (e && e.detail) || {}; const a = d.asset ? ASSETS.find(x => x[0] === d.asset) || [d.asset, d.loc || '', ''] : null;
+      this.setState({ open: true, step: a ? 'issue' : 'asset', asset: a, q: '', issue: '', sym: '', type: 'Corrective', stop: false, scanning: false, tried: false }, () => setTimeout(() => { const r = a ? this.issueRef : this.qRef; r.current && r.current.focus(); }, 50)); };
+    this._key = e => { if (e.key === 'Escape' && this.state.open) this.setState({ open: false }); };
+    window.addEventListener('cmms-quick', this._open); window.addEventListener('keydown', this._key);
+    window.CMMSQuickIntervention = d => window.dispatchEvent(new CustomEvent('cmms-quick', { detail: d || {} }));
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-quick', this._open); window.removeEventListener('keydown', this._key); clearTimeout(this._sc); }
+  pick(a) { this.setState({ asset: a, step: 'issue', scanning: false }, () => setTimeout(() => this.issueRef.current && this.issueRef.current.focus(), 50)); }
+  async start() {
+    const s = this.state, text = s.issue.trim() || s.sym;
+    if (!text) return this.setState({ tried: true });
+    const C = await import('./collab-model.js');
+    const task = (s.sym && !s.issue.trim() ? s.sym : text.charAt(0).toUpperCase() + text.slice(1)).slice(0, 60);
+    const key = C.createWo({ quick: true, task, asset: s.asset[0], loc: s.asset[1], type: s.type, prio: '', status: 'In progress', assignee: C.ME, participants: [], desc: s.issue.trim(), stop: s.stop, checklists: ['standard'], createdBy: C.ME });
+    C.post(key, 'sys', 'Quick intervention started by Gaudéric Durand');
+    const qs = new URLSearchParams({ wo: key, task, asset: s.asset[0], loc: s.asset[1], type: s.type, prio: s.stop ? 'Critical' : 'High', status: 'In progress', quick: '1' }).toString();
+    window.location.href = 'Intervention.dc.html?' + qs;
+  }
+  renderVals() {
+    const s = this.state, q = s.q.trim().toLowerCase();
+    const list = ASSETS.filter(a => !q || (a[0] + ' ' + a[1]).toLowerCase().includes(q)).slice(0, q ? 10 : 6);
+    const ok = !!(s.issue.trim() || s.sym);
+    return {
+      open: s.open, close: () => this.setState({ open: false }), isAsset: s.step === 'asset', isIssue: s.step === 'issue',
+      qRef: this.qRef, issueRef: this.issueRef, q: s.q, setQ: e => this.setState({ q: e.target.value }),
+      scanning: s.scanning, scan: () => { this.setState({ scanning: true }); clearTimeout(this._sc); this._sc = setTimeout(() => this.pick(ASSETS[0]), 1500); },
+      listLabel: q ? `${list.length} match${list.length === 1 ? '' : 'es'}` : 'Nearby and recent',
+      assets: list.map(a => { const [bg, fg] = NOTE[a[2]] || []; return { name: a[0], line: a[1], hasNote: !!a[2], note: a[2], noteBg: bg, noteFg: fg, pick: () => this.pick(a) }; }),
+      asset: s.asset ? { name: s.asset[0], line: s.asset[1] } : {}, changeAsset: () => this.setState({ step: 'asset', asset: null }),
+      symptoms: SYM.map(([label, icon]) => { const on = s.sym === label; return { label, icon, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : '#D0D5DD', color: on ? '#fff' : '#344054', pick: () => this.setState({ sym: on ? '' : label }) }; }),
+      issue: s.issue, setIssue: e => this.setState({ issue: e.target.value }), issueBorder: s.tried && !ok ? '#F04438' : '#D0D5DD',
+      types: TYPES.map(([t, icon, fg, bg]) => { const on = s.type === t; return { label: t, icon, bg: on ? bg : '#fff', border: on ? fg : '#D0D5DD', color: on ? fg : '#344054', font: on ? "600 14px 'IBM Plex Sans',sans-serif" : "500 14px 'IBM Plex Sans',sans-serif", select: () => this.setState({ type: t }) }; }),
+      toggleStop: () => this.setState({ stop: !s.stop }), stopBg: s.stop ? '#FEF6F6' : '#fff', stopBorder: s.stop ? '#C00018' : '#D0D5DD', stopColor: s.stop ? '#A30014' : '#344054', stopBox: s.stop ? '#C00018' : '#C4CAD4', stopBoxBg: s.stop ? '#C00018' : '#fff', stopIcon: s.stop ? 'check' : '',
+      start: () => this.start(), startBg: ok ? '#C00018' : '#E08A94',
+    };
+  }
+}
+</script>
+</body>
+</html>

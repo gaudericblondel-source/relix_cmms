@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="checklists" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="min-height:0;display:flex;flex-direction:column;overflow:{{ mainOverflow }}" data-screen-label="Checklist editor">
+    <div style="flex:none;padding:14px 28px 0;display:flex;flex-direction:column;gap:6px;background:#fff;border-bottom:1px solid #E4E7EC">
+      <nav style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#667085">
+        <a href="Checklists.dc.html" style="display:flex;align-items:center;gap:4px;color:#475467;font-weight:500"><span style="font:16px/1 'Material Symbols Outlined'">arrow_back</span>Checklists</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px">
+        <dc-import name="BackButton" fallback="Checklists.dc.html" hint-size="34px,34px"></dc-import>
+        <input value="{{ name }}" onInput="{{ setName }}" placeholder="Checklist name" style="flex:1;min-width:0;height:36px;margin-left:-8px;padding:0 8px;border:1px solid transparent;border-radius:6px;font:600 22px 'IBM Plex Sans',sans-serif;letter-spacing:-.01em;color:#1E2430;background:transparent;outline:none" style-hover="border-color:#E4E7EC" style-focus="border-color:#C00018;background:#fff" />
+        <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:12px;font-size:12px;font-weight:600;background:{{ statusBg }};color:{{ statusFg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ statusLabel }}</span>
+        <sc-if value="{{ dirty }}"><span style="font-size:12.5px;color:#B54708;white-space:nowrap">Unsaved changes</span></sc-if>
+        <button onClick="{{ preview }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">play_circle</span>Preview</button>
+        <button onClick="{{ saveDraft }}" style="height:34px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="background:#F9FAFB">Save draft</button>
+        <button onClick="{{ publish }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">publish</span>Publish</button>
+      </div>
+      <input value="{{ desc }}" onInput="{{ setDesc }}" placeholder="Add a short description" style="height:28px;margin-left:-8px;padding:0 8px;border:1px solid transparent;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#475467;background:transparent;outline:none" style-hover="border-color:#E4E7EC" style-focus="border-color:#C00018;background:#fff" />
+      <div style="display:flex;align-items:center;gap:16px;min-height:46px">
+        <div style="display:flex;align-items:center;gap:14px;color:#667085;font-size:12.5px;flex-wrap:wrap;white-space:nowrap">
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">format_list_numbered</span><b style="font-weight:600;color:#1E2430">{{ stepCount }}</b> steps</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">alt_route</span><b style="font-weight:600;color:#1E2430">{{ logicCount }}</b> with conditions</span>
+          <label style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">schedule</span>Est.<input value="{{ est }}" onInput="{{ setEst }}" inputmode="numeric" placeholder="—" style="width:44px;height:24px;padding:0 4px;border:1px solid #E4E7EC;border-radius:4px;font:600 12.5px 'IBM Plex Mono',monospace;color:#1E2430;text-align:right;outline:none" />min</label>
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">history</span>{{ updatedLabel }}</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+            <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
+              <button onClick="{{ v.select }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};font:{{ v.font }};color:{{ v.color }};cursor:pointer;white-space:nowrap"><span style="font:18px/1 'Material Symbols Outlined'">{{ v.icon }}</span>{{ v.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;padding:20px 28px 40px">
+        <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:8px">
+          <sc-if value="{{ hasSegs }}">
+            <div style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;margin-bottom:4px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font:17px/1 'Material Symbols Outlined';color:#475467">engineering</span><span style="font-weight:600">Who is needed</span><span style="font-size:12px;color:#667085">{{ segSummary }}</span><span style="margin-left:auto;font:600 13px 'IBM Plex Mono',monospace">{{ totalLabel }}</span></div>
+              <div style="display:flex;gap:3px;height:30px">
+                <sc-for list="{{ segs }}" as="g"><span title="{{ g.tip }}" style="flex:{{ g.flex }};min-width:0;display:flex;align-items:center;gap:5px;padding:0 8px;border-radius:5px;background:{{ g.bg }};color:{{ g.fg }};font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden"><span style="font:14px/1 'Material Symbols Outlined'">{{ g.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis">{{ g.name }} · {{ g.dur }}</span></span></sc-for>
+              </div>
+              <span style="font-size:12px;color:#98A2B3">Used to suggest the right people and plan each part of the work order. Branch-only steps are not counted.</span>
+            </div>
+          </sc-if>
+          <sc-for list="{{ rows }}" as="s" hint-placeholder-count="6">
+            <div draggable="{{ s.draggable }}" onDragStart="{{ s.drag }}" onDragOver="{{ s.over }}" onDrop="{{ s.drop }}" onDragEnd="{{ s.end }}" style="position:relative;margin-left:{{ s.indent }};opacity:{{ s.op }}">
+              <sc-if value="{{ s.isBranch }}"><span style="position:absolute;left:-22px;top:-8px;width:16px;height:36px;border-left:2px solid #BCD0F5;border-bottom:2px solid #BCD0F5;border-bottom-left-radius:8px"></span></sc-if>
+              <div style="background:#fff;border:1px solid {{ s.border }};box-shadow:{{ s.ring }};border-radius:8px">
+                <div onClick="{{ s.toggle }}" style="display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 12px 8px 6px;cursor:pointer">
+                  <span title="Drag to reorder" style="font:18px/1 'Material Symbols Outlined';color:#C4CAD4;cursor:grab">drag_indicator</span>
+                  <span style="width:24px;font:600 12px 'IBM Plex Mono',monospace;color:#98A2B3;text-align:right">{{ s.n }}</span>
+                  <span style="width:30px;height:30px;flex:none;border-radius:6px;background:{{ s.ibg }};color:{{ s.ifg }};display:grid;place-items:center;font:17px/1 'Material Symbols Outlined'">{{ s.icon }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ s.titleColor }}">{{ s.title }}</span>
+                    <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#667085;min-width:0">
+                      <span style="white-space:nowrap">{{ s.meta }}</span>
+                      <sc-if value="{{ s.hasLogic }}"><span style="display:inline-flex;align-items:center;gap:3px;min-width:0;height:20px;padding:0 7px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-weight:500"><span style="font:13px/1 'Material Symbols Outlined'">alt_route</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.logic }}</span></span></sc-if>
+                      <sc-if value="{{ s.isBranch }}"><span style="display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:10px;background:#F2F4F7;color:#475467;font-weight:500;white-space:nowrap">Only when sent here</span></sc-if>
+                      <sc-if value="{{ s.hasMedia }}"><span style="display:inline-flex;align-items:center;gap:3px;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">perm_media</span>{{ s.mediaCount }}</span></sc-if>
+                    </span>
+                  </span>
+                  <span style="flex:none;display:flex;align-items:center;gap:4px">
+                    <sc-for list="{{ s.skillChips }}" as="k"><span title="{{ k.name }} required" style="height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:{{ k.bg }};color:{{ k.fg }};font-size:11.5px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for>
+                    <sc-if value="{{ s.hasMin }}"><span style="min-width:52px;text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#475467">{{ s.minLabel }}</span></sc-if>
+                  </span>
+                  <span style="font:20px/1 'Material Symbols Outlined';color:#98A2B3">{{ s.chev }}</span>
+                </div>
+                <sc-if value="{{ s.open }}">
+                  <div style="padding:4px 16px 14px 70px;border-top:1px solid #F2F4F7;padding-top:14px">
+                    <dc-import name="StepEditor" step="{{ s.data }}" steps="{{ allSteps }}" on-change="{{ s.change }}" on-remove="{{ s.remove }}" on-duplicate="{{ s.duplicate }}" focus="{{ focus }}" focus-nonce="{{ focusNonce }}" hint-size="100%,220px"></dc-import>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ empty }}">
+            <div style="padding:28px;text-align:center;color:#667085;background:#fff;border:1px dashed #D0D5DD;border-radius:8px">No steps yet. Type the first one below — e.g. “Check pressure”.</div>
+          </sc-if>
+
+          <div style="position:sticky;bottom:16px;z-index:5;margin-top:6px;background:#fff;border:1.5px solid {{ quickBorder }};border-radius:12px;box-shadow:0 10px 28px rgba(16,24,40,.12);padding:14px 16px 12px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:30px;height:30px;flex:none;border-radius:8px;background:#FBF1F2;color:#C00018;display:grid;place-items:center;font:19px/1 'Material Symbols Outlined'">add</span>
+              <span style="font:500 12px 'IBM Plex Mono',monospace;color:#98A2B3">Step {{ nextNo }}</span>
+              <input ref="{{ quickRef }}" value="{{ quick }}" onInput="{{ setQuick }}" onKeyDown="{{ quickKey }}" placeholder="What should the technician do? e.g. Check the oil level" style="flex:1;min-width:0;height:38px;border:0;outline:none;font:500 15px 'IBM Plex Sans',sans-serif;color:#1E2430;background:transparent" />
+              <button onClick="{{ addQuick }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:{{ addBg }};border:0;border-radius:8px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ addFg }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">keyboard_return</span>Add step</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:40px">
+              <span style="font-size:12px;color:#667085;margin-right:4px">Answer type</span>
+              <sc-for list="{{ quickTypes }}" as="t" hint-placeholder-count="7">
+                <button onClick="{{ t.pick }}" title="{{ t.tip }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;border-radius:15px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};font:600 12px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button>
+              </sc-for>
+              <span style="position:relative;display:flex;margin-left:2px">
+                <select value="{{ quickType }}" onChange="{{ setQuickType }}" title="Other types" style="appearance:none;-webkit-appearance:none;height:30px;padding:0 24px 0 10px;border:1px dashed #C4CAD4;border-radius:15px;font:500 12px 'IBM Plex Sans',sans-serif;color:#475467;background:#fff;outline:none;cursor:pointer">
+                  <option value="">More…</option>
+                  <sc-for list="{{ typeOpts }}" as="t"><option value="{{ t.v }}">{{ t.l }}</option></sc-for>
+                </select>
+                <span style="position:absolute;right:5px;top:6px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+              </span>
+            </div>
+            <span style="font-size:11.5px;color:#98A2B3;padding-left:40px">Press Enter to add · {{ autoHint }} · conditions and details can be set by opening the step</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFlow }}">
+      <div style="flex:1;min-height:0;display:grid;grid-template-columns:212px minmax(0,1fr) {{ panelW }}">
+        <aside style="min-height:0;overflow:auto;background:#fff;border-right:1px solid #E4E7EC;padding:12px 10px 16px;display:flex;flex-direction:column;gap:4px">
+          <span style="padding:0 6px 6px;font-size:12px;color:#667085;line-height:1.4">Drag a block onto a <b style="font-weight:600;color:#1E2430">+</b> in the flow, or click to add it at the end.</span>
+          <sc-for list="{{ palette }}" as="g">
+            <div style="padding:8px 6px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+            <sc-for list="{{ g.items }}" as="p">
+              <div draggable="true" onDragStart="{{ p.drag }}" onDragEnd="{{ p.end }}" onClick="{{ p.click }}" style="height:34px;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid transparent;border-radius:6px;cursor:grab;user-select:none" style-hover="background:#F6F7F9;border-color:#E4E7EC">
+                <span style="width:24px;height:24px;border-radius:5px;background:{{ p.bg }};color:{{ p.fg }};display:grid;place-items:center;font:15px/1 'Material Symbols Outlined'">{{ p.icon }}</span>
+                <span style="flex:1;font-weight:500">{{ p.label }}</span>
+                <span style="font:15px/1 'Material Symbols Outlined';color:#D0D5DD">drag_indicator</span>
+              </div>
+            </sc-for>
+          </sc-for>
+        </aside>
+
+        <div style="position:relative;min-width:0;min-height:0;display:flex;flex-direction:column">
+          <div style="position:absolute;left:12px;top:12px;z-index:5;display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;background:#fff;border:1px solid #D0D5DD;border-radius:6px;height:30px">
+              <button onClick="{{ zoomOut }}" style="width:30px;height:28px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">remove</span></button>
+              <span style="width:46px;text-align:center;font:500 12px 'IBM Plex Mono',monospace;border-left:1px solid #EEF0F3;border-right:1px solid #EEF0F3;line-height:28px">{{ zoomLabel }}</span>
+              <button onClick="{{ zoomIn }}" style="width:30px;height:28px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">add</span></button>
+            </div>
+            <span style="height:30px;display:flex;align-items:center;gap:6px;padding:0 10px;background:rgba(255,255,255,.9);border-radius:6px;font-size:12px;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">conversion_path</span>Drag from a dot under a block to connect it</span>
+          </div>
+          <div ref="{{ canvasRef }}" onPointerDown="{{ panStart }}" onPointerMove="{{ panMove }}" onPointerUp="{{ panEnd }}" onPointerLeave="{{ panEnd }}" style="flex:1;overflow:auto;cursor:{{ panCursor }};user-select:none;background-color:#F6F7F9;background-image:radial-gradient(#DDE1E7 1px,transparent 1px);background-size:18px 18px">
+            <div style="position:relative;width:{{ fw }};height:{{ fh }}">
+              <div ref="{{ innerRef }}" style="position:absolute;left:0;top:0;width:{{ rawW }};height:{{ rawH }};transform:scale({{ zoom }});transform-origin:0 0">
+                <svg width="{{ rawW }}" height="{{ rawH }}" style="position:absolute;inset:0;overflow:visible;pointer-events:none">
+                  <defs>
+                    <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#98A2B3"></path></marker>
+                    <marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#C00018"></path></marker>
+                  </defs>
+                  <sc-for list="{{ edges }}" as="e"><path d="{{ e.d }}" fill="none" stroke="{{ e.color }}" stroke-width="{{ e.w }}" stroke-dasharray="{{ e.dash }}" marker-end="{{ e.marker }}"></path></sc-for>
+                  <sc-if value="{{ linking }}"><path d="{{ linkPath }}" fill="none" stroke="#C00018" stroke-width="2" stroke-dasharray="5 4"></path></sc-if>
+                </svg>
+                <sc-for list="{{ edgeLabels }}" as="l">
+                  <span style="position:absolute;left:{{ l.x }};top:{{ l.y }};transform:translate(-50%,-50%);height:18px;padding:0 6px;border-radius:9px;background:#fff;border:1px solid #E4E7EC;font:500 10.5px/16px 'IBM Plex Sans',sans-serif;color:#667085;white-space:nowrap">{{ l.text }}</span>
+                </sc-for>
+                <sc-for list="{{ nodes }}" as="n">
+                  <div data-node-id="{{ n.id }}" onClick="{{ n.select }}" onDragOver="{{ n.over }}" onDrop="{{ n.drop }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:{{ n.w }};height:{{ n.h }};background:{{ n.bg }};border:{{ n.border }};box-shadow:{{ n.shadow }};border-radius:{{ n.radius }};cursor:pointer">
+                    <sc-if value="{{ n.isStep }}">
+                      <div style="height:100%;display:flex;align-items:center;gap:10px;padding:0 12px">
+                        <span style="width:32px;height:32px;flex:none;border-radius:7px;background:{{ n.ibg }};color:{{ n.ifg }};display:grid;place-items:center;font:18px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                          <span style="font-size:11px;color:#667085;white-space:nowrap">{{ n.meta }}</span>
+                          <span style="font-weight:600;font-size:13px;line-height:1.25;color:#1E2430;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ n.title }}</span>
+                        </span>
+                        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;color:#98A2B3">
+                          <sc-if value="{{ n.hasMedia }}"><span title="Supporting content" style="font:15px/1 'Material Symbols Outlined'">perm_media</span></sc-if>
+                          <sc-if value="{{ n.hasReq }}"><span title="{{ n.reqTip }}" style="font:15px/1 'Material Symbols Outlined';color:#B54708">{{ n.reqIcon }}</span></sc-if>
+                        </span>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ n.isTerminal }}">
+                      <div style="height:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;color:{{ n.fg }}"><span style="font:18px/1 'Material Symbols Outlined'">{{ n.icon }}</span>{{ n.title }}<span title="Can't be removed" style="font:13px/1 'Material Symbols Outlined';opacity:.5">lock</span></div>
+                    </sc-if>
+                    <sc-for list="{{ n.handles }}" as="h">
+                      <div data-handle="1" onPointerDown="{{ h.down }}" title="{{ h.tip }}" style="position:absolute;left:{{ h.x }};bottom:-7px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;cursor:crosshair">
+                        <span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid {{ h.color }}"></span>
+                        <sc-if value="{{ h.hasLabel }}"><span style="margin-top:3px;height:17px;padding:0 6px;border-radius:9px;background:{{ h.labelBg }};font:600 10.5px/17px 'IBM Plex Sans',sans-serif;color:{{ h.color }};white-space:nowrap">{{ h.label }}</span></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ zones }}" as="z">
+                  <div onDragOver="{{ z.over }}" onDragLeave="{{ z.leave }}" onDrop="{{ z.drop }}" onClick="{{ z.click }}" title="Insert a step here" style="position:absolute;left:{{ z.x }};top:{{ z.y }};transform:translate(-50%,-50%);width:{{ z.w }};height:{{ z.h }};display:grid;place-items:center;background:{{ z.bg }};border:{{ z.border }};border-radius:14px;color:{{ z.fg }};font:600 11.5px 'IBM Plex Sans',sans-serif;cursor:pointer;z-index:2" style-hover="border-color:#C00018;color:#C00018">
+                    <sc-if value="{{ z.dragging }}"><span>Drop here</span></sc-if>
+                    <sc-if value="{{ z.idle }}"><span style="font:16px/1 'Material Symbols Outlined'">add</span></sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ plusMenu }}">
+                  <div style="position:absolute;left:{{ plusMenu.x }};top:{{ plusMenu.y }};transform:translateX(-50%);z-index:20;width:300px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.16);padding:8px" onPointerDown="{{ stopPd }}">
+                    <sc-for list="{{ plusGroups }}" as="g">
+                      <div style="padding:4px 6px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+                        <sc-for list="{{ g.items }}" as="t"><button onClick="{{ t.pick }}" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;background:transparent;border:0;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="width:22px;height:22px;border-radius:5px;background:{{ t.bg }};color:{{ t.fg }};display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+          <sc-if value="{{ plusMenu }}"><div onClick="{{ closePlus }}" style="position:absolute;inset:0;z-index:4"></div></sc-if>
+        </div>
+
+        <sc-if value="{{ sel }}">
+          <aside style="min-height:0;display:flex;flex-direction:column;background:#fff;border-left:1px solid #E4E7EC">
+            <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+              <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">Step {{ sel.n }}</span>
+              <button onClick="{{ closeSel }}" title="Close" style="margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:14px">
+              <dc-import name="StepEditor" step="{{ sel.data }}" steps="{{ allSteps }}" on-change="{{ sel.change }}" on-remove="{{ sel.remove }}" on-duplicate="{{ sel.duplicate }}" focus="{{ focus }}" focus-nonce="{{ focusNonce }}" hint-size="100%,300px"></dc-import>
+            </div>
+          </aside>
+        </sc-if>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;flow&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const URLQ = new URLSearchParams(window.location.search);
+const FONT = w => `${w} 13px 'IBM Plex Sans',sans-serif`;
+const PAL = [
+  ['Input', [['yesno'], ['single', 'Choice'], ['multi'], ['number'], ['text'], ['comment']]],
+  ['Action', [['instruction'], ['confirm', 'Confirmation'], ['photo'], ['file', 'Add attachment'], ['parts', 'Add spare part'], ['consumables', 'Add consumable']]],
+  ['Content', [['media:image', 'Image', 'image'], ['media:video', 'Video', 'smart_display'], ['media:pdf', 'PDF / Document', 'picture_as_pdf']]],
+  ['Logic', [['logic', 'Condition / Branch', 'alt_route']]],
+];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+class Component extends DCLogic {
+  state = { ready: false, cl: null, saved: '', view: URLQ.get('view') === 'flow' ? 'flow' : (this.props.view ?? 'list'), expanded: null, selected: null, quick: '', quickType: '', drag: null, zoom: 1, pal: null, zone: null, link: null, plus: null, focus: '', focusNonce: 0, toast: null, panning: false };
+  canvasRef = React.createRef(); innerRef = React.createRef(); quickRef = React.createRef();
+  componentDidMount() {
+    import('./checklist-model.js').then(M => {
+      const id = URLQ.get('id') || 'pump-seal';
+      const cl = M.load(id) || M.fromName(id, URLQ.get('name') || 'New checklist');
+      this.setState({ ready: true, cl, saved: JSON.stringify(cl) });
+    });
+    import('./people-model.js').then(PM => { this.PM = PM; this.forceUpdate(); });
+    this._mv = e => { if (!this._link) return; const p = this.toCanvas(e); this.setState(z => ({ link: { ...z.link, x2: p.x, y2: p.y } })); };
+    this._up = e => { const L = this._link; if (!L) return; this._link = null; const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest('[data-node-id]'); this.setState({ link: null }); if (t) this.applyLink(L.from, L.when, t.getAttribute('data-node-id')); };
+    window.addEventListener('pointermove', this._mv); window.addEventListener('pointerup', this._up);
+  }
+  componentWillUnmount() { window.removeEventListener('pointermove', this._mv); window.removeEventListener('pointerup', this._up); }
+  get M() { return window.CMMSChecklist; }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  toCanvas(e) { const r = this.innerRef.current.getBoundingClientRect(), z = this.state.zoom; return { x: (e.clientX - r.left) / z, y: (e.clientY - r.top) / z }; }
+  mut(fn) { this.setState(z => { const cl = this.M.clone(z.cl); fn(cl); return { cl }; }); }
+  patch(id, p) { this.mut(cl => { cl.steps = cl.steps.map(s => s.id === id ? { ...s, ...p } : s); }); }
+  insert(index, step, extra) { this.mut(cl => { cl.steps.splice(index, 0, step); if (extra) cl.steps.splice(index + 1, 0, extra); }); return step.id; }
+  removeStep(id) { this.mut(cl => { cl.steps = cl.steps.filter(s => s.id !== id); this.M.cleanRefs(cl, id); }); this.setState(z => ({ selected: z.selected === id ? null : z.selected, expanded: z.expanded === id ? null : z.expanded })); }
+  duplicate(id) { const M = this.M; this.mut(cl => { const i = cl.steps.findIndex(s => s.id === id); const c = { ...M.clone(cl.steps[i]), id: M.uid(), title: cl.steps[i].title + ' (copy)' }; cl.steps.splice(i + 1, 0, c); }); }
+  applyLink(fromId, when, tgt) {
+    const M = this.M, cl = this.state.cl, st = cl.steps.find(s => s.id === fromId);
+    if (!st || tgt === 'START' || tgt === fromId) return;
+    const label = tgt === 'END' ? 'End' : (cl.steps.find(s => s.id === tgt) || {}).title;
+    if (when === null || when === '*') {
+      const def = M.defaultNext(cl, fromId);
+      this.patch(fromId, tgt === 'END' && def !== 'END' ? { after: 'finish', afterTarget: '' } : tgt === def ? { after: 'next', afterTarget: '' } : { after: 'goto', afterTarget: tgt });
+    } else {
+      let rules = st.rules.filter(r => !(r.when === when && (r.action === 'goto' || r.action === 'finish')));
+      if (tgt === 'END') rules.push({ when, action: 'finish' }); else if (tgt !== M.afterTarget(cl, st)) rules.push({ when, action: 'goto', target: tgt });
+      this.patch(fromId, { rules });
+    }
+    this.flash(`${when && when !== '*' ? M.whenLabel(st, when) + ' → ' : ''}${label}`);
+  }
+  fromPalette(key, index) {
+    const M = this.M;
+    if (key === 'logic') { const q = M.newStep('New question?', 'yesno', { required: true }); const b = M.newStep('What to do if Yes', 'instruction', { conditional: true }); q.rules = [{ when: 'yes', action: 'goto', target: b.id }]; this.insert(index, q, b); this.select(q.id, 'logic'); return; }
+    if (key.startsWith('media:')) { const k = key.split(':')[1]; const s = M.newStep('Read the instructions', 'instruction', { media: [{ kind: k, name: `New ${M.MEDIA[k][0].toLowerCase()}` }] }); this.insert(index, s); this.select(s.id, 'media'); return; }
+    const prev = this.state.cl.steps[index - 1];
+    const s = M.newStep(M.TYPES[key].label, key, { conditional: !!(prev && prev.conditional) });
+    this.insert(index, s); this.select(s.id);
+  }
+  onNode(id, key) {
+    const M = this.M;
+    if (key.startsWith('media:')) { const k = key.split(':')[1]; const st = this.state.cl.steps.find(s => s.id === id); this.patch(id, { media: [...st.media, { kind: k, name: `New ${M.MEDIA[k][0].toLowerCase()}` }] }); this.select(id, 'media'); this.flash(`${M.MEDIA[k][0]} attached to “${st.title}”`); }
+    if (key === 'logic') this.select(id, 'logic');
+  }
+  select(id, focus) { this.setState(z => ({ selected: id, expanded: id, plus: null, focus: focus || '', focusNonce: focus ? z.focusNonce + 1 : z.focusNonce })); }
+  addQuick() {
+    const M = this.M, t = this.state.quick.trim(); if (!t) return;
+    const type = this.state.quickType || M.guessType(t);
+    this.mut(cl => { cl.steps.push(M.newStep(t, type)); });
+    this.setState({ quick: '', quickType: '' });
+  }
+  save(status) {
+    const now = new Date(), stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const cl = { ...this.state.cl, status, updated: stamp, updatedBy: 'G. Durand' };
+    this.M.save(cl); this.setState({ cl, saved: JSON.stringify(cl) });
+    this.flash(status === 'published' ? 'Published — new interventions use this version' : 'Draft saved');
+  }
+
+  flow() {
+    const M = this.M, s = this.state, cl = s.cl, steps = cl.steps, n = steps.length;
+    const NW = 252, NH = 76, TW = 212, TH = 46, ROW = 132, PADX = 170, COL1 = PADX + 340, TOP = 64;
+    const nodes = {}, list = [];
+    const put = o => { nodes[o.id] = o; list.push(o); };
+    put({ id: 'START', col: 0, row: 0, x: PADX + (NW - TW) / 2, y: TOP + (NH - TH) / 2, w: TW, h: TH });
+    steps.forEach((st, i) => put({ id: st.id, col: st.conditional ? 1 : 0, row: i + 1, x: st.conditional ? COL1 : PADX, y: TOP + (i + 1) * ROW, w: NW, h: NH, st, i }));
+    put({ id: 'END', col: 0, row: n + 1, x: PADX + (NW - TW) / 2, y: TOP + (n + 1) * ROW + (NH - TH) / 2, w: TW, h: TH });
+    const handlesFor = st => {
+      if (!M.TYPES[st.type].answer) return [{ when: null, label: '' }];
+      const opts = M.whenOptions(st); if (!opts.length) return [{ when: null, label: '' }];
+      if (opts.length <= 3) return opts.map(([v, l]) => ({ when: v, label: st.type === 'number' ? (v === 'out' ? 'Out of range' : 'In range') : l }));
+      const ruled = new Set(st.rules.filter(r => r.action !== 'require').map(r => r.when));
+      return [...opts.filter(([v]) => ruled.has(v)).map(([v, l]) => ({ when: v, label: l })), { when: '*', label: 'Other answers' }];
+    };
+    const edges = [], labels = []; let laneL = 0, laneR = 0;
+    const route = (a, sx, b, label, active) => {
+      const sy = a.y + a.h, tx = b.x + b.w / 2, ty = b.y; let d;
+      const blocked = a.col === b.col && list.some(o => o.col === a.col && o.row > a.row && o.row < b.row);
+      if (ty > sy && a.col === b.col && !blocked && Math.abs(sx - tx) < 1) d = `M${sx} ${sy}V${ty - 2}`;
+      else if (ty > sy && !blocked && b.row - a.row === 1) d = `M${sx} ${sy}C${sx} ${(sy + ty) / 2} ${tx} ${(sy + ty) / 2} ${tx} ${ty - 2}`;
+      else if (ty > sy && a.col !== b.col && b.row - a.row > 1 && a.col === 1) { const lx = COL1 + NW + 36 + (laneR++) * 14; d = `M${sx} ${sy}V${sy + 16}H${lx}V${ty - 20}H${tx}V${ty - 2}`; }
+      else if (ty > sy && a.col !== b.col && b.row - a.row > 1 && !list.some(o => o.col === 1 && o.row > a.row && o.row < b.row)) d = `M${sx} ${sy}C${sx} ${sy + 60} ${tx} ${ty - 60} ${tx} ${ty - 2}`;
+      else { const right = a.col === 1 || b.col === 1; const lx = right ? COL1 + NW + 36 + (laneR++) * 14 : PADX - 36 - (laneL++) * 14; d = `M${sx} ${sy}V${sy + 16}H${lx}V${ty - 20}H${tx}V${ty - 2}`; }
+      edges.push({ d, color: active ? '#C00018' : '#B8BFCA', w: active ? 2 : 1.5, dash: '', marker: active ? 'url(#fb)' : 'url(#fa)' });
+      if (label) labels.push({ x: sx + 'px', y: sy + 22 + 'px', text: label });
+    };
+    const first = M.firstStep(cl);
+    route(nodes.START, nodes.START.x + TW / 2, nodes[first] || nodes.END, '', false);
+    const nodeViews = list.map(o => {
+      if (o.id === 'START' || o.id === 'END') {
+        const isS = o.id === 'START';
+        return { id: o.id, x: o.x + 'px', y: o.y + 'px', w: o.w + 'px', h: o.h + 'px', isTerminal: true, isStep: false, title: isS ? 'Start intervention' : 'End intervention', icon: isS ? 'play_arrow' : 'flag',
+          fg: isS ? '#0B6B4A' : '#475467', bg: isS ? '#E6F4EE' : '#EEF1F4', border: `1px solid ${isS ? '#A6DDC4' : '#D0D5DD'}`, radius: '23px', shadow: 'none', handles: [],
+          select: () => this.setState({ selected: null }), over: e => {}, drop: e => {} };
+      }
+      const st = o.st, T = M.TYPES[st.type], [ibg, ifg] = M.GROUP_COLORS[T.group], on = s.selected === st.id;
+      const hs = handlesFor(st), def = M.afterTarget(cl, st);
+      let defaultUsed = false;
+      const handles = hs.map((h, j) => {
+        const hx = hs.length === 1 ? NW / 2 : (j + 1) / (hs.length + 1) * NW;
+        const rule = h.when && h.when !== '*' ? st.rules.find(r => r.when === h.when && (r.action === 'goto' || r.action === 'finish')) : null;
+        const target = rule ? (rule.action === 'finish' ? 'END' : rule.target) : null;
+        if (rule && nodes[target]) route(o, o.x + hx, nodes[target], '', on || s.selected === target);
+        else defaultUsed = true;
+        return { x: hx + 'px', label: h.label, hasLabel: !!h.label, color: rule ? '#2456B8' : '#98A2B3', labelBg: rule ? '#EAF1FD' : '#F2F4F7', tip: 'Drag to connect',
+          down: e => { e.stopPropagation(); e.preventDefault(); const p = { x: o.x + hx, y: o.y + NH }; this._link = { from: st.id, when: h.when }; this.setState({ link: { x1: p.x, y1: p.y, x2: p.x, y2: p.y } }); } };
+      });
+      if (defaultUsed && nodes[def]) route(o, o.x + NW / 2, nodes[def], hs.length > 1 && hs.some(h => h.when && st.rules.some(r => r.when === h.when && r.action !== 'require')) ? 'Otherwise' : '', on || s.selected === def);
+      const req = st.rules.filter(r => r.action === 'require');
+      return { id: st.id, x: o.x + 'px', y: o.y + 'px', w: NW + 'px', h: NH + 'px', isStep: true, isTerminal: false, title: st.title || 'Untitled step', meta: `${o.i + 1} · ${T.label}${st.required ? ' · Required' : ''}`,
+        icon: T.icon, ibg, ifg, hasMedia: st.media.length > 0, hasReq: req.length > 0, reqIcon: req.some(r => r.need === 'photo') ? 'photo_camera' : 'chat', reqTip: req.map(r => `${M.whenLabel(st, r.when)} → ${r.need} required`).join(', '),
+        bg: st.conditional ? '#FBFCFE' : '#fff', border: on ? '2px solid #C00018' : st.conditional ? '1.5px dashed #9DB6E8' : '1px solid #D9DEE5', radius: '10px', shadow: on ? '0 0 0 4px rgba(192,0,24,.1)' : '0 1px 2px rgba(16,24,40,.06)',
+        handles, select: e => { e.stopPropagation(); this.select(st.id); },
+        over: e => { if (s.pal && s.pal !== 'step') e.preventDefault(); }, drop: e => { e.preventDefault(); const k = e.dataTransfer.getData('text/plain'); if (k && (k.startsWith('media:') || k === 'logic')) this.onNode(st.id, k); this.setState({ pal: null }); } };
+    });
+    const dragging = !!s.pal;
+    const zoneAt = (o, index) => ({ cx: o.x + o.w / 2, cy: o.y + o.h + (ROW - (o.id === 'START' ? (TH + (NH - TH) / 2) : NH)) / 2 + (o.id === 'START' ? 0 : 0), index });
+    const zs = [zoneAt(nodes.START, 0), ...steps.map((st, i) => zoneAt(nodes[st.id], i + 1))];
+    const zones = zs.map((z, k) => { const hot = s.zone === k; return { x: z.cx + 'px', y: Math.min(z.cy, z.cy) + 'px', w: dragging ? '96px' : '24px', h: dragging ? '28px' : '24px', dragging, idle: !dragging,
+      bg: hot ? '#FBF1F2' : '#fff', border: dragging ? `1.5px dashed ${hot ? '#C00018' : '#98A2B3'}` : '1px solid #D0D5DD', fg: hot ? '#C00018' : '#667085',
+      over: e => { e.preventDefault(); if (this.state.zone !== k) this.setState({ zone: k }); }, leave: () => this.state.zone === k && this.setState({ zone: null }),
+      drop: e => { e.preventDefault(); const key = e.dataTransfer.getData('text/plain'); this.setState({ pal: null, zone: null }); if (key) this.fromPalette(key, z.index); },
+      click: e => { e.stopPropagation(); this.setState({ plus: { x: z.cx, y: z.cy + 18, index: z.index } }); } }; });
+    const rawW = COL1 + NW + 110, rawH = nodes.END.y + TH + 60;
+    const L = s.link;
+    return { nodes: nodeViews, edges, edgeLabels: labels, zones, rawW: rawW + 'px', rawH: rawH + 'px', fw: rawW * s.zoom + 'px', fh: rawH * s.zoom + 'px',
+      linking: !!L, linkPath: L ? `M${L.x1} ${L.y1}C${L.x1} ${L.y1 + 60} ${L.x2} ${L.y2 - 60} ${L.x2} ${L.y2}` : '' };
+  }
+
+  renderVals() {
+    const M = this.M, s = this.state;
+    if (!s.ready || !M) return { name: '', desc: '', views: [], rows: [], isList: true, isFlow: false, palette: [], nodes: [], edges: [], zones: [], edgeLabels: [], mainOverflow: 'auto' };
+    const cl = s.cl, steps = cl.steps;
+    const views = [['list', 'Checklist', 'checklist'], ['flow', 'Workflow', 'account_tree']].map(([k, label, icon]) => ({ label, icon, bg: s.view === k ? '#fff' : 'transparent', shadow: s.view === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: FONT(s.view === k ? 600 : 500), color: s.view === k ? '#1E2430' : '#667085', select: () => this.setState({ view: k, plus: null }) }));
+    const dirty = JSON.stringify(cl) !== s.saved;
+    const up = cl.updated ? (() => { const [d, t] = cl.updated.split('T'), [, m, dd] = d.split('-'); return `Updated ${MONTHS[+m - 1]} ${+dd}, ${t} by ${cl.updatedBy}`; })() : 'Never saved';
+    const mk = (st, i) => ({
+      data: st, change: p => this.patch(st.id, p), remove: () => this.removeStep(st.id), duplicate: () => this.duplicate(st.id),
+    });
+    const rows = steps.map((st, i) => {
+      const T = M.TYPES[st.type], [ibg, ifg] = M.GROUP_COLORS[T.group], open = s.expanded === st.id, logic = M.logicSummary(cl, st);
+      return { ...mk(st, i), n: i + 1, title: st.title || 'Untitled step', titleColor: st.title ? '#1E2430' : '#98A2B3', icon: T.icon, ibg, ifg,
+        skillChips: this.PM ? (st.skills || []).map(id => this.PM.skill(id)) : [], hasMin: !!+st.minutes, minLabel: +st.minutes ? st.minutes + ' min' : '',
+        meta: `${T.label} · ${st.required ? 'Required' : 'Optional'}`, hasLogic: !!logic, logic, isBranch: st.conditional, indent: st.conditional ? '36px' : '0',
+        hasMedia: st.media.length > 0, mediaCount: st.media.length, open, chev: open ? 'expand_less' : 'expand_more',
+        border: open ? '#C00018' : '#E4E7EC', ring: open ? '0 0 0 3px rgba(192,0,24,.08)' : 'none', op: s.drag === i ? 0.4 : 1, draggable: open ? 'false' : 'true',
+        toggle: () => this.setState({ expanded: open ? null : st.id, focus: '' }),
+        drag: e => { e.dataTransfer.effectAllowed = 'move'; this.setState({ drag: i }); },
+        over: e => { e.preventDefault(); const from = this.state.drag; if (from === null || from === i) return; this.mut(c => { const [m] = c.steps.splice(from, 1); c.steps.splice(i, 0, m); }); this.setState({ drag: i }); },
+        drop: e => e.preventDefault(), end: () => this.setState({ drag: null }) };
+    });
+    const guess = M.guessType(s.quick);
+    const base = {
+      mainOverflow: s.view === 'flow' ? 'hidden' : 'auto',
+      name: cl.name, setName: e => { const v = e.target.value; this.mut(c => { c.name = v; }); },
+      desc: cl.desc, setDesc: e => { const v = e.target.value; this.mut(c => { c.desc = v; }); },
+      est: cl.est ?? '', setEst: e => { const v = e.target.value.replace(/\D/g, ''); this.mut(c => { c.est = v; }); },
+      statusLabel: cl.status === 'published' ? 'Published' : 'Draft', statusBg: cl.status === 'published' ? '#E6F4EE' : '#FEF3E2', statusFg: cl.status === 'published' ? '#0B6B4A' : '#B54708',
+      dirty, updatedLabel: up, stepCount: steps.length, logicCount: steps.filter(x => x.rules.length || x.after !== 'next').length,
+      views, isList: s.view === 'list', isFlow: s.view === 'flow',
+      saveDraft: () => this.save('draft'), publish: () => this.save('published'),
+      preview: () => { M.savePreview(cl); window.location.href = 'Intervention.dc.html?preview=1'; },
+      allSteps: steps, focus: s.focus, focusNonce: s.focusNonce,
+      rows, empty: !steps.length,
+      ...(() => { const PM = this.PM; if (!PM) return { hasSegs: false, segs: [] }; const sg = PM.segmentsOf([cl]), tot = sg.reduce((a, g) => a + g.minutes, 0);
+        return { hasSegs: sg.length > 0 && tot > 0, totalLabel: PM.dur(tot), segSummary: sg.length > 1 ? `${sg.length} parts · can be split between people` : 'One part',
+          segs: sg.map(g => { const k = g.skills.length ? PM.skill(g.skills[0]) : { icon: 'person', fg: '#475467', bg: '#EEF1F4' }; return { name: PM.skillNames(g.skills), dur: PM.dur(g.minutes), icon: k.icon, fg: k.fg, bg: k.bg, flex: Math.max(1, g.minutes), tip: `${g.label} · ${PM.skillNames(g.skills)} · ${PM.dur(g.minutes)}` }; }) }; })(),
+      quickRef: this.quickRef, quick: s.quick, setQuick: e => this.setState({ quick: e.target.value }), quickKey: e => { if (e.key === 'Enter') { e.preventDefault(); this.addQuick(); } },
+      quickType: s.quickType, setQuickType: e => this.setState({ quickType: e.target.value }), autoLabel: `Auto · ${M.TYPES[guess].label}`,
+      typeOpts: Object.entries(M.TYPES).map(([v, t]) => ({ v, l: t.label })), addQuick: () => this.addQuick(),
+      quickTypes: ['confirm', 'yesno', 'number', 'photo', 'instruction', 'text'].map(v => { const t = M.TYPES[v], on = (s.quickType || guess) === v, explicit = s.quickType === v;
+        return { label: t.label, icon: t.icon, tip: explicit ? 'Selected' : on ? 'Guessed from the title' : 'Use this type', bg: on ? (explicit ? '#1E2430' : '#F2F4F7') : '#fff', fg: on ? (explicit ? '#fff' : '#1E2430') : '#475467', bd: on ? (explicit ? '#1E2430' : '#98A2B3') : '#E4E7EC',
+          pick: () => this.setState({ quickType: s.quickType === v ? '' : v }) }; }),
+      autoHint: s.quickType ? 'type chosen manually' : 'type guessed from the title (' + M.TYPES[guess].label + ')', nextNo: (rows ? rows.length : 0) + 1,
+      quickBorder: s.quick ? '#C00018' : '#D0D5DD', addBg: s.quick ? '#C00018' : '#F2F4F7', addFg: s.quick ? '#fff' : '#98A2B3',
+      focusQuick: () => this.quickRef.current && this.quickRef.current.focus(),
+      toast: s.toast,
+    };
+    if (s.view !== 'flow') return { ...base, palette: [], nodes: [], edges: [], zones: [], edgeLabels: [] };
+    const palette = PAL.map(([g, items]) => ({ label: g, items: items.map(([key, label, icon]) => { const t = M.TYPES[key], [bg, fg] = M.GROUP_COLORS[t ? t.group : g];
+      return { label: label || t.label, icon: icon || t.icon, bg, fg,
+        drag: e => { e.dataTransfer.setData('text/plain', key); e.dataTransfer.effectAllowed = 'copy'; this.setState({ pal: key.startsWith('media:') || key === 'logic' ? key : 'step', plus: null }); },
+        end: () => this.setState({ pal: null, zone: null }),
+        click: () => { if ((key.startsWith('media:') || key === 'logic') && this.state.selected) this.onNode(this.state.selected, key); else this.fromPalette(key, steps.length); } }; }) }));
+    const selSt = steps.find(x => x.id === s.selected);
+    const pm = s.plus;
+    return { ...base, ...this.flow(), palette, panelW: selSt ? '380px' : '0px',
+      sel: selSt ? { ...mk(selSt), n: steps.indexOf(selSt) + 1 } : null, closeSel: () => this.setState({ selected: null }),
+      plusMenu: pm ? { x: pm.x + 'px', y: pm.y + 'px' } : null, closePlus: () => this.setState({ plus: null }), stopPd: e => e.stopPropagation(),
+      plusGroups: PAL.map(([g, items]) => ({ label: g, items: items.map(([key, label, icon]) => { const t = M.TYPES[key], [bg, fg] = M.GROUP_COLORS[t ? t.group : g]; return { label: label || t.label, icon: icon || t.icon, bg, fg, pick: () => { this.setState({ plus: null }); this.fromPalette(key, pm ? pm.index : steps.length); } }; }) })),
+      canvasRef: this.canvasRef, innerRef: this.innerRef, zoom: s.zoom, zoomLabel: Math.round(s.zoom * 100) + '%',
+      zoomIn: () => this.setState({ zoom: Math.min(1.4, +(s.zoom + 0.1).toFixed(2)) }), zoomOut: () => this.setState({ zoom: Math.max(0.4, +(s.zoom - 0.1).toFixed(2)) }),
+      panCursor: s.panning ? 'grabbing' : 'grab',
+      panStart: e => { if (e.button !== 0 || e.target.closest('[data-node-id],[data-handle],button')) return; const el = this.canvasRef.current; this._pan = { x: e.clientX, y: e.clientY, l: el.scrollLeft, t: el.scrollTop, moved: false }; this.setState({ panning: true }); },
+      panMove: e => { const p = this._pan, el = this.canvasRef.current; if (!p || !el) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; if (Math.abs(dx) + Math.abs(dy) > 4) p.moved = true; el.scrollLeft = p.l - dx; el.scrollTop = p.t - dy; },
+      panEnd: () => { const p = this._pan; if (!p) return; this._pan = null; this.setState({ panning: false }); if (!p.moved) this.setState({ selected: null }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

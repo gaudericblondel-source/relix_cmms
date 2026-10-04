@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" role="Maintenance Manager" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="planning" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:14px" data-screen-label="Planning">
+    <header style="flex:none;display:flex;align-items:center;gap:14px">
+      <dc-import name="BackButton" fallback="Home.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Planning</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">Scheduling of work orders by technician and team</p>
+      </div>
+      <button onClick="{{ create }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>Create</button>
+    </header>
+
+    <section style="flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+        <div style="display:flex;flex-direction:column;gap:1px;padding:10px 18px;border-right:1px solid #EEF0F3">
+          <span style="font-size:12px;font-weight:500;color:#667085">{{ k.label }}</span>
+          <span style="font-size:22px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</span>
+        </div>
+      </sc-for>
+    </section>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+        <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.pick }}" style="height:30px;padding:0 12px;background:{{ m.bg }};border:0;border-radius:5px;box-shadow:{{ m.shadow }};font:{{ m.font }};color:{{ m.color }};cursor:pointer">{{ m.label }}</button></sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:2px">
+        <button onClick="{{ prev }}" aria-label="Previous" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;cursor:pointer;color:#475467" style-hover="background:#EEF0F3"><span style="font:20px/1 'Material Symbols Outlined'">chevron_left</span></button>
+        <button onClick="{{ next }}" aria-label="Next" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;cursor:pointer;color:#475467" style-hover="background:#EEF0F3"><span style="font:20px/1 'Material Symbols Outlined'">chevron_right</span></button>
+        <span style="padding:0 6px;font-size:14px;font-weight:600;white-space:nowrap">{{ period }}</span>
+      </div>
+      <button onClick="{{ today }}" style="height:32px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Today</button>
+      <label style="height:32px;display:flex;align-items:center;gap:6px;padding:0 6px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;margin-left:8px"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">groups</span>
+        <select value="{{ team }}" onChange="{{ setTeam }}" style="height:28px;border:0;outline:none;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><option value="">All teams</option><sc-for list="{{ teams }}" as="t"><option value="{{ t }}">{{ t }}</option></sc-for></select></label>
+      <button onClick="{{ togglePanel }}" style="margin-left:auto;height:32px;display:flex;align-items:center;gap:7px;padding:0 12px 0 10px;background:{{ panelBtnBg }};border:1px solid {{ panelBtnBd }};border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined';color:#B54708">pending_actions</span>Not scheduled<span style="height:20px;min-width:22px;display:grid;place-items:center;padding:0 6px;border-radius:10px;background:#FEF3E2;color:#B54708;font-size:11.5px;font-weight:600">{{ backlogCount }}</span></button>
+    </div>
+
+    <div role="group" aria-label="People" style="flex:none;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+      <sc-for list="{{ people }}" as="p" hint-placeholder-count="8">
+        <button onClick="{{ p.pick }}" aria-pressed="{{ p.pressed }}" style="height:32px;display:flex;align-items:center;gap:7px;padding:0 11px 0 4px;border-radius:16px;border:1px solid {{ p.bd }};background:{{ p.bg }};font:500 12.5px 'IBM Plex Sans',sans-serif;color:{{ p.fg }};cursor:pointer;white-space:nowrap">
+          <span style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:{{ p.avBg }};color:{{ p.avFg }};font:600 10px 'IBM Plex Sans',sans-serif">{{ p.ini }}</span>{{ p.label }}</button>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-height:0;display:flex;gap:12px">
+      <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:none;display:grid;grid-template-columns:{{ cols }};border-bottom:1px solid #E4E7EC;background:#F9FAFB">
+            <div></div>
+            <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+              <div style="padding:8px 10px;border-left:1px solid #EEF0F3;font-size:12.5px;font-weight:600;color:{{ d.color }};background:{{ d.bg }};white-space:nowrap">{{ d.label }} <span style="font-weight:400;color:#98A2B3">{{ d.load }}</span></div>
+            </sc-for>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto">
+            <div style="position:relative;display:grid;grid-template-columns:{{ cols }};height:{{ gridH }}px">
+              <div style="position:relative">
+                <sc-for list="{{ hours }}" as="h" hint-placeholder-count="11"><span style="position:absolute;left:0;right:8px;top:{{ h.top }}px;text-align:right;font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3;transform:translateY(-6px)">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+                <div onClick="{{ d.slot }}" style="position:relative;border-left:1px solid #EEF0F3;background:{{ d.colBg }};cursor:copy" title="Click an empty slot to create a work order">
+                  <sc-for list="{{ hours }}" as="h"><span style="position:absolute;left:0;right:0;top:{{ h.top }}px;border-top:1px solid #F2F4F7"></span></sc-for>
+                  <sc-if value="{{ d.isToday }}"><span style="position:absolute;left:0;right:0;top:{{ nowTop }}px;border-top:2px solid #C00018;z-index:3"></span></sc-if>
+                  <sc-for list="{{ d.events }}" as="e">
+                    <a href="{{ e.href }}" onClick="{{ e.stop }}" style="position:absolute;top:{{ e.top }}px;height:{{ e.h }}px;left:calc({{ e.left }}% + 3px);width:calc({{ e.w }}% - 6px);z-index:2;display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:6px;background:{{ e.bg }};border:1px solid {{ e.bd }};color:#1E2430;overflow:hidden;opacity:{{ e.op }}" style-hover="box-shadow:0 2px 8px rgba(16,24,40,.12)">
+                      <span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:{{ e.fg }};white-space:nowrap;overflow:hidden"><span style="font:14px/1 'Material Symbols Outlined'">{{ e.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis">{{ e.asset }}</span><sc-if value="{{ e.urgent }}"><span style="margin-left:auto;font:14px/1 'Material Symbols Outlined';color:#C00018">bolt</span></sc-if></span>
+                      <span style="font-size:12px;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.task }}</span>
+                      <span style="display:flex;align-items:center;gap:5px;margin-top:auto;font-size:11px;color:#667085;white-space:nowrap"><span style="width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:{{ e.avBg }};color:{{ e.avFg }};font:600 8.5px 'IBM Plex Sans',sans-serif">{{ e.who }}</span>{{ e.time }}<sc-if value="{{ e.done }}"><span style="font:14px/1 'Material Symbols Outlined';color:#0B6B4A">check_circle</span></sc-if></span>
+                    </a>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isMonth }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#F9FAFB;border-bottom:1px solid #E4E7EC">
+            <sc-for list="{{ dow }}" as="w"><div style="padding:8px 10px;font-size:12px;font-weight:600;color:#667085">{{ w }}</div></sc-for>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(92px,1fr)">
+            <sc-for list="{{ month }}" as="c" hint-placeholder-count="35">
+              <div style="padding:8px 10px;border-right:1px solid #F2F4F7;border-bottom:1px solid #F2F4F7;background:{{ c.bg }};display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:12.5px;font-weight:600;color:{{ c.color }}">{{ c.day }}</span>
+                <sc-if value="{{ c.has }}"><span style="align-self:flex-start;height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-size:11.5px;font-weight:600">{{ c.count }} WOs</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="flex:none;display:flex;align-items:center;gap:14px;padding:8px 14px;border-top:1px solid #EEF0F3;background:#FAFAFB;font-size:12px;color:#667085">
+          <sc-for list="{{ legend }}" as="g" hint-placeholder-count="4"><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:{{ g.bg }};border:1px solid {{ g.fg }}"></span>{{ g.label }}</span></sc-for>
+          <span style="margin-left:auto;color:#98A2B3">Click an empty slot to create a work order</span>
+        </div>
+      </section>
+
+      <sc-if value="{{ panel }}" hint-placeholder-val="{{ false }}">
+        <aside style="width:300px;flex:none;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+            <span style="font:18px/1 'Material Symbols Outlined';color:#B54708">pending_actions</span><h2 style="margin:0;font-size:14px;font-weight:600">Not scheduled</h2><span style="font-size:12px;color:#98A2B3">{{ backlogHours }}</span>
+            <button onClick="{{ togglePanel }}" aria-label="Close" style="margin-left:auto;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;cursor:pointer;color:#667085" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined'">close</span></button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ backlog }}" as="u" hint-placeholder-count="5">
+              <div style="padding:10px 12px;border:1px solid #E4E7EC;border-radius:8px;display:flex;flex-direction:column;gap:5px">
+                <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:{{ u.fg }}"><span style="font:14px/1 'Material Symbols Outlined'">{{ u.icon }}</span>{{ u.type }}<sc-if value="{{ u.urgent }}"><span style="margin-left:auto;height:18px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;background:{{ u.pbg }};color:{{ u.pfg }};font-size:11px">{{ u.prio }}</span></sc-if></span>
+                <span style="font-weight:600">{{ u.asset }}</span>
+                <span style="color:#475467">{{ u.task }}</span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#667085"><span style="font:14px/1 'Material Symbols Outlined'">schedule</span>{{ u.dur }}<span style="margin-left:auto">{{ u.age }}</span></span>
+                <button onClick="{{ u.plan }}" style="height:30px;display:flex;align-items:center;justify-content:center;gap:5px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:16px/1 'Material Symbols Outlined'">event_available</span>Plan next free slot</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{ backlogEmpty }}"><div style="padding:24px;text-align:center;color:#667085">Everything is scheduled.</div></sc-if>
+          </div>
+        </aside>
+      </sc-if>
+    </div>
+  </main>
+</div>
+<sc-if value="{{ toast }}"><div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)">{{ toast }}</div></sc-if>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;default&quot;:&quot;week&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const TYPE = { Preventive: ['event_repeat', '#2456B8', '#EAF1FD', '#C9D8F5'], Corrective: ['build', '#B54708', '#FEF3E2', '#F5D3A6'], Predictive: ['insights', '#6941C6', '#F3EEFC', '#D9CCF5'], Inspection: ['visibility', '#0E7490', '#E3F4F7', '#B5DDE6'] };
+const PRIO = { Critical: ['#C00018', '#fff'], High: ['#FDECEC', '#B42318'] };
+const PEOPLE = [['GD', 'Gaudéric Durand', 'Mechanical team', '#FBE7EA', '#A30014'], ['MD', 'Marc Dupont', 'Mechanical team', '#E6F4EE', '#0B6B4A'], ['PL', 'Pierre Leroy', 'Mechanical team', '#E8EEF9', '#2456B8'], ['AM', 'Alex Martin', 'Mechanical team', '#FEF3E2', '#B54708'], ['SM', 'Sophie Martin', 'Electrical team', '#F3EEFC', '#6941C6'], ['SB', 'Sofia Benali', 'Electrical team', '#E3F4F7', '#0E7490'], ['JM', 'Julie Martin', 'Float Line team', '#FEF3E2', '#B54708']];
+const P = Object.fromEntries(PEOPLE.map(p => [p[0], p]));
+const TEAMS = ['Mechanical team', 'Electrical team', 'Float Line team'];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const BASE = new Date(2026, 8, 28), H0 = 7, H1 = 18, ROW = 62, PADT = 10, TODAY = 1, NOW = 10.4;
+const dateOf = d => new Date(BASE.getFullYear(), BASE.getMonth(), BASE.getDate() + d);
+const hm = h => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round(h % 1 * 60)).padStart(2, '0')}`;
+const fmtH = h => h % 1 ? `${Math.floor(h)} h ${String(Math.round(h % 1 * 60)).padStart(2, '0')}` : `${h} h`;
+let seq = 1;
+const SEED = [
+  [0, 7.5, 1.5, 'Conveyor Line 3', 'Bearing replacement', 'MD', 'Corrective', 'High'], [0, 9, 2, 'Hydraulic Press PH-030', 'Preventive service', 'PL', 'Preventive', 'Medium'], [0, 13, 2, 'Bottero 548 Cutter', 'Blade change', 'AM', 'Corrective', 'Medium'], [0, 15, 1, 'Pump P-101', 'Vibration reading', 'SB', 'Predictive', 'Low'],
+  [1, 8, 1.5, 'Conveyor Line 3', 'Sensor check', 'MD', 'Corrective', 'High'], [1, 9, 2.5, 'Palletizing Robot 1', 'Error E-452 diagnosis', 'PL', 'Corrective', 'Critical'], [1, 10.5, 1.5, 'Compressor C-01', 'Filter replacement', 'SM', 'Preventive', 'Medium'], [1, 13.5, 2, 'Annealing Lehr', 'Roller alignment', 'JM', 'Corrective', 'High'], [1, 16, 1.5, 'Pump P-101', 'Seal replacement', 'PL', 'Corrective', 'Critical'],
+  [2, 8, 2, 'Palletizing Robot 1', 'Lubrication', 'AM', 'Preventive', 'Low'], [2, 11, 2, 'Tin Bath', 'Thermal imaging', 'SB', 'Predictive', 'High'], [2, 14, 3, 'Annealing Lehr', 'Half-day maintenance', 'JM', 'Preventive', 'Medium'],
+  [3, 8, 1.5, 'Bottero 548 Cutter', 'Blade alignment', 'MD', 'Corrective', 'High'], [3, 10, 1, 'Packaging Line 1', 'Safety inspection', 'AM', 'Inspection', 'Medium'], [3, 13, 2, 'Compressor C-01', 'Annual inspection', 'SM', 'Inspection', 'Medium'],
+  [4, 7.5, 1.5, 'Tempering Furnace 2', 'Chain inspection', 'PL', 'Inspection', 'Medium'], [4, 9, 2.5, 'Conveyor Line 2', '1000 h service', 'MD', 'Preventive', 'Medium'], [4, 13, 2, 'Tin Bath', 'Roller inspection', 'AM', 'Inspection', 'High'],
+  [7, 9, 2, 'Compressor C-01', 'Annual overhaul', 'SM', 'Preventive', 'Medium'], [8, 13, 1.5, 'Fan V-12', 'Vibration analysis', 'PL', 'Predictive', 'High']
+].map(([day, start, dur, asset, task, who, type, prio]) => ({ id: 'e' + seq++, day, start, dur, asset, task, who, type, prio }));
+const BACKLOG = [
+  ['Tin Bath', 'Roller drive replacement', 'Corrective', 'Critical', 4, 'AM', 'Reported 20 min ago'], ['Fan V-08', 'Noisy bearing', 'Corrective', 'High', 1.5, 'AM', 'Requested 2 d ago'], ['Cooling Tower', 'Legionella sampling', 'Inspection', 'High', 1, 'JM', 'Due by Oct 2'],
+  ['Annealing Lehr', 'Safety guard repair', 'Corrective', 'Medium', 2, 'JM', 'Requested today'], ['Tempering Furnace 1', 'Gas detector calibration', 'Inspection', 'Medium', 1, 'SM', 'Due by Oct 6'], ['Hydraulic Press PH-030', 'Hose replacement', 'Corrective', 'Medium', 2.5, 'PL', 'Requested 1 d ago']
+].map(([asset, task, type, prio, dur, who, age]) => ({ id: 'u' + seq++, asset, task, type, prio, dur, who, age }));
+class Component extends DCLogic {
+  state = { mode: this.props.mode ?? 'week', week: 0, dayIdx: TODAY, events: SEED, backlog: BACKLOG, who: '', team: '', panel: false, toast: null };
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  plan(u) {
+    const s = this.state; let placed = null;
+    for (let d = TODAY; d < TODAY + 5 && !placed; d++) { if (d % 7 > 4) continue; for (let h = d === TODAY ? 11 : 8; h + u.dur <= 17 && !placed; h += 0.5) {
+      if (!s.events.some(e => e.day === d && e.who === u.who && e.start < h + u.dur && h < e.start + e.dur)) placed = { day: d, start: h }; } }
+    if (!placed) return this.flash('No free slot this week for ' + P[u.who][1]);
+    this.setState({ events: [...s.events, { ...u, id: 'e' + seq++, ...placed }], backlog: s.backlog.filter(x => x.id !== u.id) });
+    this.flash(`${u.asset} — planned ${DAYS[placed.day % 7]} ${hm(placed.start)} for ${P[u.who][1]}`);
+  }
+  renderVals() {
+    const s = this.state, mode = s.mode;
+    const ok = e => (!s.who || e.who === s.who) && (!s.team || P[e.who][2] === s.team);
+    const w0 = s.week * 7, dayList = mode === 'day' ? [w0 + s.dayIdx] : [0, 1, 2, 3, 4, 5, 6].map(i => w0 + i);
+    const weekEv = s.events.filter(e => e.day >= w0 && e.day < w0 + 7 && ok(e));
+    const lay = list => { const out = {}; const sorted = [...list].sort((a, b) => a.start - b.start); let lanes = [], cluster = [], end = -1;
+      const flush = () => { cluster.forEach(id => { out[id].n = lanes.length; }); lanes = []; cluster = []; end = -1; };
+      sorted.forEach(e => { if (e.start >= end && cluster.length) flush(); let li = lanes.findIndex(x => x <= e.start); if (li < 0) { li = lanes.length; lanes.push(0); } lanes[li] = e.start + e.dur; out[e.id] = { lane: li }; cluster.push(e.id); end = Math.max(end, e.start + e.dur); }); flush(); return out; };
+    const days = dayList.map(d => { const dt = dateOf(d), list = s.events.filter(e => e.day === d && ok(e)), L = lay(list), wk = d % 7 > 4, isToday = d === TODAY, hrs = list.reduce((a, e) => a + e.dur, 0);
+      return { label: `${DAYS[((d % 7) + 7) % 7]} ${dt.getDate()}`, load: hrs ? '· ' + fmtH(hrs) : '', isToday, color: isToday ? '#C00018' : wk ? '#98A2B3' : '#1E2430', bg: isToday ? '#FBF1F2' : 'transparent', colBg: wk ? '#FCFCFD' : '#fff',
+        slot: () => window.CMMSCreateWO ? window.CMMSCreateWO({}) : this.flash('Create a work order on this slot'),
+        events: list.map(e => { const [icon, fg, bg, bd] = TYPE[e.type], l = L[e.id], done = d < TODAY || (d === TODAY && e.start + e.dur <= NOW), p = P[e.who];
+          return { ...e, icon, fg, bg, bd, top: (e.start - H0) * ROW + 2 + PADT, h: e.dur * ROW - 4, left: l.lane * 100 / l.n, w: 100 / l.n, op: done ? 0.55 : 1, done, urgent: !done && (e.prio === 'Critical' || e.prio === 'High'),
+            time: `${hm(e.start)}–${hm(e.start + e.dur)}`, avBg: p[3], avFg: p[4], href: 'Work Order.dc.html?' + new URLSearchParams({ wo: 'WO-' + (1339800 + Number(e.id.slice(1))), task: e.task, asset: e.asset, type: e.type, prio: e.prio, status: done ? 'Completed' : 'Scheduled' }).toString(), stop: ev => ev.stopPropagation() }; }) }; });
+    const cols = mode === 'day' ? '56px minmax(0,1fr)' : '56px repeat(5,minmax(130px,1fr)) repeat(2,minmax(70px,.5fr))';
+    const hours = Array.from({ length: H1 - H0 }, (_, i) => ({ top: i * ROW + PADT, label: hm(H0 + i) }));
+    const hrsTot = weekEv.reduce((a, e) => a + e.dur, 0), cap = (s.who ? 1 : s.team ? PEOPLE.filter(p => p[2] === s.team).length : PEOPLE.length) * 8 * 5;
+    const kpis = [['Scheduled this week', weekEv.length, '#1E2430'], ['Overdue', s.who ? 0 : 2, '#B42318'], ['Critical', weekEv.filter(e => e.prio === 'Critical').length, '#1E2430'], ['Planned workload', fmtH(hrsTot), '#1E2430'], ['Load rate', Math.round(hrsTot / cap * 100) + ' %', '#1E2430']].map(([label, value, color]) => ({ label, value, color }));
+    const people = [['', 'Everyone', '★', '#F2F4F7', '#475467'], ...PEOPLE.map(p => [p[0], p[1], p[0], p[3], p[4]])].map(([k, label, ini, avBg, avFg]) => { const on = s.who === k;
+      return { label, ini, avBg, avFg, pressed: String(on), bg: on ? '#FBF1F2' : '#fff', bd: on ? '#C00018' : '#E4E7EC', fg: on ? '#A30014' : '#344054', pick: () => this.setState({ who: on && k ? '' : k }) }; });
+    const modes = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']].map(([k, label]) => { const on = mode === k; return { label, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: on ? '#1E2430' : '#667085', pick: () => this.setState({ mode: k }) }; });
+    const a = dateOf(w0), b = dateOf(w0 + 6);
+    let period = `${MON[a.getMonth()]} ${a.getDate()} – ${a.getMonth() === b.getMonth() ? '' : MON[b.getMonth()] + ' '}${b.getDate()}, ${b.getFullYear()}`;
+    if (mode === 'day') { const d = dateOf(w0 + s.dayIdx); period = `${DAYS[s.dayIdx]} ${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
+    const mref = new Date(2026, 8 + Math.floor((s.week * 7 + 3) / 30), 1); if (mode === 'month') period = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][mref.getMonth()] + ' ' + mref.getFullYear();
+    const first = new Date(mref); first.setDate(1 - ((mref.getDay() + 6) % 7));
+    const month = Array.from({ length: 35 }, (_, i) => { const d = new Date(first); d.setDate(first.getDate() + i); const inM = d.getMonth() === mref.getMonth(), wd = (d.getDay() + 6) % 7, idx = Math.round((d - BASE) / 864e5);
+      const real = s.events.filter(e => e.day === idx && ok(e)).length, count = real || (inM && wd < 5 ? (d.getDate() * 5) % 4 + 2 : 0);
+      return { day: d.getDate(), has: count > 0, count, bg: inM ? '#fff' : '#FAFAFB', color: idx === TODAY ? '#C00018' : inM ? '#1E2430' : '#C4CAD4' }; });
+    const step = mode === 'day' ? 'day' : mode === 'month' ? 'month' : 'week';
+    const move = dir => { if (step === 'day') { let di = s.dayIdx + dir, wk = s.week; if (di > 6) { di = 0; wk++; } if (di < 0) { di = 6; wk--; } this.setState({ dayIdx: di, week: wk }); } else this.setState({ week: s.week + dir * (step === 'month' ? 4 : 1) }); };
+    const bl = s.backlog.filter(u => (!s.who || u.who === s.who) && (!s.team || P[u.who][2] === s.team));
+    return {
+      kpis, people, modes, period, days, cols, hours, gridH: (H1 - H0) * ROW + PADT * 2, nowTop: (NOW - H0) * ROW + PADT, month, dow: DAYS,
+      isGrid: mode !== 'month', isMonth: mode === 'month', teams: TEAMS, team: s.team, setTeam: e => this.setState({ team: e.target.value, who: '' }),
+      prev: () => move(-1), next: () => move(1), today: () => this.setState({ week: 0, dayIdx: TODAY }),
+      panel: s.panel, togglePanel: () => this.setState({ panel: !s.panel }), panelBtnBg: s.panel ? '#FFF8F0' : '#fff', panelBtnBd: s.panel ? '#F5D3A6' : '#D0D5DD',
+      backlogCount: s.backlog.length, backlogHours: fmtH(bl.reduce((x, u) => x + u.dur, 0)) + ' total', backlogEmpty: !bl.length,
+      backlog: bl.map(u => { const [icon, fg] = TYPE[u.type], [pbg, pfg] = PRIO[u.prio] || []; return { ...u, icon, fg, pbg, pfg, urgent: !!PRIO[u.prio], dur: fmtH(u.dur) + ' · ' + P[u.who][1], plan: () => this.plan(u) }; }),
+      legend: Object.entries(TYPE).map(([label, t]) => ({ label, bg: t[2], fg: t[1] })),
+      create: () => window.CMMSCreateWO && window.CMMSCreateWO({}), toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;z-index:80;height:56px;background:#34050D;display:grid;grid-template-columns:232px minmax(0,1fr) auto;align-items:center;gap:16px;padding:0 16px 0 0;color:#fff;font-family:'IBM Plex Sans',system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,.06)">
+  <div style="display:flex;align-items:center;gap:6px;padding-left:16px;min-width:0">
+    <a href="Home.dc.html" title="Relix home" style="flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:6px" style-hover="background:rgba(255,255,255,.08)"><img src="relix-logo-white.svg" alt="Relix" style="width:30px;height:auto;display:block" /></a>
+    <a href="Home.dc.html" style="margin-left:4px;color:#fff;font-weight:700;font-size:23px;line-height:1;letter-spacing:.01em;text-decoration:none">Relix</a>
+  </div>
+
+  <div style="position:relative;justify-self:center;width:100%;max-width:640px">
+    <label style="height:40px;display:flex;align-items:center;gap:10px;padding:0 8px 0 12px;background:{{ searchBg }};border:1px solid {{ searchBorder }};box-shadow:{{ searchRing }};border-radius:8px;cursor:text;transition:background .15s">
+      <span style="font:20px/1 'Material Symbols Outlined';color:{{ searchIcon }}">search</span>
+      <input ref="{{ inputRef }}" value="{{ q }}" onInput="{{ onInput }}" onFocus="{{ onFocus }}" onBlur="{{ onBlur }}" onKeyDown="{{ onKey }}" placeholder="Search equipment, work orders, people, sites..." style="flex:1;min-width:0;background:transparent;border:0;outline:none;color:{{ searchText }};font:14px 'IBM Plex Sans',sans-serif" />
+      <sc-if value="{{ hasQuery }}"><button onMouseDown="{{ clear }}" title="Clear" style="width:24px;height:24px;display:grid;place-items:center;padding:0;background:#F2F4F7;border:0;border-radius:12px;color:#667085;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">close</span></button></sc-if>
+      <span style="flex:none;display:flex;gap:3px">
+        <span style="font:500 11px/16px 'IBM Plex Sans',sans-serif;padding:0 6px;border:1px solid {{ kbdBorder }};border-radius:4px;color:{{ kbdColor }}">{{ modKey }}</span>
+        <span style="font:500 11px/16px 'IBM Plex Sans',sans-serif;padding:0 6px;border:1px solid {{ kbdBorder }};border-radius:4px;color:{{ kbdColor }}">K</span>
+      </span>
+    </label>
+
+    <sc-if value="{{ open }}">
+      <div onMouseDown="{{ keepFocus }}" style="position:absolute;top:46px;left:0;right:0;min-width:560px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 16px 40px rgba(16,24,40,.22);color:#1E2430;overflow:hidden;font-size:13px">
+        <sc-if value="{{ hasQuery }}">
+          <div style="display:flex;gap:4px;padding:8px 8px 6px;border-bottom:1px solid #EEF0F3;overflow-x:auto;scrollbar-width:none">
+            <sc-for list="{{ cats }}" as="c">
+              <button onClick="{{ c.select }}" style="flex:none;height:26px;display:flex;align-items:center;gap:5px;padding:0 9px 0 7px;background:{{ c.bg }};border:1px solid {{ c.border }};border-radius:13px;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ c.color }};cursor:pointer;opacity:{{ c.op }}"><span style="font:15px/1 'Material Symbols Outlined'">{{ c.icon }}</span>{{ c.label }}<span style="color:{{ c.countColor }}">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="max-height:460px;overflow:auto;padding:4px 6px 6px">
+          <sc-for list="{{ groups }}" as="g">
+            <div style="display:flex;align-items:center;gap:6px;padding:10px 10px 4px;font-size:11.5px;font-weight:600;color:#667085"><span>{{ g.label }}</span><span style="font-weight:500;color:#98A2B3">{{ g.count }}</span><sc-if value="{{ g.hasMore }}"><button onClick="{{ g.more }}" style="margin-left:auto;padding:0;background:transparent;border:0;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Show all {{ g.count }}</button></sc-if></div>
+            <sc-for list="{{ g.items }}" as="r">
+              <div onMouseEnter="{{ r.hover }}" onClick="{{ r.pick }}" style="min-height:46px;display:flex;align-items:center;gap:10px;padding:5px 10px;border-radius:6px;background:{{ r.bg }};cursor:pointer">
+                <span style="width:30px;height:30px;flex:none;border-radius:7px;background:{{ r.iconBg }};color:{{ r.iconFg }};display:grid;place-items:center;font:17px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.pre }}<span style="color:#C00018">{{ r.hit }}</span>{{ r.post }}</span>
+                  <span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.ctx }}</span>
+                </span>
+                <sc-if value="{{ r.hasBadge }}"><span style="flex:none;height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:{{ r.badgeBg }};color:{{ r.badgeFg }};font-size:11.5px;font-weight:600;white-space:nowrap">{{ r.badge }}</span></sc-if>
+                <sc-if value="{{ false }}"><button onClick="{{ r.openDash }}" title="Switch and open site dashboard" style="flex:none;height:26px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:15px/1 'Material Symbols Outlined'">monitoring</span>Dashboard</button></sc-if>
+                <span style="flex:none;min-width:58px;text-align:right;font-size:11.5px;font-weight:500;color:{{ r.enterColor }};white-space:nowrap">{{ r.action }} ↵</span>
+              </div>
+            </sc-for>
+          </sc-for>
+          <sc-if value="{{ noResults }}">
+            <div style="padding:28px 16px;text-align:center;color:#667085">No results for “{{ q }}”<div style="font-size:12px;color:#98A2B3;margin-top:4px">Try an equipment name, a part reference, a person or a location.</div></div>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:8px 12px;border-top:1px solid #EEF0F3;background:#F9FAFB;font-size:11.5px;color:#667085">
+          <span style="display:flex;align-items:center;gap:4px"><span style="font:500 10.5px 'IBM Plex Mono',monospace;padding:1px 5px;border:1px solid #D0D5DD;border-radius:4px;background:#fff">↑↓</span>Navigate</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="font:500 10.5px 'IBM Plex Mono',monospace;padding:1px 5px;border:1px solid #D0D5DD;border-radius:4px;background:#fff">↵</span>Open</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="font:500 10.5px 'IBM Plex Mono',monospace;padding:1px 5px;border:1px solid #D0D5DD;border-radius:4px;background:#fff">Esc</span>Close</span>
+          <span style="margin-left:auto">{{ totalLabel }}</span>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:4px">
+    <button onClick="{{ openSites }}" title="Current site — only this site's activity is shown" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 12px 0 10px;margin-right:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:17px;color:#fff;cursor:pointer;font:600 12.5px 'IBM Plex Sans',sans-serif;white-space:nowrap" style-hover="background:rgba(255,255,255,.16)"><span style="font:18px/1 'Material Symbols Outlined'">factory</span>{{ siteName }}<span style="font:17px/1 'Material Symbols Outlined';opacity:.7">expand_more</span></button>
+    <div style="position:relative">
+      <button onClick="{{ toggleLang }}" title="Language" style="height:34px;display:flex;align-items:center;gap:5px;padding:0 8px;background:{{ langBtnBg }};border:0;border-radius:6px;color:rgba(255,255,255,.85);cursor:pointer;font:500 12px 'IBM Plex Sans',sans-serif" style-hover="background:rgba(255,255,255,.08);color:#fff"><span style="font:19px/1 'Material Symbols Outlined'">language</span>{{ langCode }}</button>
+      <sc-if value="{{ langOpen }}">
+        <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:90"></div>
+        <div style="position:absolute;right:0;top:42px;z-index:91;width:220px;padding:4px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 16px 40px rgba(16,24,40,.2);color:#1E2430;font-size:13px">
+          <div style="padding:8px 10px 6px;font-size:11.5px;font-weight:600;color:#98A2B3">Display language</div>
+          <sc-for list="{{ langs }}" as="l">
+            <button onClick="{{ l.pick }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:{{ l.bg }};border:0;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="width:24px;font:500 11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ l.code }}</span><span style="flex:1;font-weight:{{ l.weight }}">{{ l.name }}</span><sc-if value="{{ l.on }}"><span style="font:18px/1 'Material Symbols Outlined';color:#C00018">check</span></sc-if></button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="position:relative">
+      <button onClick="{{ toggleNotif }}" title="Notifications" style="position:relative;width:36px;height:36px;display:grid;place-items:center;background:{{ notifBtnBg }};border:0;border-radius:6px;color:#fff;cursor:pointer" style-hover="background:rgba(255,255,255,.08)">
+        <span style="font:22px/1 'Material Symbols Outlined'">notifications</span>
+        <sc-if value="{{ hasUnread }}"><span style="position:absolute;top:3px;right:2px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#E0243A;border:2px solid #34050D;font:700 9.5px/13px 'IBM Plex Sans',sans-serif;color:#fff;text-align:center">{{ unreadCount }}</span></sc-if>
+      </button>
+      <sc-if value="{{ notifOpen }}">
+        <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:90"></div>
+        <div style="position:absolute;right:-90px;top:44px;z-index:91;width:420px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 16px 40px rgba(16,24,40,.22);color:#1E2430;font-size:13px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px 0">
+            <span style="font-size:14px;font-weight:600">Notifications</span>
+            <button onClick="{{ markAll }}" style="margin-left:auto;padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ markAllColor }};cursor:pointer;display:flex;align-items:center;gap:4px"><span style="font:16px/1 'Material Symbols Outlined'">done_all</span>Mark all as read</button>
+          </div>
+          <div style="display:flex;gap:2px;padding:0 10px;border-bottom:1px solid #EEF0F3">
+            <sc-for list="{{ notifTabs }}" as="t">
+              <button onClick="{{ t.select }}" style="position:relative;height:38px;padding:0 6px;background:transparent;border:0;font:{{ t.font }};color:{{ t.color }};cursor:pointer;display:flex;align-items:center;gap:6px">{{ t.label }}<span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#F2F4F7;color:#475467;font:600 11px/18px 'IBM Plex Sans',sans-serif">{{ t.count }}</span><span style="position:absolute;left:4px;right:4px;bottom:-1px;height:2px;border-radius:2px;background:{{ t.bar }}"></span></button>
+            </sc-for>
+          </div>
+          <div style="max-height:470px;overflow:auto">
+            <sc-for list="{{ notifGroups }}" as="g">
+              <div style="padding:10px 14px 4px;font-size:11.5px;font-weight:600;color:#98A2B3">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="n">
+                <div onClick="{{ n.open }}" style="position:relative;display:grid;grid-template-columns:30px minmax(0,1fr) 24px;gap:10px;padding:10px 12px 10px 14px;background:{{ n.bg }};border-top:1px solid #F2F4F7;cursor:pointer" style-hover="background:#F6F7F9">
+                  <span style="position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:{{ n.edge }}"></span>
+                  <span style="width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:{{ n.ibg }};color:{{ n.ifg }};font:17px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:{{ n.kindColor }};font-weight:600">{{ n.kind }}<sc-if value="{{ n.isImp }}"><span style="height:17px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;background:#FEF3E2;color:#B54708;font-size:10.5px;font-weight:600">Action needed</span></sc-if><sc-if value="{{ n.isCrit }}"><span style="height:17px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;background:#C00018;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.02em">CRITICAL</span></sc-if><span style="margin-left:auto;font-weight:400;color:#98A2B3">{{ n.ago }}</span></span>
+                    <span style="font-weight:{{ n.weight }};line-height:1.35;text-wrap:pretty">{{ n.title }}</span>
+                    <span style="font-size:12px;color:#667085;line-height:1.35">{{ n.sub }}</span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:2px">
+                    <sc-if value="{{ n.unread }}"><button onClick="{{ n.markRead }}" title="Mark as read" style="width:24px;height:24px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:12px;cursor:pointer" style-hover="background:#E4E7EC"><span style="width:8px;height:8px;border-radius:50%;background:#2456B8"></span></button></sc-if>
+                  </span>
+                </div>
+              </sc-for>
+            </sc-for>
+            <sc-if value="{{ noNotif }}"><div style="padding:36px 16px;text-align:center;color:#667085"><span style="display:block;font:28px/1 'Material Symbols Outlined';color:#98A2B3;margin-bottom:8px">notifications_off</span>You're all caught up.</div></sc-if>
+          </div>
+          <a href="Notification Settings.dc.html" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-top:1px solid #EEF0F3;background:#F9FAFB;font-size:12.5px;font-weight:600;color:#475467"><span style="font:16px/1 'Material Symbols Outlined'">tune</span>Notification settings</a>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="width:1px;height:24px;background:rgba(255,255,255,.12);margin:0 6px"></div>
+
+    <div style="position:relative">
+      <button onClick="{{ toggleProfile }}" style="height:42px;display:flex;align-items:center;gap:10px;padding:0 6px 0 4px;background:{{ profileBg }};border:0;border-radius:8px;color:#fff;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,.08)">
+        <span style="width:30px;height:30px;border-radius:50%;background:#7A1E2C;display:grid;place-items:center;font:600 12px 'IBM Plex Sans',sans-serif">GD</span>
+        <span style="display:flex;flex-direction:column;gap:1px">
+          <span style="font:600 13px/1.2 'IBM Plex Sans',sans-serif;white-space:nowrap">Gaudéric Durand</span>
+          <span style="font:400 11px/1.2 'IBM Plex Sans',sans-serif;opacity:.7;white-space:nowrap">{{ role }}</span>
+        </span>
+        <span style="font:18px/1 'Material Symbols Outlined';opacity:.6">expand_more</span>
+      </button>
+      <sc-if value="{{ profileOpen }}">
+        <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:90"></div>
+        <div style="position:absolute;right:0;top:48px;z-index:91;width:300px;padding:6px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 16px 40px rgba(16,24,40,.2);color:#1E2430;font-size:13px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 8px 10px;border-bottom:1px solid #EEF0F3;margin-bottom:4px">
+            <span data-person="GD" title="View my profile" style="width:36px;height:36px;border-radius:50%;background:#7A1E2C;color:#fff;display:grid;place-items:center;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer">GD</span>
+            <span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">Gaudéric Durand</span><span style="font-size:12px;color:#667085">{{ role }} · Mechanical team</span></span>
+          </div>
+          <button onClick="{{ openSites }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px;background:transparent;border:0;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit" style-hover="background:#F2F4F7">
+            <span style="font:19px/1 'Material Symbols Outlined';color:#475467">factory</span>
+            <span style="flex:1;display:flex;flex-direction:column;gap:1px"><span style="font-size:11.5px;color:#98A2B3">Current site</span><span style="font-weight:600;color:#1E2430">{{ siteName }}</span></span>
+            <span style="font-size:12px;font-weight:600;color:#C00018">Switch</span>
+          </button>
+          <button onClick="{{ openMyProfile }}" style="width:100%;display:flex;align-items:center;gap:10px;height:36px;padding:0 8px;background:transparent;border:0;border-radius:6px;color:#1E2430;font:13px 'IBM Plex Sans',sans-serif;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">person</span>My profile<span style="margin-left:auto;font-size:11.5px;color:#98A2B3">skills, availability</span></button>
+          <a href="Notification Settings.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 8px;border-radius:6px;color:#1E2430" style-hover="background:#F2F4F7"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">notifications_active</span>Notification settings</a>
+          <a href="Administration.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 8px;border-radius:6px;color:#1E2430" style-hover="background:#F2F4F7"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">help</span>Help &amp; support</a>
+          <div style="height:1px;background:#EEF0F3;margin:4px 0"></div>
+          <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 8px;border-radius:6px;color:#1E2430" style-hover="background:#F2F4F7"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">logout</span>Sign out</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sitesOpen }}">
+        <div onClick="{{ closeAll }}" style="position:fixed;inset:0;z-index:90"></div>
+        <div style="position:absolute;right:0;top:48px;z-index:91;width:380px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 16px 40px rgba(16,24,40,.2);color:#1E2430;font-size:13px;overflow:hidden">
+          <div style="padding:10px;border-bottom:1px solid #EEF0F3">
+            <label style="height:36px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ siteQ }}" onInput="{{ setSiteQ }}" placeholder="Find a site, city or business…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" /></label>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:9px 12px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;color:#475467;line-height:1.4"><span style="font:16px/1 'Material Symbols Outlined';color:#2456B8;margin-top:1px">info</span><span>You only see the activity of the selected site. Other sites stay searchable in <b>read-only</b>.</span></div>
+          <div style="max-height:380px;overflow:auto;padding:4px 6px 8px">
+            <sc-for list="{{ siteGroups }}" as="g">
+              <div style="padding:10px 8px 4px;font-size:11.5px;font-weight:600;color:#98A2B3">{{ g.path }}</div>
+              <sc-for list="{{ g.sites }}" as="s">
+                <button onClick="{{ s.pick }}" style="width:100%;min-height:48px;display:flex;align-items:center;gap:10px;padding:6px 8px;background:{{ s.bg }};border:0;border-radius:6px;text-align:left;cursor:pointer;font-family:inherit" style-hover="background:#F2F4F7">
+                  <span style="width:30px;height:30px;flex:none;border-radius:6px;background:#F2F4F7;color:#475467;display:grid;place-items:center;font:600 10.5px 'IBM Plex Mono',monospace">{{ s.code }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;color:#1E2430">{{ s.name }}</span><span style="font-size:12px;color:#667085">{{ s.place }} · {{ s.time }}</span></span>
+                  <sc-if value="{{ s.hasAlert }}"><span style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#FDECEC;color:#B42318;font-size:11.5px;font-weight:600;white-space:nowrap">{{ s.alert }} overdue</span></sc-if>
+                  <sc-if value="{{ s.current }}"><span style="font:18px/1 'Material Symbols Outlined';color:#C00018">check</span></sc-if>
+                </button>
+              </sc-for>
+            </sc-for>
+            <sc-if value="{{ noSites }}"><div style="padding:20px;text-align:center;color:#667085">No site matches “{{ siteQ }}”</div></sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <dc-import name="QuickIntervention" hint-size="0px,0px"></dc-import>
+  <dc-import name="ProfilePanel" hint-size="0px,0px"></dc-import>
+  <div style="position:fixed;top:66px;right:16px;z-index:96;width:384px;display:flex;flex-direction:column;gap:8px;pointer-events:none">
+    <sc-for list="{{ toasts }}" as="n">
+      <div onClick="{{ n.open }}" onMouseEnter="{{ n.hold }}" onMouseLeave="{{ n.release }}" style="pointer-events:auto;position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) 28px;gap:10px;padding:12px 10px 12px 16px;background:{{ n.bg }};border:1px solid {{ n.border }};border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.2);color:#1E2430;font:13px 'IBM Plex Sans',sans-serif;cursor:pointer;overflow:hidden">
+        <span style="position:absolute;left:0;top:0;bottom:0;width:4px;background:{{ n.edge }}"></span>
+        <span style="width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:{{ n.tileBg }};color:{{ n.tileFg }};font:19px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+        <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+          <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:{{ n.kindColor }}">{{ n.kind }}<sc-if value="{{ n.isCrit }}"><span style="height:17px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;background:#C00018;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.02em">CRITICAL</span></sc-if><span style="margin-left:auto;font-weight:400;color:#98A2B3">now</span></span>
+          <span style="font-weight:600;line-height:1.35;text-wrap:pretty">{{ n.title }}</span>
+          <sc-if value="{{ n.hasSub }}"><span style="font-size:12px;color:#667085;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.sub }}</span></sc-if>
+          <span style="display:flex;gap:12px;margin-top:4px;font-size:12.5px;font-weight:600"><span style="color:#C00018">{{ n.cta }}</span><button onClick="{{ n.markRead }}" style="padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Mark as read</button></span>
+        </span>
+        <button onClick="{{ n.dismiss }}" title="Dismiss" style="width:28px;height:28px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#F2F4F7;color:#475467"><span style="font:18px/1 'Material Symbols Outlined'">close</span></button>
+        <sc-if value="{{ n.timed }}"><span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#F2F4F7"><span style="display:block;height:100%;width:{{ n.left }};background:{{ n.edge }};transition:width .25s linear"></span></span></sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:95;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:620},&quot;role&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Maintenance Manager&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const KEY = 'cmms.nav.collapsed', NKEY = 'cmms.notif.read', LKEY = 'cmms.lang';
+const CAT = {
+  asset: ['Equipment', 'precision_manufacturing', '#E6F4EE', '#0B6B4A', 'Open'],
+  wo: ['Work orders', 'build', '#FBE7EA', '#A30014', 'Open'],
+  part: ['Spare parts', 'inventory_2', '#FEF3E2', '#B54708', 'Open'],
+  person: ['People', 'person', '#EAF1FD', '#2456B8', 'Open'],
+  site: ['Sites', 'factory', '#F3EEFC', '#6941C6', 'Switch'],
+  loc: ['Locations', 'account_tree', '#EEF1F4', '#475467', 'Open'],
+};
+const enc = encodeURIComponent;
+const woHref = (title, loc, type, prio, status) => { const [asset, task] = title.split(' — '); return 'Work Order.dc.html?' + new URLSearchParams({ wo: 'search-' + asset.replace(/\W+/g, '-'), task, asset, loc, type, prio, status }); };
+const ST = { Overdue: ['#FDECEC', '#B42318'], Scheduled: ['#EAF1FD', '#2456B8'], 'In progress': ['#E6F4EE', '#0B6B4A'], 'Waiting for parts': ['#FEF3E2', '#B54708'], Paused: ['#EAF1FD', '#2456B8'], 'Out of stock': ['#FDECEC', '#B42318'], Low: ['#FEF3E2', '#B54708'], Stopped: ['#FDECEC', '#B42318'] };
+const IDX = [
+  ...[['Tempering Furnace 2', 'Tempering Line › Furnace Zone', 'Stopped'], ['Tempering Furnace 1', 'Tempering Line › Furnace Zone'], ['Conveyor Line 3', 'Float Line'], ['Conveyor Line 2', 'Float Line'], ['Pump P-101', 'Tempering Line › Heating Zone'], ['Fan V-12', 'Float Line › Utilities'], ['Compressor C-01', 'Utilities › Compressed Air'], ['Palletizing Robot 1', 'Packaging › Line 1'], ['Mixer 02', 'Batch House › Mixing'], ['Dryer S-01', 'Utilities › Compressed Air'], ['Hydraulic Press PH-030', 'Workshop › Press Area'], ['Tin Bath', 'Float Line › Hot End', 'Stopped']]
+    .map(([n, loc, b]) => ({ t: 'asset', n, ctx: `${loc} · {site}`, badge: b, href: 'Asset Detail.dc.html' })),
+  ...[['Pump P-101 — Seal replacement', 'Tempering Line', 'Corrective', 'Critical', 'Overdue', 'Gaudéric Durand · 3 d late'], ['Conveyor Line 3 — Sensor check', 'Float Line', 'Corrective', 'High', 'Scheduled', 'Gaudéric Durand · Today 09:00'], ['Hydraulic Press — Oil leak', 'Workshop', 'Corrective', 'Medium', 'Scheduled', 'Marc Dupont · Today 11:30'], ['Fan V-12 — Abnormal vibration', 'Float Line', 'Corrective', 'High', 'Paused', 'Gaudéric Durand · 3 of 7 steps'], ['Compressor C-01 — Filter replacement', 'Utilities', 'Preventive', 'Medium', 'Paused', 'Sophie Martin · 4 of 6 steps'], ['Dryer S-01 — Belt replacement', 'Utilities', 'Corrective', 'Medium', 'Waiting for parts', 'Gaudéric Durand · Fri 2'], ['Mixer 02 — Vibration analysis', 'Batch House', 'Predictive', 'Low', 'Scheduled', 'Sofia Benali · Today 13:00'], ['Conveyor Line 2 — Belt tracking', 'Float Line', 'Corrective', 'Medium', 'In progress', 'Pierre Leroy · started 09:40']]
+    .map(([n, loc, type, prio, status, who]) => ({ t: 'wo', n, ctx: `${type} · ${loc} · ${who}`, badge: status, href: woHref(n, loc, type, prio, status === 'Paused' ? 'In progress' : status) })),
+  ...[['Ball bearing 6205-2RS', 'BRG-6205', '42 in stock · Store A-12'], ['Drive belt BPU280', 'BLT-BPU280', '2 in stock · min 5', 'Low'], ['Hydraulic filter HX-10', 'FLT-HX10', 'Blocks 1 work order', 'Out of stock'], ['Temperature probe PT100', 'SEN-PT100', '6 in stock · Store B-03'], ['Mechanical seal 45 mm', 'SEAL-M45', '3 in stock · Store A-07'], ['Variable speed drive ATV320', 'VFD-ATV320', 'On order · ETA Oct 6', 'Out of stock'], ['Contactor LC1D18', 'CTR-LC1D', '11 in stock · Store C-01']]
+    .map(([n, ref, m, b]) => ({ t: 'part', n, k: ref, ctx: `${ref} · ${m}`, badge: b, href: 'Spare Parts.dc.html?q=' + enc(ref) })),
+  ...[['Pierre Leroy', 'Maintenance Technician', 'Mechanical team'], ['Marc Dupont', 'Maintenance Technician', 'Mechanical team'], ['Sophie Martin', 'Electrician', 'Electrical team'], ['Julie Martin', 'Maintenance Technician', 'Float Line team'], ['Sofia Benali', 'Electrician', 'Electrical team'], ['Alex Martin', 'Maintenance Technician', 'Packaging team'], ['Hugo Petit', 'Maintenance Planner', 'Planning'], ['Claire Moreau', 'Reliability Engineer', 'Engineering']]
+    .map(([n, role, team]) => ({ t: 'person', n, ctx: `${role} · ${team} · {site}`, href: 'Teams and Users.dc.html?q=' + enc(n) })),
+  ...[['Float Line', 'Line', 412, ''], ['Furnace Zone', 'Area', 38, 'Float Line'], ['Tempering Line', 'Line', 186, ''], ['Heating Zone', 'Area', 24, 'Tempering Line'], ['Packaging', 'Line', 140, ''], ['Batch House', 'Area', 52, ''], ['Utilities', 'Area', 96, ''], ['Workshop', 'Area', 31, '']]
+    .map(([n, lvl, cnt, parent]) => ({ t: 'loc', n, ctx: `{site}${parent ? ' › ' + parent : ''} › ${n} · ${lvl} · ${cnt} assets`, href: 'Assets.dc.html?loc=' + enc(n) })),
+];
+const RECENT_N = ['Pump P-101 — Seal replacement', 'Tempering Furnace 2', 'Drive belt BPU280', 'Sophie Martin'];
+const LANGS = [['EN', 'English'], ['FR', 'Français'], ['DE', 'Deutsch'], ['ES', 'Español'], ['IT', 'Italiano'], ['PT', 'Português'], ['NL', 'Nederlands'], ['PL', 'Polski'], ['ZH', '中文'], ['AR', 'العربية']];
+const LVL = { crit: ['#FDECEC', '#B42318', '#C00018'], imp: ['#FEF3E2', '#B54708', 'transparent'], info: ['#EEF1F4', '#475467', 'transparent'] };
+const NOTIF = [
+  ['n1', 'crit', 'report', 'Critical equipment issue', 'Tin Bath — roller stopped', 'Float Line · production impacted · reported by operator', '2 min', 'today', 'Asset Detail.dc.html'],
+  ['n2', 'crit', 'schedule', 'Intervention overdue', 'Pump P-101 — Seal replacement', '3 days late · assigned to you', '15 min', 'today', woHref('Pump P-101 — Seal replacement', 'Tempering Line', 'Corrective', 'Critical', 'Overdue')],
+  ['n3', 'imp', 'assignment_ind', 'Work order assigned to you', 'Fan V-08 — Noisy bearing', 'High priority · not scheduled yet · by Hugo Petit', '28 min', 'today', woHref('Fan V-08 — Noisy bearing', 'Float Line', 'Corrective', 'High', 'Requested')],
+  ['n4', 'imp', 'block', 'Required part unavailable', 'Hydraulic filter HX-10 is out of stock', 'Blocks Hydraulic Press — Oil leak', '40 min', 'today', 'Spare Parts.dc.html?q=FLT-HX10'],
+  ['n5', 'imp', 'pause_circle', 'Intervention paused', 'Compressor C-01 — Filter replacement', 'Sophie Martin · 4 of 6 steps · waiting for a part', '1 h', 'today', woHref('Compressor C-01 — Filter replacement', 'Utilities', 'Preventive', 'Medium', 'In progress')],
+  ['n6', 'imp', 'priority_high', 'Priority changed', 'Conveyor Line 3 — Sensor check', 'Medium → High · by Hugo Petit', '1 h', 'today', woHref('Conveyor Line 3 — Sensor check', 'Float Line', 'Corrective', 'High', 'Scheduled')],
+  ['n8', 'imp', 'inventory_2', 'Low spare-part stock', 'Drive belt BPU280 — 2 left', 'Minimum 5 · used on 3 assets', '2 h', 'today', 'Spare Parts.dc.html?q=BLT-BPU280'],
+  ['n9', 'info', 'event', 'Planning change', 'Palletizing Robot — Lubrication', 'Moved to Wed 30, 10:00 · by Hugo Petit', 'Yesterday', 'earlier', 'Planning.dc.html', 1],
+  ['n10', 'info', 'subdirectory_arrow_right', 'Follow-up intervention created', 'Conveyor Line 3 — Belt replacement', 'From the completed sensor check · Sophie Martin', 'Yesterday', 'earlier', woHref('Conveyor Line 3 — Belt replacement', 'Float Line', 'Corrective', 'Medium', 'Requested'), 1],
+];
+const NTYPE = { n1: 'eq-critical', n2: 'int-overdue', n3: 'wo-assigned', n4: 'part-unavailable', n5: 'int-paused', n6: 'wo-priority', n8: 'part-low', n9: 'plan-change', n10: 'wo-followup' };
+const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    let read = {}, lang = 'EN', collapsed = false;
+    try { read = JSON.parse(localStorage.getItem(NKEY) || '{}'); lang = localStorage.getItem(LKEY) || 'EN'; collapsed = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    NOTIF.forEach(n => { if (n[9] && read[n[0]] === undefined) read[n[0]] = true; });
+    this.state = { q: '', focus: false, active: 0, cat: '', collapsed, read, lang, menu: null, nfilter: 'all', siteQ: '', site: null, toast: null, toasts: [] };
+  }
+  inputRef = React.createRef();
+  componentDidMount() {
+    this._nav = e => this.setState({ collapsed: !!e.detail });
+    this._key = e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); this.inputRef.current && this.inputRef.current.focus(); } };
+    window.addEventListener('cmms-nav', this._nav); window.addEventListener('keydown', this._key);
+    import((window.__resources && window.__resources.sitesModel) || './sites-model.js').then(S => this.setState({ site: S.current().id }));
+    this._site = e => this.setState({ site: e.detail }); this._siteOpen = () => this.setState({ menu: 'sites', siteQ: '' });
+    window.addEventListener('cmms-site', this._site); window.addEventListener('cmms-site-open', this._siteOpen);
+    Promise.all([import('./collab-model.js'), import('./notif-model.js')]).then(([C, N]) => { this.setState({ C, N });
+      try { if (!sessionStorage.getItem('cmms.notif.demo') && !/Intervention|Notification Settings/.test(decodeURIComponent(location.pathname))) { sessionStorage.setItem('cmms.notif.demo', '1'); this._demo = setTimeout(() => C.post('team', 'PL', '@Gaudéric the BPU280 belts just arrived at the Float Line store — shall I fit one on Dryer S-01 this afternoon?'), 7000); } } catch (e) {} });
+    this._notif = e => { this.setState(s => ({ nv: (s.nv || 0) + 1 })); if (e && e.detail) this.pushToast(e.detail); };
+    this._prefs = () => this.setState(s => ({ nv: (s.nv || 0) + 1 }));
+    window.addEventListener('cmms-notif', this._notif); window.addEventListener('cmms-notif-prefs', this._prefs);
+    this._tick = setInterval(() => { const now = Date.now(); const ts = this.state.toasts.filter(x => !x.ttl || x.hold || now < x.until); if (ts.length !== this.state.toasts.length || ts.some(x => x.ttl)) this.setState({ toasts: ts }); }, 250);
+  }
+  componentWillUnmount() { clearInterval(this._tick); clearTimeout(this._demo); window.removeEventListener('cmms-notif', this._notif); window.removeEventListener('cmms-notif-prefs', this._prefs); ['cmms-nav', 'keydown', 'cmms-site', 'cmms-site-open'].forEach((k, i) => window.removeEventListener(k, [this._nav, this._key, this._site, this._siteOpen][i])); clearTimeout(this._t); }
+  pushToast(d) {
+    const N = this.state.N; if (!N) return;
+    const type = d.type || 'wo-message'; if (N.levelOf(type) !== 'toast') return;
+    const L = N.look(type), now = Date.now();
+    const item = { id: d.id || 't' + now, type, kind: d.kind || N.typeOf(type).label, title: d.title || '', sub: d.sub || '', href: d.href || '#', icon: d.icon || L.icon, ttl: L.ttl, until: now + L.ttl, start: now, hold: false };
+    this.setState(s => ({ toasts: [item, ...s.toasts.filter(x => x.id !== item.id)].slice(0, 3) }));
+  }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2800); }
+  setRead(read) { try { localStorage.setItem(NKEY, JSON.stringify(read)); } catch (e) {} this.setState({ read }); }
+  toggleNav() { const c = !this.state.collapsed; try { localStorage.setItem(KEY, c ? '1' : '0'); } catch (e) {} window.dispatchEvent(new CustomEvent('cmms-nav', { detail: c })); this.setState({ collapsed: c }); }
+  switchSite(x, dash) { const S = window.CMMSSites; if (!S) return; S.select(x.id); this.setState({ q: '', focus: false, menu: null }); this.inputRef.current && this.inputRef.current.blur(); if (dash) window.location.href = 'Site Dashboard.dc.html'; else this.flash(`Switched to ${x.name}`); }
+  index() {
+    const S = window.CMMSSites, cur = S && this.state.site ? S.SITES.find(x => x.id === this.state.site) : null, siteName = cur ? cur.name : 'Thourotte Plant';
+    const sites = S ? S.SITES.map(x => ({ t: 'site', n: x.name, k: `${x.city} ${x.country} ${x.id}`, ctx: `${x.city}, ${x.country} · ${S.businessPath(x).slice(-1)[0].name} · ${x.assets} assets`, badge: x.id === this.state.site ? 'Current' : x.k.overdue ? `${x.k.overdue} overdue` : '', site: x })) : [];
+    return [...IDX.map(x => ({ ...x, ctx: x.ctx.replace('{site}', siteName) })), ...sites];
+  }
+  results() {
+    const s = norm(this.state.q.trim()), all = this.index();
+    if (!s) { const flat = RECENT_N.map(n => all.find(x => x.n === n)).filter(Boolean); return { flat, groups: [{ t: '', label: 'Recent', all: flat, items: flat }], counts: {}, total: 0, recent: true }; }
+    const hits = all.filter(x => norm(x.n + ' ' + (x.k || '') + ' ' + x.ctx).includes(s));
+    const counts = {}; hits.forEach(h => { counts[h.t] = (counts[h.t] || 0) + 1; });
+    const cf = this.state.cat;
+    const groups = Object.keys(CAT).filter(t => !cf || t === cf).map(t => { const a = hits.filter(h => h.t === t); a.sort((x, y) => norm(x.n).indexOf(s) - norm(y.n).indexOf(s)); return { t, label: CAT[t][0], all: a, items: cf ? a : a.slice(0, 3) }; }).filter(g => g.items.length);
+    return { flat: groups.flatMap(g => g.items), groups, counts, total: hits.length, recent: false };
+  }
+  pick(x) { if (!x) return; if (x.t === 'site') return this.switchSite(x.site, false); window.location.href = x.href; }
+  siteVals() {
+    const S = window.CMMSSites, st = this.state;
+    if (!S || !st.site) return { siteName: 'Thourotte Plant', siteGroups: [], noSites: false };
+    const cur = S.SITES.find(x => x.id === st.site) || S.SITES[0], q = norm(st.siteQ.trim()), groups = [];
+    S.SITES.forEach(x => { const path = S.businessPath(x).map(b => b.name), hay = norm([x.name, x.city, x.country, x.id, ...path].join(' '));
+      if (q && !hay.includes(q)) return; const key = path.join(' › '); let g = groups.find(y => y.path === key); if (!g) groups.push(g = { path: key, sites: [] });
+      g.sites.push({ code: x.id, name: x.name, place: `${x.city}, ${x.country}`, time: S.localTime(x), alert: x.k.overdue, hasAlert: x.k.overdue > 0, current: x.id === cur.id, bg: x.id === cur.id ? '#FBF1F2' : 'transparent', pick: () => this.switchSite(x, false) }); });
+    return { siteName: cur.name, siteGroups: groups, noSites: !groups.length };
+  }
+  renderVals() {
+    const st = this.state, r = this.results(), s = norm(st.q.trim()), menu = st.menu;
+    let i = -1;
+    const deco = x => { i++; const idx = i, [, icon, iconBg, iconFg, action] = CAT[x.t], on = idx === st.active;
+      const at = s ? norm(x.n).indexOf(s) : -1;
+      const [pre, hit, post] = at >= 0 ? [x.n.slice(0, at), x.n.slice(at, at + s.length), x.n.slice(at + s.length)] : [x.n, '', ''];
+      const [bbg, bfg] = x.badge === 'Current' ? ['#E6F4EE', '#0B6B4A'] : ST[x.badge] || (x.badge ? ['#FDECEC', '#B42318'] : []);
+      return { icon, iconBg, iconFg, pre, hit, post, ctx: x.ctx, hasBadge: !!x.badge, badge: x.badge, badgeBg: bbg, badgeFg: bfg, isSite: x.t === 'site', action,
+        bg: on ? '#F2F4F7' : 'transparent', enterColor: on ? '#667085' : 'transparent', hover: () => this.state.active !== idx && this.setState({ active: idx }),
+        pick: () => this.pick(x), openDash: e => { e.stopPropagation(); this.switchSite(x.site, true); } };
+    };
+    const groups = r.groups.map(g => ({ label: g.label, count: r.recent ? '' : g.all.length, hasMore: !r.recent && !st.cat && g.all.length > g.items.length, more: () => this.setState({ cat: g.t, active: 0 }), items: g.items.map(deco) }));
+    const cats = [['', 'All', 'apps', r.total]].concat(Object.keys(CAT).map(t => [t, CAT[t][0], CAT[t][1], r.counts[t] || 0])).map(([k, label, icon, count]) => {
+      const on = st.cat === k; return { label, icon, count, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : '#E4E7EC', color: on ? '#fff' : '#344054', countColor: on ? 'rgba(255,255,255,.7)' : '#98A2B3', op: count || on ? 1 : 0.45, select: () => this.setState({ cat: on ? '' : k, active: 0 }) }; });
+
+    const chatN = st.C ? st.C.notifications().map(n => ({ type: n.type || (n.icon === 'swap_horiz' ? 'reassign' : n.icon === 'alternate_email' ? 'mention' : 'wo-message'), id: n.id, lvl: n.lvl, icon: n.icon, kind: n.kind, title: n.title, sub: n.sub, ago: n.ago, grp: 'today', href: st.C.notifHref(n), unread: !st.read[n.id] })) : [];
+    const nList = [...chatN.filter(n => n.ago === 'now'), ...NOTIF.map(([id, lvl, icon, kind, title, sub, ago, grp, href]) => ({ id, type: NTYPE[id], lvl, icon, kind, title, sub, ago, grp, href, unread: !st.read[id] })), ...chatN.filter(n => n.ago !== 'now')];
+    const order = { now: 0, '2 min': 1, '15 min': 2, '20 min': 3, '28 min': 4, '40 min': 5, '45 min': 6, '1 h': 7, '2 h': 8, Yesterday: 9 };
+    nList.sort((a, b) => (order[a.ago] ?? 8) - (order[b.ago] ?? 8));
+    if (st.N) { for (let i = nList.length - 1; i >= 0; i--) if (st.N.levelOf(nList[i].type) === 'activity') nList.splice(i, 1); }
+    const unread = nList.filter(n => n.unread).length;
+    const shown = nList.filter(n => st.nfilter === 'all' || n.unread);
+    const notifGroups = [['today', 'Today'], ['earlier', 'Earlier']].map(([g, label]) => ({ label, items: shown.filter(n => n.grp === g).map(n => { let [ibg, ifg, edge] = LVL[n.lvl], bg0 = null;
+      if (st.N && n.type) { const L = st.N.look(n.type); ibg = L.tileBg; ifg = L.tileFg; edge = L.edge; bg0 = n.unread && L.imp === 'crit' ? L.rowBg : null; }
+      return { ...n, ibg, ifg, edge: n.unread ? edge : 'transparent', isCrit: n.lvl === 'crit', isImp: n.lvl === 'imp' && n.unread, kindColor: n.lvl === 'crit' ? '#B42318' : n.lvl === 'imp' ? '#B54708' : '#667085', weight: n.unread ? 600 : 400, bg: n.unread ? (n.lvl === 'crit' ? '#FEF6F6' : '#FFFFFF') : '#FBFBFC',
+        markRead: e => { e.stopPropagation(); this.setRead({ ...this.state.read, [n.id]: true }); },
+        open: () => { this.setRead({ ...this.state.read, [n.id]: true }); window.location.href = n.href; } }; }) })).filter(g => g.items.length);
+
+    const go = () => this.pick(r.flat[st.active]);
+    const toggle = k => () => this.setState({ menu: menu === k ? null : k, siteQ: '' });
+    return {
+      ...this.siteVals(),
+      role: this.props.role ?? 'Maintenance Manager',
+      toggleNav: () => this.toggleNav(), navIcon: st.collapsed ? 'left_panel_open' : 'left_panel_close', navTip: st.collapsed ? 'Expand menu' : 'Collapse menu',
+      inputRef: this.inputRef, q: st.q, hasQuery: !!st.q, modKey: isMac ? '⌘' : 'Ctrl',
+      open: st.focus, groups, cats, noResults: !r.recent && r.total === 0,
+      totalLabel: r.recent ? 'Recently opened' : `${r.total} result${r.total === 1 ? '' : 's'}`,
+      searchBg: st.focus ? '#fff' : 'rgba(255,255,255,.94)', searchBorder: st.focus ? '#fff' : 'rgba(255,255,255,.2)', searchRing: st.focus ? '0 0 0 3px rgba(255,255,255,.22)' : 'none',
+      searchIcon: '#667085', searchText: '#1E2430', kbdBorder: '#D0D5DD', kbdColor: '#667085',
+      onInput: e => this.setState({ q: e.target.value, active: 0, focus: true, cat: '' }),
+      onFocus: () => this.setState({ focus: true, menu: null }), onBlur: () => this.setState({ focus: false }),
+      keepFocus: e => { if (e.target.tagName !== 'INPUT') e.preventDefault(); },
+      clear: e => { e.preventDefault(); this.setState({ q: '', active: 0, cat: '' }); },
+      onKey: e => {
+        const n = r.flat.length;
+        if (e.key === 'ArrowDown') { e.preventDefault(); this.setState({ active: n ? (st.active + 1) % n : 0 }); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); this.setState({ active: n ? (st.active - 1 + n) % n : 0 }); }
+        else if (e.key === 'Enter') { e.preventDefault(); go(); }
+        else if (e.key === 'Escape') { this.setState({ q: '', focus: false, cat: '' }); e.target.blur(); }
+      },
+      closeAll: () => this.setState({ menu: null }),
+      langOpen: menu === 'lang', toggleLang: toggle('lang'), langCode: st.lang, langBtnBg: menu === 'lang' ? 'rgba(255,255,255,.12)' : 'transparent',
+      langs: LANGS.map(([code, name]) => ({ code, name, on: code === st.lang, weight: code === st.lang ? 600 : 400, bg: code === st.lang ? '#FBF1F2' : 'transparent',
+        pick: () => { try { localStorage.setItem(LKEY, code); } catch (e) {} this.setState({ lang: code, menu: null }); } })),
+      notifOpen: menu === 'notif', toggleNotif: toggle('notif'), notifBtnBg: menu === 'notif' ? 'rgba(255,255,255,.12)' : 'transparent',
+      hasUnread: unread > 0, unreadCount: unread > 9 ? '9+' : unread, markAllColor: unread ? '#C00018' : '#98A2B3',
+      markAll: () => { const read = { ...st.read }; nList.forEach(n => { read[n.id] = true; }); this.setRead(read); },
+      notifTabs: [['all', 'All', nList.length], ['unread', 'Unread', unread]].map(([k, label, count]) => ({ label, count, font: st.nfilter === k ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: st.nfilter === k ? '#1E2430' : '#667085', bar: st.nfilter === k ? '#C00018' : 'transparent', select: () => this.setState({ nfilter: k }) })),
+      notifGroups, noNotif: !notifGroups.length,
+      profileOpen: menu === 'profile', toggleProfile: toggle('profile'), profileBg: menu === 'profile' || menu === 'sites' ? 'rgba(255,255,255,.12)' : 'transparent',
+      openSites: () => this.setState({ menu: 'sites', siteQ: '' }), sitesOpen: menu === 'sites', siteQ: st.siteQ, setSiteQ: e => this.setState({ siteQ: e.target.value }),
+      openMyProfile: () => { this.setState({ menu: null }); window.dispatchEvent(new CustomEvent('cmms-profile-open', { detail: { key: 'GD' } })); },
+      toast: st.toast,
+      toasts: st.toasts.map(x => { const L = st.N ? st.N.look(x.type) : {}, crit = L.imp === 'crit';
+        const done = () => this.setState(s => ({ toasts: s.toasts.filter(y => y.id !== x.id) }));
+        return { ...x, ...L, isCrit: crit, hasSub: !!x.sub, bg: crit ? '#FFFBFB' : '#fff', border: crit ? '#F3A3AC' : '#E4E7EC', cta: crit ? 'Open now' : 'Open',
+          timed: !!x.ttl, left: x.ttl ? Math.max(0, (x.until - Date.now()) / x.ttl * 100) + '%' : '0%',
+          open: () => { done(); this.setRead({ ...this.state.read, [x.id]: true }); window.location.href = x.href; },
+          markRead: e => { e.stopPropagation(); done(); this.setRead({ ...this.state.read, [x.id]: true }); },
+          dismiss: e => { e.stopPropagation(); done(); },
+          hold: () => this.setState(s => ({ toasts: s.toasts.map(y => y.id === x.id ? { ...y, hold: true } : y) })),
+          release: () => this.setState(s => ({ toasts: s.toasts.map(y => y.id === x.id ? { ...y, hold: false, until: Date.now() + (y.ttl || 0) } : y) })) }; }),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="parts" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:16px" data-screen-label="Spare parts">
+    <header style="flex:none;display:flex;align-items:center;gap:12px">
+      <dc-import name="BackButton" fallback="Home.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Spare parts</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">Stock levels, storerooms and consumption · Thourotte Plant</p>
+      </div>
+      <button onClick="{{ doExport }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">download</span>Export</button>
+      <button onClick="{{ openNew }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New part</button>
+    </header>
+
+    <section style="flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+        <button onClick="{{ k.select }}" style="position:relative;display:flex;flex-direction:column;gap:1px;padding:12px 18px;background:{{ k.bg }};border:0;border-right:1px solid #EEF0F3;text-align:left;cursor:{{ k.cursor }};font-family:inherit;color:#1E2430" style-hover="background:#FAFAFB">
+          <span style="font-size:12px;color:#667085;font-weight:500">{{ k.label }}</span>
+          <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:22px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</span><span style="font-size:12px;color:#667085;white-space:nowrap">{{ k.sub }}</span></span>
+          <span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:{{ k.bar }}"></span>
+        </button>
+      </sc-for>
+    </section>
+
+    <section style="flex:0 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+      <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3;flex-wrap:wrap">
+        <label style="width:300px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px">
+          <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+          <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search by name, reference, supplier…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+        </label>
+        <sc-for list="{{ selects }}" as="s" hint-placeholder-count="2">
+          <label style="position:relative;height:34px;display:flex;align-items:center;border:1px solid {{ s.border }};background:{{ s.bg }};border-radius:6px">
+            <select value="{{ s.value }}" onChange="{{ s.onChange }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 30px 0 10px;border:0;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;outline:none">
+              <sc-for list="{{ s.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+            </select>
+            <span style="position:absolute;right:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+          </label>
+        </sc-for>
+        <sc-if value="{{ hasFilters }}"><button onClick="{{ resetFilters }}" style="height:34px;padding:0 8px;background:transparent;border:0;font:600 13px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Reset</button></sc-if>
+        <span style="margin-left:auto;color:#667085;font-size:12.5px">{{ countLabel }}</span>
+        <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ views }}" as="v" hint-placeholder-count="2"><button onClick="{{ v.select }}" title="{{ v.label }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 10px;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};font:{{ v.font }};color:{{ v.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ v.icon }}</span>{{ v.label }}</button></sc-for>
+        </div>
+        <div style="flex-basis:100%;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span title="Storage areas are defined in the plant hierarchy (Assets)" style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#667085;margin-right:2px"><span style="font:16px/1 'Material Symbols Outlined'">warehouse</span>Storage area</span>
+          <sc-for list="{{ storeChips }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.select }}" title="{{ c.path }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ c.bg }};border:1px solid {{ c.border }};border-radius:15px;font:{{ c.font }};color:{{ c.color }};cursor:pointer;white-space:nowrap">{{ c.label }}<span style="font-weight:500;color:{{ c.countColor }};font-variant-numeric:tabular-nums">{{ c.count }}</span><sc-if value="{{ c.hasAlert }}"><span title="{{ c.alertTip }}" style="width:7px;height:7px;border-radius:50%;background:#D92D20"></span></sc-if></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto">
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="position:sticky;top:0;z-index:3;display:grid;grid-template-columns:minmax(240px,2fr) 120px 150px 190px 118px 90px minmax(120px,1fr) 48px;align-items:center;height:36px;padding-left:16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+        <span>Part</span><span>Category</span><span>Location</span><span>Stock</span><span>Status</span><span style="text-align:right;padding-right:16px">Unit cost</span><span>Supplier</span><span></span>
+      </div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+        <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(240px,2fr) 120px 150px 190px 118px 90px minmax(120px,1fr) 48px;align-items:center;min-height:50px;padding-left:16px;border-bottom:1px solid #F2F4F7;cursor:pointer;background:{{ r.bg }}" style-hover="background:#F9FAFB">
+          <span style="display:flex;align-items:center;gap:10px;min-width:0;padding-right:10px">
+            <span style="width:32px;height:32px;flex:none;border-radius:6px;background:repeating-linear-gradient(135deg,#EEF0F3 0 4px,#E4E7EC 4px 8px);display:grid;place-items:center;color:#98A2B3;font:17px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+            <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font:12px 'IBM Plex Mono',monospace;color:#667085">{{ r.ref }}</span></span>
+          </span>
+          <span style="color:#475467">{{ r.cat }}</span>
+          <span title="{{ r.storePath }}" style="display:flex;flex-direction:column;gap:1px"><span style="color:#344054">{{ r.store }}</span><span style="font:11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ r.bin }}</span></span>
+          <span style="display:flex;flex-direction:column;gap:4px;padding-right:18px">
+            <span style="display:flex;align-items:baseline;gap:6px"><span style="font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;color:{{ r.qtyColor }}">{{ r.qty }}</span><span style="font-size:12px;color:#667085">{{ r.unit }}</span><span style="margin-left:auto;font-size:11.5px;color:#98A2B3">min {{ r.min }} · max {{ r.max }}</span></span>
+            <span style="position:relative;height:4px;border-radius:2px;background:#EEF0F3"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ r.barW }};border-radius:2px;background:{{ r.barColor }}"></span><span style="position:absolute;left:{{ r.minX }};top:-2px;width:1.5px;height:8px;background:#667085"></span></span>
+          </span>
+          <span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span></span>
+          <span style="text-align:right;padding-right:16px;font-variant-numeric:tabular-nums;color:#344054">{{ r.cost }}</span>
+          <span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.supplier }}</span>
+          <span style="position:relative;display:grid;place-items:center">
+            <button onClick="{{ r.menu }}" style="width:30px;height:30px;display:grid;place-items:center;background:{{ r.menuBg }};border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:20px/1 'Material Symbols Outlined'">more_horiz</span></button>
+            <sc-if value="{{ r.menuOpen }}">
+              <div style="position:absolute;right:6px;top:{{ r.menuTop }};z-index:40;width:210px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.14);padding:6px;cursor:default">
+                <button onClick="{{ r.open }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">swap_vert</span>Adjust stock</button>
+                <button onClick="{{ r.reorder }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">shopping_cart</span>Request reorder</button>
+                <button onClick="{{ r.reserve }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">bookmark_add</span>Reserve for a work order</button>
+                <button onClick="{{ r.edit }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">edit</span>Edit part</button>
+                <div style="height:1px;background:#EEF0F3;margin:6px 4px"></div>
+                <button onClick="{{ r.del }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer;text-align:left" style-hover="background:#FEF3F2"><span style="font:18px/1 'Material Symbols Outlined'">delete</span>Delete part</button>
+              </div>
+            </sc-if>
+          </span>
+        </div>
+      </sc-for>
+      </sc-if>
+      <sc-if value="{{ isCatalog }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px;padding:16px">
+          <sc-for list="{{ rows }}" as="r">
+            <div onClick="{{ r.open }}" style="display:flex;flex-direction:column;background:#fff;border:1px solid {{ r.cardBorder }};border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .15s,border-color .15s" style-hover="border-color:#C4CAD4;box-shadow:0 8px 24px rgba(16,24,40,.08)">
+              <div style="position:relative;height:152px;background:repeating-linear-gradient(135deg,#F6F7F9 0 7px,#EEF0F3 7px 14px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+                <span style="font:40px/1 'Material Symbols Outlined';color:#C4CAD4">{{ r.icon }}</span>
+                <span style="font:10.5px 'IBM Plex Mono',monospace;color:#98A2B3">part photo</span>
+                <span style="position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:11.5px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};box-shadow:0 0 0 2px #fff"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:12px 14px 14px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ r.cat }}</span>
+                  <span style="font-weight:600;font-size:14px;line-height:1.35;text-wrap:pretty;min-height:38px">{{ r.name }}</span>
+                  <span style="font:11.5px 'IBM Plex Mono',monospace;color:#667085">{{ r.ref }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:baseline;gap:6px">
+                    <span style="font-size:20px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.qtyColor }}">{{ r.avail }}</span>
+                    <span style="font-size:12px;color:#667085">{{ r.unit }} available</span>
+                    <span style="margin-left:auto;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ r.cost }}</span>
+                  </div>
+                  <span style="position:relative;height:5px;border-radius:3px;background:#EEF0F3"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ r.barW }};border-radius:3px;background:{{ r.barColor }}"></span><span style="position:absolute;left:{{ r.minX }};top:-2px;width:1.5px;height:9px;background:#667085"></span></span>
+                  <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#667085"><span style="font:14px/1 'Material Symbols Outlined'">location_on</span>{{ r.store }} · <span style="font-family:'IBM Plex Mono',monospace">{{ r.bin }}</span></span>
+                </div>
+                <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">
+                  <span style="display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:{{ r.hintColor }}"><span style="font:14px/1 'Material Symbols Outlined'">{{ r.hintIcon }}</span>{{ r.hint }}</span>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button onClick="{{ r.reserve }}" title="{{ r.resTip }}" style="height:32px;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;background:{{ r.resBg }};border:1px solid {{ r.resBorder }};border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ r.resColor }};cursor:pointer;white-space:nowrap" style-hover="filter:brightness(.97)"><span style="font:16px/1 'Material Symbols Outlined'">bookmark_add</span>{{ r.resLabel }}</button>
+                    <button onClick="{{ r.reorder }}" title="{{ r.reqTip }}" style="height:32px;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;background:{{ r.reqBg }};border:1px solid {{ r.reqBorder }};border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ r.reqColor }};cursor:pointer;white-space:nowrap" style-hover="filter:brightness(.97)"><span style="font:16px/1 'Material Symbols Outlined'">{{ r.reqIcon }}</span>{{ r.reqLabel }}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ empty }}"><div style="padding:48px;text-align:center;color:#667085">No parts match these filters.</div></sc-if>
+      <div style="display:flex;align-items:center;padding:10px 14px;color:#667085;font-size:12.5px">{{ rangeLabel }}</div>
+    </div>
+    </section>
+    <sc-if value="{{ menuOpen }}"><div onClick="{{ closeMenus }}" style="position:fixed;inset:0;z-index:30"></div></sc-if>
+  </main>
+
+  <sc-if value="{{ detailOpen }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:520px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+        <span style="width:48px;height:48px;flex:none;border-radius:8px;background:repeating-linear-gradient(135deg,#EEF0F3 0 4px,#E4E7EC 4px 8px);display:grid;place-items:center;color:#98A2B3;font:22px/1 'Material Symbols Outlined'">{{ d.icon }}</span>
+        <div style="flex:1;min-width:0">
+          <h2 style="margin:0;font-size:16px;font-weight:600">{{ d.name }}</h2>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;color:#667085;font-size:12.5px"><span style="font-family:'IBM Plex Mono',monospace">{{ d.ref }}</span>·<span>{{ d.cat }}</span><span style="display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border-radius:10px;font-size:11.5px;font-weight:600;background:{{ d.sbg }};color:{{ d.sfg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ d.status }}</span></div>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #E4E7EC;border-radius:8px">
+          <sc-for list="{{ d.stats }}" as="s"><div style="padding:10px 12px;border-right:1px solid #EEF0F3;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#667085">{{ s.k }}</span><span style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.v }}</span></div></sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+          <span style="font-weight:600">Adjust stock</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+              <sc-for list="{{ adjModes }}" as="m" hint-placeholder-count="2"><button onClick="{{ m.select }}" style="height:30px;display:flex;align-items:center;gap:4px;padding:0 10px;background:{{ m.bg }};border:0;border-radius:5px;box-shadow:{{ m.shadow }};font:{{ m.font }};color:{{ m.color }};cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ m.icon }}</span>{{ m.label }}</button></sc-for>
+            </div>
+            <input type="number" min="1" value="{{ adjQty }}" onInput="{{ setAdjQty }}" style="width:72px;height:34px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+            <span style="position:relative;display:flex;flex:1">
+              <select value="{{ adjReason }}" onChange="{{ setAdjReason }}" style="appearance:none;-webkit-appearance:none;width:100%;height:34px;padding:0 28px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none">
+                <sc-for list="{{ reasons }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+              <span style="position:absolute;right:6px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+            </span>
+            <button onClick="{{ applyAdj }}" style="height:34px;padding:0 14px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Apply</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-weight:600;font-size:14px">Details</span>
+          <dl style="margin:0;display:grid;grid-template-columns:140px 1fr;row-gap:8px">
+            <sc-for list="{{ d.details }}" as="x"><dt style="color:#667085">{{ x.k }}</dt><dd style="margin:0;font-weight:500">{{ x.v }}</dd></sc-for>
+          </dl>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-weight:600;font-size:14px">Used on</span>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ d.usedOn }}" as="u"><a href="Asset Detail.dc.html" style="height:28px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #E4E7EC;border-radius:14px;color:#344054;font-weight:500"><span style="font:15px/1 'Material Symbols Outlined';color:#98A2B3">precision_manufacturing</span>{{ u }}</a></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:14px;margin-bottom:6px">Recent movements</span>
+          <sc-for list="{{ d.moves }}" as="m">
+            <div style="display:grid;grid-template-columns:24px minmax(0,1fr) auto 60px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #F2F4F7">
+              <span style="font:18px/1 'Material Symbols Outlined';color:{{ m.color }}">{{ m.icon }}</span>
+              <span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500">{{ m.label }}</span><span style="font-size:12px;color:#667085">{{ m.sub }}</span></span>
+              <span style="font-weight:600;font-variant-numeric:tabular-nums;color:{{ m.color }}">{{ m.qty }}</span>
+              <span style="text-align:right;font-size:12px;color:#98A2B3">{{ m.when }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ reorderCurrent }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">shopping_cart</span>Request reorder</button>
+                <button onClick="{{ r.reserve }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">bookmark_add</span>Reserve for a work order</button>
+        <a href="Work Orders.dc.html?new=1" style="margin-left:auto;height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font-weight:500"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">bookmark_add</span>Reserve for a work order</a>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ formOpen }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:520px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+        <div style="flex:1"><h2 style="margin:0;font-size:16px;font-weight:600">{{ formTitle }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">Fields marked * are required</p></div>
+        <button onClick="{{ closeDrawer }}" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:4px 20px 20px">
+        <sc-for list="{{ formSections }}" as="sec">
+          <div style="padding:16px 0 8px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">{{ sec.title }}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;padding-bottom:10px">
+            <sc-for list="{{ sec.fields }}" as="f">
+              <label style="display:flex;flex-direction:column;gap:5px;grid-column:{{ f.span }}">
+                <span style="font-size:12.5px;font-weight:500;color:#344054">{{ f.label }}<sc-if value="{{ f.req }}"><span style="color:#C00018"> *</span></sc-if></span>
+                <sc-if value="{{ f.isText }}"><input value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" type="{{ f.type }}" style="height:36px;padding:0 10px;border:1px solid {{ f.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></sc-if>
+                <sc-if value="{{ f.isSelect }}">
+                  <span style="position:relative;display:flex">
+                    <select value="{{ f.value }}" onChange="{{ f.onInput }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid {{ f.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">{{ f.ph }}</option><sc-for list="{{ f.options }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select>
+                    <span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+                  </span>
+                </sc-if>
+              </label>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <sc-if value="{{ hasErrors }}"><span style="font-size:12.5px;color:#B42318;display:flex;align-items:center;gap:4px"><span style="font:16px/1 'Material Symbols Outlined'">error</span>Fill in the required fields</span></sc-if>
+        <button onClick="{{ closeDrawer }}" style="margin-left:auto;height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+        <button onClick="{{ savePart }}" style="height:34px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Save part</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;filter&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;low&quot;,&quot;out&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;catalog&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const CATS = { Bearings: 'settings', Belts: 'conveyor_belt', Filters: 'filter_alt', Sensors: 'sensors', Seals: 'radio_button_unchecked', Lubricants: 'water_drop', Electrical: 'bolt', Drives: 'memory' };
+const STORES = ['Main store', 'Float Line store', 'Workshop store'];
+const SEED = [
+  ['BRG-6205', 'Ball bearing 6205-2RS', 'Bearings', 'Main store', 'A-03-2', 42, 10, 60, 'pcs', 12.4, 'SKF France', ['Conveyor Line 3', 'Hydraulic Press PH-030', 'Fan V-12']],
+  ['BLT-BPU280', 'Drive belt BPU280', 'Belts', 'Float Line store', 'F-01-4', 2, 5, 20, 'pcs', 38.9, 'Gates Europe', ['Conveyor Line 2', 'Dryer S-01']],
+  ['FLT-HX10', 'Hydraulic filter HX-10', 'Filters', 'Workshop store', 'W-02-1', 0, 4, 12, 'pcs', 54.0, 'Parker Hannifin', ['Hydraulic Press PH-030']],
+  ['SEN-PT100', 'Temperature probe PT100', 'Sensors', 'Main store', 'B-11-3', 6, 3, 10, 'pcs', 86.5, 'WIKA', ['Tempering Furnace 1', 'Tempering Furnace 2']],
+  ['SEAL-M45', 'Mechanical seal 45 mm', 'Seals', 'Main store', 'A-07-1', 3, 2, 8, 'pcs', 142.0, 'John Crane', ['Pump P-101']],
+  ['GRS-LT2', 'Lithium grease LT2 400 g', 'Lubricants', 'Workshop store', 'W-05-2', 18, 6, 40, 'cartridges', 7.8, 'TotalEnergies', ['Palletizing Robot 1', 'Conveyor Line 3']],
+  ['ENC-500', 'Incremental encoder 500 ppr', 'Electrical', 'Main store', 'C-02-4', 1, 2, 6, 'pcs', 212.0, 'Sick', ['Packaging Line 1']],
+  ['VFD-ATV320', 'Variable speed drive ATV320', 'Drives', 'Main store', 'C-09-1', 0, 1, 3, 'pcs', 684.0, 'Schneider Electric', ['Conveyor Line 3']],
+  ['FLT-AIR-C01', 'Air intake filter C-01', 'Filters', 'Main store', 'B-04-2', 7, 4, 12, 'pcs', 31.2, 'Atlas Copco', ['Compressor C-01']],
+  ['CTR-LC1D', 'Contactor LC1D18', 'Electrical', 'Main store', 'C-05-3', 11, 4, 16, 'pcs', 48.6, 'Schneider Electric', ['Electrical cabinets', 'Fan V-12']],
+].map(([ref, name, cat, store, bin, qty, min, max, unit, cost, supplier, usedOn]) => ({ ref, name, cat, store, bin, qty, min, max, unit, cost, supplier, usedOn, reserved: ref === 'BRG-6205' ? 4 : ref === 'SEN-PT100' ? 2 : 0 }));
+const st = p => p.qty === 0 ? ['Out of stock', '#FDECEC', '#B42318', '#D92D20'] : p.qty < p.min ? ['Low stock', '#FEF3E2', '#B54708', '#F79009'] : ['In stock', '#E6F4EE', '#0B6B4A', '#12A06E'];
+const eur = n => '€' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+class Component extends DCLogic {
+  state = { rows: SEED, q: new URLSearchParams(window.location.search).get('q') || '', view: this.props.view ?? 'list', cat: '', store: '', kpi: this.props.filter ?? '', menu: null, detail: null, form: null, f: {}, errors: {}, adj: 'out', adjQty: '1', adjReason: 'Consumed on work order', toast: null };
+  componentDidMount() { import('./plant-model.js').then(PL => { this.PL = PL; const st = new URLSearchParams(location.search).get('store'); this.setState(st && STORES.includes(st) ? { store: st } : {}); }); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  renderVals() {
+    const s = this.state, q = s.q.toLowerCase();
+    const low = s.rows.filter(p => p.qty > 0 && p.qty < p.min).length, out = s.rows.filter(p => p.qty === 0).length;
+    const kpis = [['', 'References', '1,940', 'in catalog', '#1E2430'], ['', 'Stock value', '€184,320', '3 storerooms', '#1E2430'], ['low', 'Low stock', low + 20, 'below minimum', '#B54708'], ['out', 'Out of stock', out + 2, 'reorder now', '#B42318'], ['', 'Reserved', 14, 'for open work orders', '#1E2430']]
+      .map(([k, label, value, sub, color]) => ({ label, value, sub, color, cursor: k ? 'pointer' : 'default', bg: k && s.kpi === k ? '#FBF7F7' : '#fff', bar: k && s.kpi === k ? '#C00018' : 'transparent', select: () => k && this.setState({ kpi: s.kpi === k ? '' : k }) }));
+    const list = s.rows.filter(p => (!q || (p.ref + p.name + p.supplier).toLowerCase().includes(q)) && (!s.cat || p.cat === s.cat) && (!s.store || p.store === s.store)
+      && (!s.kpi || (s.kpi === 'low' ? p.qty > 0 && p.qty < p.min : p.qty === 0)));
+    const rows = list.map((p, i) => {
+      const [status, sbg, sfg, dot] = st(p), mo = s.menu === p.ref, scale = p.max * 1.1;
+      return { ...p, storePath: this.PL && this.PL.storageByName(p.store) ? this.PL.pathOf(this.PL.storageByName(p.store).id) : p.store, icon: CATS[p.cat], status, sbg, sfg, cost: eur(p.cost), avail: Math.max(0, p.qty - p.reserved), needsReorder: p.qty < p.min, canReserve: p.qty >= p.min, cardBorder: s.detail === p.ref ? '#C00018' : '#E4E7EC',
+        reserve: e => { e.stopPropagation(); this.setState({ menu: null }); this.flash(p.qty === 0 ? `Reservation queued · ${p.ref} — you'll be served first on delivery` : `1 × ${p.ref} reserved · pick the work order in the reservation list`); },
+        ...(p.qty === 0 ? { hint: 'Out of stock · next delivery not planned', hintColor: '#B42318', hintIcon: 'error',
+            resLabel: 'Reserve on arrival', resTip: 'Queue a reservation — served first when stock arrives', resBg: '#fff', resBorder: '#D0D5DD', resColor: '#344054',
+            reqLabel: 'Request urgently', reqTip: `Request ${p.max} × ${p.ref}`, reqIcon: 'priority_high', reqBg: '#C00018', reqBorder: '#C00018', reqColor: '#fff' }
+          : p.qty < p.min ? { hint: `${p.min - p.qty} below minimum (min ${p.min})`, hintColor: '#B54708', hintIcon: 'warning',
+            resLabel: 'Reserve', resTip: `${Math.max(0, p.qty - p.reserved)} available to reserve`, resBg: '#fff', resBorder: '#D0D5DD', resColor: '#1E2430',
+            reqLabel: 'Request reorder', reqTip: `Request ${p.max - p.qty} × ${p.ref} to reach max`, reqIcon: 'shopping_cart', reqBg: '#FFFAF2', reqBorder: '#F8C98B', reqColor: '#B54708' }
+          : { hint: `Above minimum · ${p.qty - p.min} spare`, hintColor: '#0B6B4A', hintIcon: 'check_circle',
+            resLabel: 'Reserve', resTip: 'Reserve for a work order', resBg: '#1E2430', resBorder: '#1E2430', resColor: '#fff',
+            reqLabel: 'Request more', reqTip: 'Order extra stock (not required)', reqIcon: 'add_shopping_cart', reqBg: '#fff', reqBorder: '#D0D5DD', reqColor: '#475467' }), qtyColor: p.qty === 0 ? '#B42318' : p.qty < p.min ? '#B54708' : '#1E2430',
+        barW: Math.min(100, p.qty / scale * 100) + '%', minX: (p.min / scale * 100) + '%', barColor: dot, bg: s.detail === p.ref ? '#FBF7F7' : '#fff',
+        open: e => { e.stopPropagation(); this.setState({ detail: p.ref, menu: null, adjQty: '1' }); },
+        menuOpen: mo, menuBg: mo ? '#EEF0F3' : 'transparent', menuTop: i > list.length - 4 && list.length > 5 ? '-172px' : '34px',
+        menu: e => { e.stopPropagation(); this.setState({ menu: mo ? null : p.ref }); },
+        reorder: e => { e.stopPropagation(); this.setState({ menu: null }); this.flash(`Reorder requested · ${p.max - p.qty} × ${p.ref}`); },
+        edit: e => { e.stopPropagation(); this.setState({ form: { ref: p.ref }, f: { ...p, min: String(p.min), max: String(p.max), cost: String(p.cost) }, errors: {}, menu: null }); },
+        del: e => { e.stopPropagation(); this.setState(x => ({ rows: x.rows.filter(r => r.ref !== p.ref), menu: null })); this.flash(`${p.ref} deleted`); } };
+    });
+    const sel = (k, ph, opts) => ({ value: s[k], border: s[k] ? '#C00018' : '#D0D5DD', bg: s[k] ? '#FBF7F7' : '#fff', options: [{ v: '', l: ph }, ...opts.map(o => ({ v: o, l: o }))], onChange: e => this.setState({ [k]: e.target.value }) });
+    const dp = s.rows.find(p => p.ref === s.detail);
+    let d = {};
+    if (dp) {
+      const [status, sbg, sfg] = st(dp);
+      d = { ...dp, icon: CATS[dp.cat], status, sbg, sfg,
+        stats: [['On hand', dp.qty, dp.qty === 0 ? '#B42318' : '#1E2430'], ['Reserved', dp.reserved, '#1E2430'], ['Available', Math.max(0, dp.qty - dp.reserved), '#1E2430'], ['Min / max', `${dp.min} / ${dp.max}`, '#475467']].map(([k, v, color]) => ({ k, v, color })),
+        details: [['Storage area', `${this.PL && this.PL.storageByName(dp.store) ? this.PL.pathOf(this.PL.storageByName(dp.store).id) : dp.store} · bin ${dp.bin}`], ['Unit', dp.unit], ['Unit cost', eur(dp.cost)], ['Stock value', eur(dp.cost * dp.qty)], ['Supplier', dp.supplier], ['Lead time', '5 business days']].map(([k, v]) => ({ k, v })),
+        moves: (dp.moves || []).concat([
+          ['remove', 'Consumed', 'Conveyor Line 3 — Sensor check · S. Martin', '−2', 'Today', '#B42318'],
+          ['add', 'Received', 'PO-44821 · ' + dp.supplier, '+20', 'Sep 18', '#0B6B4A'],
+          ['remove', 'Consumed', 'Hydraulic Press — Oil leak · M. Dupont', '−1', 'Sep 14', '#B42318'],
+          ['tune', 'Inventory adjustment', 'Cycle count · P. Leroy', '+1', 'Sep 2', '#475467'],
+        ]).slice(0, 5).map(([icon, label, sub, qty, when, color]) => ({ icon, label, sub, qty, when, color })) };
+    }
+    const f = s.f, E = k => s.errors[k] ? '#F04438' : '#D0D5DD';
+    const fld = (k, label, kind, x = {}) => ({ label, req: !!x.req, span: x.full ? '1 / -1' : 'auto', isText: kind !== 'select', isSelect: kind === 'select', type: kind === 'number' ? 'number' : 'text', value: f[k] ?? '', ph: x.ph || '', options: x.options || [], border: E(k),
+      onInput: e => { const v = e.target.value; this.setState(z => ({ f: { ...z.f, [k]: v }, errors: { ...z.errors, [k]: 0 } })); } });
+    return {
+      kpis, rows, empty: !rows.length, isList: s.view !== 'catalog', isCatalog: s.view === 'catalog',
+      views: [['list', 'List', 'table_rows'], ['catalog', 'Catalog', 'grid_view']].map(([k, label, icon]) => { const on = (s.view === 'catalog') === (k === 'catalog'); return { label, icon, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: on ? '#1E2430' : '#667085', select: () => this.setState({ view: k }) }; }), selects: [sel('cat', 'All categories', Object.keys(CATS))],
+      storeChips: [['', 'All storage areas'], ...STORES.map(x => [x, x])].map(([k, label]) => { const on = s.store === k, inS = s.rows.filter(p => !k || p.store === k), alerts = inS.filter(p => p.qty === 0).length;
+        const sn = this.PL && k ? this.PL.storageByName(k) : null;
+        return { path: sn ? this.PL.pathOf(sn.id) : 'All storage areas in the plant hierarchy', label: sn ? `${label} · ${this.PL.zoneOf(sn.id).name}` : label, count: k ? inS.length : s.rows.length, hasAlert: alerts > 0, alertTip: `${alerts} out of stock`, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : '#D0D5DD', color: on ? '#fff' : '#344054', countColor: on ? 'rgba(255,255,255,.7)' : '#98A2B3',
+          font: on ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif", select: () => this.setState({ store: k }) }; }),
+      q: s.q, setQ: e => this.setState({ q: e.target.value }), hasFilters: !!(q || s.cat || s.store || s.kpi), resetFilters: () => this.setState({ q: '', cat: '', store: '', kpi: '' }),
+      countLabel: `${s.q || s.cat || s.store || s.kpi ? list.length : '1,940'} parts`, rangeLabel: `Showing 1–${list.length} of ${s.q || s.cat || s.store || s.kpi ? list.length : '1,940'}`,
+      menuOpen: !!s.menu, closeMenus: () => this.setState({ menu: null }), doExport: () => this.flash('Exporting stock list…'),
+      detailOpen: !!dp, d, closeDrawer: () => this.setState({ detail: null, form: null }),
+      adjModes: [['out', 'Remove', 'remove'], ['in', 'Add', 'add']].map(([k, label, icon]) => ({ label, icon, bg: s.adj === k ? '#fff' : 'transparent', shadow: s.adj === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: s.adj === k ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif", color: s.adj === k ? '#1E2430' : '#667085', select: () => this.setState({ adj: k, adjReason: k === 'out' ? 'Consumed on work order' : 'Goods received' }) })),
+      reasons: s.adj === 'out' ? ['Consumed on work order', 'Scrapped / damaged', 'Transfer to another store', 'Inventory correction'] : ['Goods received', 'Returned from work order', 'Transfer from another store', 'Inventory correction'],
+      adjQty: s.adjQty, setAdjQty: e => this.setState({ adjQty: e.target.value }), adjReason: s.adjReason, setAdjReason: e => this.setState({ adjReason: e.target.value }),
+      applyAdj: () => { const n = Math.max(1, +s.adjQty || 1), sign = s.adj === 'out' ? -1 : 1;
+        this.setState(z => ({ rows: z.rows.map(p => p.ref === z.detail ? { ...p, qty: Math.max(0, p.qty + sign * n), moves: [[sign < 0 ? 'remove' : 'add', z.adjReason, 'Manual entry · G. Durand', (sign < 0 ? '−' : '+') + n, 'Just now', sign < 0 ? '#B42318' : '#0B6B4A'], ...(p.moves || [])] } : p) }));
+        this.flash(`Stock ${sign < 0 ? 'decreased' : 'increased'} by ${n}`); },
+      reorderCurrent: () => dp && this.flash(`Reorder requested · ${dp.max - dp.qty} × ${dp.ref}`),
+      openNew: () => this.setState({ form: { ref: null }, f: { unit: 'pcs' }, errors: {} }), formOpen: !!s.form, formTitle: s.form && s.form.ref ? 'Edit part' : 'New spare part',
+      formSections: [
+        { title: 'Identification', fields: [fld('ref', 'Reference', 'text', { req: 1, ph: 'e.g. BRG-6206' }), fld('name', 'Name', 'text', { req: 1, ph: 'e.g. Ball bearing 6206-2RS' }), fld('cat', 'Category', 'select', { req: 1, ph: 'Select a category', options: Object.keys(CATS) }), fld('supplier', 'Supplier', 'text', { ph: 'e.g. SKF France' })] },
+        { title: 'Storage', fields: [fld('store', 'Storeroom', 'select', { req: 1, ph: 'Select a storeroom', options: STORES }), fld('bin', 'Bin location', 'text', { ph: 'e.g. A-03-2' }), fld('min', 'Minimum stock', 'number', { req: 1, ph: '0' }), fld('max', 'Maximum stock', 'number', { ph: '0' }), fld('unit', 'Unit', 'select', { ph: 'Select', options: ['pcs', 'cartridges', 'liters', 'meters', 'kg'] }), fld('cost', 'Unit cost (€)', 'number', { ph: '0.00' })] },
+      ],
+      hasErrors: Object.values(s.errors).some(Boolean),
+      savePart: () => { const errors = {}; ['ref', 'name', 'cat', 'store', 'min'].forEach(k => { if (!f[k]) errors[k] = 1; }); if (Object.keys(errors).length) return this.setState({ errors });
+        const row = { ref: f.ref, name: f.name, cat: f.cat, store: f.store, bin: f.bin || '—', qty: +f.qty || 0, min: +f.min, max: +f.max || +f.min * 3, unit: f.unit || 'pcs', cost: +f.cost || 0, supplier: f.supplier || '—', usedOn: f.usedOn || [], reserved: 0 };
+        const editing = s.form.ref;
+        this.setState(z => ({ rows: editing ? z.rows.map(p => p.ref === editing ? { ...p, ...row, qty: p.qty } : p) : [row, ...z.rows], form: null }));
+        this.flash(`${row.ref} ${editing ? 'updated' : 'added to catalog'}`); },
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

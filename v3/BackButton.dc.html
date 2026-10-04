@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<button onClick="{{ back }}" title="{{ tip }}" aria-label="{{ tip }}" style="flex:none;width:34px;height:34px;display:grid;place-items:center;padding:0;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#344054;cursor:pointer" style-hover="background:#F9FAFB;border-color:#98A2B3"><span style="font:20px/1 'Material Symbols Outlined'">arrow_back</span></button>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:60,&quot;height&quot;:60},&quot;fallback&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Home.dc.html&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const fb = this.props.fallback || 'Home.dc.html';
+    let same = false; try { same = !!document.referrer && new URL(document.referrer).origin === location.origin && document.referrer !== location.href; } catch (e) {}
+    return { tip: 'Back to previous page', back: () => { if (same && history.length > 1) history.back(); else location.href = fb; } };
+  }
+}
+</script>
+</body>
+</html>

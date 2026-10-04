@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="documents" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) {{ panelW }};min-height:0" data-screen-label="Documents">
+    <div style="overflow:auto;padding:20px 28px 28px;display:flex;flex-direction:column;gap:14px;min-width:0">
+      <header style="flex:none;display:flex;align-items:center;gap:12px">
+          <dc-import name="BackButton" fallback="Home.dc.html" hint-size="34px,34px"></dc-import>
+        <div style="flex:1;min-width:0">
+          <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Documents</h1>
+          <p style="margin:2px 0 0;color:#667085;font-size:13px">Technical documentation linked to assets and work orders</p>
+        </div>
+        <button onClick="{{ openUpload }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">upload</span>Upload document</button>
+      </header>
+
+      <div style="flex:none;display:flex;gap:2px;border-bottom:1px solid #E4E7EC;overflow-x:auto;scrollbar-width:none">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="7">
+          <button onClick="{{ c.select }}" style="position:relative;flex:none;height:40px;display:flex;align-items:center;gap:6px;padding:0 12px;background:transparent;border:0;font:{{ c.font }};color:{{ c.color }};cursor:pointer;white-space:nowrap">{{ c.label }}<span style="font-size:11.5px;font-weight:600;color:{{ c.countColor }};font-variant-numeric:tabular-nums">{{ c.count }}</span><span style="position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:{{ c.bar }}"></span></button>
+        </sc-for>
+      </div>
+
+      <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="width:300px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;background:#fff">
+          <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+          <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search by name, asset or type…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+        </label>
+        <sc-for list="{{ selects }}" as="s" hint-placeholder-count="2">
+          <label style="position:relative;height:34px;display:flex;align-items:center;border:1px solid {{ s.border }};background:{{ s.bg }};border-radius:6px">
+            <select value="{{ s.value }}" onChange="{{ s.onChange }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 30px 0 10px;border:0;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;outline:none"><sc-for list="{{ s.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select>
+            <span style="position:absolute;right:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+          </label>
+        </sc-for>
+        <button onClick="{{ toggleFav }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ favBg }};border:1px solid {{ favBorder }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font-family:'Material Symbols Outlined';font-size:18px;line-height:1;color:#E3A008;font-variation-settings:'FILL' 1">star</span>Favorites</button>
+        <div style="margin-left:auto;display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ layouts }}" as="v" hint-placeholder-count="2"><button onClick="{{ v.select }}" title="{{ v.label }}" style="width:34px;height:30px;display:grid;place-items:center;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};color:{{ v.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ v.icon }}</span></button></sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+          <sc-for list="{{ docs }}" as="d" hint-placeholder-count="9">
+            <div onClick="{{ d.select }}" style="display:flex;flex-direction:column;background:#fff;border:1px solid {{ d.border }};box-shadow:{{ d.ring }};border-radius:8px;cursor:pointer;overflow:hidden" style-hover="border-color:#C4CAD4">
+              <div style="position:relative;height:120px;background:repeating-linear-gradient(135deg,#F6F7F9 0 6px,#EEF0F3 6px 12px);display:grid;place-items:center;border-bottom:1px solid #EEF0F3">
+                <span style="font:11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ d.thumb }}</span>
+                <span style="position:absolute;left:10px;top:10px;height:20px;padding:0 6px;border-radius:4px;background:{{ d.ftBg }};color:{{ d.ftFg }};font:600 10px/20px 'IBM Plex Mono',monospace">{{ d.ft }}</span>
+                <button onClick="{{ d.star }}" title="Favorite" style="position:absolute;right:6px;top:6px;width:28px;height:28px;display:grid;place-items:center;background:rgba(255,255,255,.9);border:0;border-radius:6px;cursor:pointer;color:{{ d.starColor }};font-family:'Material Symbols Outlined';font-size:18px;line-height:1;font-variation-settings:'FILL' {{ d.starFill }}">star</button>
+              </div>
+              <div style="padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px">
+                <span style="font-weight:600;line-height:1.35;text-wrap:pretty">{{ d.name }}</span>
+                <span style="display:flex;align-items:center;gap:6px"><span style="height:20px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;font-size:11px;font-weight:600;background:{{ d.catBg }};color:{{ d.catFg }}">{{ d.cat }}</span><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#475467">{{ d.ver }}</span></span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#667085"><span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.asset }}</span><span>{{ d.date }}</span></span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isRows }}">
+        <section style="flex:none;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <div style="display:grid;grid-template-columns:minmax(240px,2fr) 110px 70px minmax(140px,1.2fr) 100px 40px;align-items:center;height:36px;padding-left:14px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085;border-radius:8px 8px 0 0"><span>Name</span><span>Category</span><span>Version</span><span>Asset</span><span>Updated</span><span></span></div>
+          <sc-for list="{{ docs }}" as="d">
+            <div onClick="{{ d.select }}" style="display:grid;grid-template-columns:minmax(240px,2fr) 110px 70px minmax(140px,1.2fr) 100px 40px;align-items:center;min-height:46px;padding-left:14px;border-bottom:1px solid #F2F4F7;background:{{ d.rowBg }};cursor:pointer" style-hover="background:#F9FAFB">
+              <span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:30px;height:30px;flex:none;border-radius:6px;background:{{ d.ftBg }};color:{{ d.ftFg }};display:grid;place-items:center;font:600 9.5px 'IBM Plex Mono',monospace">{{ d.ft }}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span></span>
+              <span><span style="height:20px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;font-size:11px;font-weight:600;background:{{ d.catBg }};color:{{ d.catFg }}">{{ d.cat }}</span></span>
+              <span style="font:500 12px 'IBM Plex Mono',monospace;color:#475467">{{ d.ver }}</span>
+              <span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.asset }}</span>
+              <span style="color:#667085">{{ d.date }}</span>
+              <button onClick="{{ d.star }}" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;cursor:pointer;color:{{ d.starColor }};font-family:'Material Symbols Outlined';font-size:18px;line-height:1;font-variation-settings:'FILL' {{ d.starFill }}">star</button>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+      <sc-if value="{{ empty }}"><div style="padding:48px;text-align:center;color:#667085;background:#fff;border:1px dashed #D0D5DD;border-radius:8px">No documents match these filters.</div></sc-if>
+      <div style="flex:none;display:flex;align-items:center;color:#667085;font-size:12.5px">{{ rangeLabel }}</div>
+    </div>
+
+    <sc-if value="{{ sel }}">
+      <aside style="border-left:1px solid #E4E7EC;background:#fff;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:16px 18px 12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #EEF0F3">
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <h2 style="flex:1;margin:0;font-size:16px;font-weight:600;line-height:1.35">{{ sel.name }}</h2>
+            <button onClick="{{ sel.star }}" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;cursor:pointer;color:{{ sel.starColor }};font-family:'Material Symbols Outlined';font-size:20px;line-height:1;font-variation-settings:'FILL' {{ sel.starFill }}">star</button>
+            <button onClick="{{ closePanel }}" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px"><span style="height:20px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;font-size:11px;font-weight:600;background:{{ sel.catBg }};color:{{ sel.catFg }}">{{ sel.cat }}</span><span style="height:20px;display:inline-flex;align-items:center;padding:0 6px;border-radius:4px;font:600 11px 'IBM Plex Mono',monospace;background:#F2F4F7;color:#475467">{{ sel.ver }} · current</span></div>
+          <div style="display:flex;gap:8px;margin-top:4px;position:relative">
+            <button onClick="{{ openDoc }}" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:6px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">open_in_new</span>Open</button>
+            <button onClick="{{ download }}" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">download</span>Download</button>
+            <button onClick="{{ togglePanelMenu }}" style="width:34px;height:34px;display:grid;place-items:center;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#344054;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">more_horiz</span></button>
+            <sc-if value="{{ panelMenu }}">
+              <div style="position:absolute;right:0;top:40px;z-index:40;width:220px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.14);padding:6px">
+                <button onClick="{{ newVersion }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">upload_file</span>Upload new version</button>
+                <button onClick="{{ closePanelMenu }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">link</span>Link to a work order</button>
+                <button onClick="{{ closePanelMenu }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">edit</span>Edit details</button>
+                <div style="height:1px;background:#EEF0F3;margin:6px 4px"></div>
+                <button onClick="{{ deleteDoc }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer;text-align:left" style-hover="background:#FEF3F2"><span style="font:18px/1 'Material Symbols Outlined'">delete</span>Delete</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:14px 18px 18px;display:flex;flex-direction:column;gap:16px">
+          <div style="flex:none;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <div style="height:260px;overflow:auto;background:#F2F4F7;display:grid;place-items:center">
+              <div style="width:{{ previewW }};height:{{ previewH }};background:repeating-linear-gradient(135deg,#fff 0 8px,#F6F7F9 8px 16px);border:1px solid #E4E7EC;display:grid;place-items:center;font:11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ sel.thumb }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:6px 8px;border-top:1px solid #EEF0F3">
+              <button onClick="{{ zoomOut }}" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">zoom_out</span></button>
+              <span style="width:44px;text-align:center;font:500 12px 'IBM Plex Mono',monospace;color:#475467">{{ zoomLabel }}</span>
+              <button onClick="{{ zoomIn }}" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">zoom_in</span></button>
+              <span style="margin-left:auto;font-size:12px;color:#98A2B3">Page 1 of {{ sel.pages }}</span>
+              <button onClick="{{ openDoc }}" title="Full screen" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">fullscreen</span></button>
+            </div>
+          </div>
+          <dl style="margin:0;display:grid;grid-template-columns:110px 1fr;row-gap:8px">
+            <dt style="color:#667085">Asset</dt><dd style="margin:0"><a href="Asset Detail.dc.html" style="font-weight:500">{{ sel.asset }}</a></dd>
+            <dt style="color:#667085">Discipline</dt><dd style="margin:0;font-weight:500">{{ sel.disc }}</dd>
+            <dt style="color:#667085">Updated</dt><dd style="margin:0;font-weight:500">{{ sel.date }} · P. Leroy</dd>
+            <dt style="color:#667085">File</dt><dd style="margin:0;font-weight:500">{{ sel.ft }} · {{ sel.size }}</dd>
+            <dt style="color:#667085">Work orders</dt><dd style="margin:0;font-weight:500">{{ sel.wos }}</dd>
+          </dl>
+          <div style="display:flex;flex-direction:column">
+            <span style="font-weight:600;margin-bottom:6px">Version history</span>
+            <sc-for list="{{ sel.versions }}" as="v">
+              <div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #F2F4F7">
+                <span style="font:600 12px 'IBM Plex Mono',monospace;color:{{ v.color }}">{{ v.v }}</span>
+                <span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.note }}</span><span style="font-size:12px;color:#667085">{{ v.who }} · {{ v.when }}</span></span>
+                <button onClick="{{ download }}" title="Download this version" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">download</span></button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </aside>
+    </sc-if>
+    <sc-if value="{{ panelMenu }}"><div onClick="{{ closePanelMenu }}" style="position:fixed;inset:0;z-index:30"></div></sc-if>
+  </main>
+
+  <sc-if value="{{ uploadOpen }}">
+    <div onClick="{{ closeUpload }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:500px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+        <div style="flex:1"><h2 style="margin:0;font-size:16px;font-weight:600">{{ uploadTitle }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">{{ uploadSub }}</p></div>
+        <button onClick="{{ closeUpload }}" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px">
+        <button onClick="{{ pickFile }}" style="height:120px;border:1.5px dashed {{ dropBorder }};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#667085;background:#FCFCFD;cursor:pointer;font:13px 'IBM Plex Sans',sans-serif">
+          <span style="font:26px/1 'Material Symbols Outlined';color:{{ dropIconColor }}">{{ dropIcon }}</span>
+          <span style="color:#1E2430;font-weight:500">{{ dropLabel }}</span>
+          <span style="font-size:11.5px;color:#98A2B3">PDF, DOCX, XLSX, DWG, JPG, PNG · up to 50 MB</span>
+        </button>
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Document name<span style="color:#C00018"> *</span></span>
+          <input value="{{ u.name }}" onInput="{{ uon.name }}" placeholder="e.g. Electrical drawing — Furnace 2" style="height:36px;padding:0 10px;border:1px solid {{ uerr.name }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <label style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12.5px;font-weight:500;color:#344054">Category<span style="color:#C00018"> *</span></span>
+            <span style="position:relative;display:flex"><select value="{{ u.cat }}" onChange="{{ uon.cat }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid {{ uerr.cat }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select</option><sc-for list="{{ catNames }}" as="c"><option value="{{ c }}">{{ c }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12.5px;font-weight:500;color:#344054">Version</span>
+            <input value="{{ u.ver }}" onInput="{{ uon.ver }}" style="height:36px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;outline:none" />
+          </label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Linked asset</span>
+          <span style="position:relative;display:flex"><select value="{{ u.asset }}" onChange="{{ uon.asset }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">None</option><sc-for list="{{ assetNames }}" as="a"><option value="{{ a }}">{{ a }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Linked work order</span>
+          <span style="position:relative;display:flex"><select value="{{ u.wo }}" onChange="{{ uon.wo }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">None</option><option>Pump P-101 — Seal replacement</option><option>Conveyor Line 3 — Sensor check</option><option>Hydraulic Press — Oil leak</option><option>Tempering Furnace 2 — Temperature check</option><option>Fan V-12 — Abnormal vibration</option></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Version note</span>
+          <textarea value="{{ u.note }}" onInput="{{ uon.note }}" rows="2" placeholder="What changed in this version?" style="padding:8px 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px/1.5 'IBM Plex Sans',sans-serif;outline:none;resize:vertical"></textarea>
+        </label>
+      </div>
+      <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ closeUpload }}" style="margin-left:auto;height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+        <button onClick="{{ doUpload }}" style="height:34px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Upload</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;showPreview&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const CAT = { Drawing: ['#EAF1FD', '#2456B8', 742], Manual: ['#F3EEFC', '#6941C6', 318], Procedure: ['#FEF3E2', '#B54708', 512], Photo: ['#E6F4EE', '#0B6B4A', 889], Report: ['#FDECEC', '#B42318', 263], Other: ['#EEF1F4', '#475467', 123] };
+const CAT_LABEL = { Drawing: 'Drawings', Manual: 'Manuals', Procedure: 'Procedures', Photo: 'Photos', Report: 'Reports', Other: 'Other' };
+const FT = { PDF: ['#FDECEC', '#B42318'], DOCX: ['#EAF1FD', '#2456B8'], XLSX: ['#E6F4EE', '#0B6B4A'], JPG: ['#FEF3E2', '#B54708'], DWG: ['#F3EEFC', '#6941C6'] };
+const SEED = [
+  ['Electrical drawing — Furnace 2 main cabinet', 'Drawing', 'V4', 'Tempering Furnace 2', 'Sep 2', 'PDF', true, 'Electrical', 'electrical schematic'],
+  ['Mechanical drawing — Conveyor Line 3', 'Drawing', 'V2', 'Conveyor Line 3', 'Sep 1', 'PDF', false, 'Mechanical', 'mechanical drawing'],
+  ['Bearing replacement procedure', 'Procedure', 'V3', 'All conveyors', 'Aug 30', 'DOCX', false, 'Mechanical', 'procedure text'],
+  ['Siemens 1LA7 motor manual', 'Manual', 'V1', 'Motor 1LA7', 'Aug 29', 'PDF', false, 'Electrical', 'manual cover'],
+  ['Electrical cabinet A1 photo', 'Photo', 'V1', 'Cabinet A1', 'Aug 28', 'JPG', false, 'Electrical', 'cabinet photo'],
+  ['Vibration report — Turbine T1', 'Report', 'V1', 'Turbine T1', 'Aug 27', 'PDF', true, 'Condition monitoring', 'report chart'],
+  ['Pneumatic drawing — Float Line', 'Drawing', 'V3', 'Float Line', 'Aug 26', 'PDF', false, 'Pneumatic', 'pneumatic schematic'],
+  ['2026 work order history', 'Report', 'V1', 'All equipment', 'Aug 25', 'XLSX', false, 'Maintenance', 'spreadsheet'],
+  ['Lockout / tagout procedure', 'Procedure', 'V2', 'All equipment', 'Aug 24', 'PDF', true, 'Safety', 'procedure text'],
+  ['Hydraulic circuit — Press PH-030', 'Drawing', 'V1', 'Hydraulic Press PH-030', 'Aug 20', 'DWG', false, 'Hydraulic', 'hydraulic schematic'],
+  ['Compressor C-01 service manual', 'Manual', 'V2', 'Compressor C-01', 'Aug 12', 'PDF', false, 'Mechanical', 'manual cover'],
+  ['Robot gripper setup photo', 'Photo', 'V1', 'Palletizing Robot 1', 'Aug 8', 'JPG', false, 'Automation', 'setup photo'],
+].map(([name, cat, ver, asset, date, ft, fav, disc, thumb], i) => ({ id: 'd' + i, name, cat, ver, asset, date, ft, fav, disc, thumb }));
+const ASSETS = ['Tempering Furnace 2', 'Tempering Furnace 1', 'Conveyor Line 3', 'Conveyor Line 2', 'Hydraulic Press PH-030', 'Compressor C-01', 'Palletizing Robot 1', 'Float Line'];
+let did = 100;
+class Component extends DCLogic {
+  state = { rows: SEED, cat: '', q: new URLSearchParams(window.location.search).get('q') || '', ft: '', asset: '', fav: false, layout: 'grid', sel: this.props.showPreview === false ? null : 'd0', zoom: 1, panelMenu: false, upload: null, u: {}, uerr: {}, file: false, toast: null };
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  star(id) { this.setState(s => ({ rows: s.rows.map(r => r.id === id ? { ...r, fav: !r.fav } : r) })); }
+  renderVals() {
+    const s = this.state, q = s.q.toLowerCase();
+    const list = s.rows.filter(r => (!s.cat || r.cat === s.cat) && (!s.ft || r.ft === s.ft) && (!s.asset || r.asset === s.asset) && (!s.fav || r.fav) && (!q || (r.name + r.asset + r.cat).toLowerCase().includes(q)));
+    const deco = r => { const [catBg, catFg] = CAT[r.cat], [ftBg, ftFg] = FT[r.ft], on = s.sel === r.id; return { ...r, catBg, catFg, ftBg, ftFg,
+      border: on ? '#C00018' : '#E4E7EC', ring: on ? '0 0 0 3px rgba(192,0,24,.1)' : 'none', rowBg: on ? '#FBF7F7' : '#fff',
+      starColor: r.fav ? '#E3A008' : '#98A2B3', starFill: r.fav ? 1 : 0,
+      select: () => this.setState({ sel: r.id, zoom: 1, panelMenu: false }), star: e => { e.stopPropagation(); this.star(r.id); } }; };
+    const docs = list.map(deco);
+    const cats = [['', 'All', 2847], ...Object.entries(CAT).map(([k, v]) => [k, CAT_LABEL[k], v[2]])].map(([k, label, count]) => ({ label, count: count.toLocaleString('en-US'),
+      font: s.cat === k ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: s.cat === k ? '#1E2430' : '#667085', countColor: s.cat === k ? '#C00018' : '#98A2B3', bar: s.cat === k ? '#C00018' : 'transparent', select: () => this.setState({ cat: k }) }));
+    const sel = (k, ph, opts) => ({ value: s[k], border: s[k] ? '#C00018' : '#D0D5DD', bg: s[k] ? '#FBF7F7' : '#fff', options: [{ v: '', l: ph }, ...opts.map(o => ({ v: o, l: o }))], onChange: e => this.setState({ [k]: e.target.value }) });
+    const cur = s.rows.find(r => r.id === s.sel);
+    const n = cur ? +cur.ver.slice(1) : 0;
+    const selV = cur ? { ...deco(cur), size: ['2.4 MB', '860 KB', '1.1 MB', '4.8 MB'][cur.name.length % 4], pages: cur.ft === 'JPG' ? 1 : (cur.name.length % 5) + 2, wos: cur.fav ? 'Pump P-101 — Seal replacement · Furnace 2 — Probe replacement' : 'Conveyor Line 3 — Sensor check',
+      versions: Array.from({ length: n }, (_, i) => n - i).map(v => ({ v: 'V' + v, color: v === n ? '#0B6B4A' : '#98A2B3', note: v === n ? (cur.note || 'Updated cabinet wiring after retrofit') : v === 1 ? 'Initial release' : 'Revised terminal numbering', who: ['P. Leroy', 'S. Martin', 'M. Dupont'][v % 3], when: v === n ? cur.date : ['Jun 14', 'Mar 2', 'Jan 9'][v % 3] })) } : null;
+    const u = s.u, E = k => s.uerr[k] ? '#F04438' : '#D0D5DD';
+    const total = s.cat || q || s.ft || s.asset || s.fav ? list.length : 2847;
+    return {
+      cats, docs, empty: !docs.length, isGrid: s.layout === 'grid', isRows: s.layout === 'list',
+      q: s.q, setQ: e => this.setState({ q: e.target.value }), selects: [sel('ft', 'Any file type', Object.keys(FT)), sel('asset', 'Any asset', ASSETS)],
+      favBg: s.fav ? '#FFFAEB' : '#fff', favBorder: s.fav ? '#E3A008' : '#D0D5DD', toggleFav: () => this.setState({ fav: !s.fav }),
+      layouts: [['grid', 'Grid', 'grid_view'], ['list', 'List', 'table_rows']].map(([k, label, icon]) => ({ label, icon, bg: s.layout === k ? '#fff' : 'transparent', shadow: s.layout === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', color: s.layout === k ? '#1E2430' : '#667085', select: () => this.setState({ layout: k }) })),
+      rangeLabel: `Showing 1–${Math.min(12, list.length)} of ${total.toLocaleString('en-US')} documents`,
+      sel: selV, panelW: selV ? '400px' : '0px', closePanel: () => this.setState({ sel: null }),
+      star: () => cur && this.star(cur.id),
+      zoomLabel: Math.round(s.zoom * 100) + '%', zoomIn: () => this.setState({ zoom: Math.min(2, s.zoom + 0.25) }), zoomOut: () => this.setState({ zoom: Math.max(0.5, s.zoom - 0.25) }),
+      previewW: 300 * s.zoom + 'px', previewH: 212 * s.zoom + 'px',
+      openDoc: () => cur && this.flash(`Opening ${cur.name}…`), download: () => cur && this.flash(`Downloading ${cur.ft}…`),
+      panelMenu: s.panelMenu, togglePanelMenu: () => this.setState({ panelMenu: !s.panelMenu }), closePanelMenu: () => this.setState({ panelMenu: false }),
+      newVersion: () => cur && this.setState({ panelMenu: false, upload: { versionOf: cur.id }, u: { name: cur.name, cat: cur.cat, asset: ASSETS.includes(cur.asset) ? cur.asset : '', ver: 'V' + (n + 1), wo: '', note: '' }, uerr: {}, file: false }),
+      deleteDoc: () => { if (!cur) return; this.setState(z => ({ rows: z.rows.filter(r => r.id !== cur.id), sel: null, panelMenu: false })); this.flash('Document deleted'); },
+      openUpload: () => this.setState({ upload: {}, u: { ver: 'V1', cat: s.cat || '' }, uerr: {}, file: false }), closeUpload: () => this.setState({ upload: null }), uploadOpen: !!s.upload,
+      uploadTitle: s.upload && s.upload.versionOf ? 'Upload new version' : 'Upload document', uploadSub: s.upload && s.upload.versionOf ? 'The previous version stays in the history' : 'Fields marked * are required',
+      u, uerr: { name: E('name'), cat: E('cat') }, uon: Object.fromEntries(['name', 'cat', 'ver', 'asset', 'wo', 'note'].map(k => [k, e => { const v = e.target.value; this.setState(z => ({ u: { ...z.u, [k]: v }, uerr: { ...z.uerr, [k]: 0 } })); }])),
+      catNames: Object.keys(CAT), assetNames: ASSETS,
+      pickFile: () => this.setState(z => ({ file: true, u: { ...z.u, name: z.u.name || 'Maintenance report — Furnace 2' } })),
+      dropBorder: s.file ? '#12A06E' : '#D0D5DD', dropIcon: s.file ? 'task' : 'cloud_upload', dropIconColor: s.file ? '#0B6B4A' : '#98A2B3', dropLabel: s.file ? 'report_furnace2.pdf · 1.2 MB' : 'Drag and drop a file, or click to browse',
+      doUpload: () => { const uerr = {}; if (!u.name) uerr.name = 1; if (!u.cat) uerr.cat = 1; if (Object.keys(uerr).length) return this.setState({ uerr });
+        const vOf = s.upload.versionOf;
+        if (vOf) this.setState(z => ({ rows: z.rows.map(r => r.id === vOf ? { ...r, ver: u.ver, date: 'Today', note: u.note } : r), upload: null }));
+        else { const id = 'd' + did++; this.setState(z => ({ rows: [{ id, name: u.name, cat: u.cat, ver: u.ver || 'V1', asset: u.asset || 'Not linked', date: 'Today', ft: 'PDF', fav: false, disc: 'Maintenance', thumb: 'document preview' }, ...z.rows], upload: null, sel: id })); }
+        this.flash(vOf ? `${u.ver} uploaded` : 'Document uploaded'); },
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font:17px/1 'Material Symbols Outlined';color:#475467">engineering</span>
+      <span style="font-weight:600">{{ headTitle }}</span>
+      <span style="font-size:12px;color:#667085">{{ headSub }}</span>
+      <span style="margin-left:auto;font:600 12.5px 'IBM Plex Mono',monospace;color:#344054">{{ total }}</span>
+    </div>
+    <div style="display:flex;gap:3px;height:26px">
+      <sc-for list="{{ bar }}" as="g" hint-placeholder-count="2"><span title="{{ g.tip }}" style="flex:{{ g.flex }};min-width:0;display:flex;align-items:center;gap:5px;padding:0 8px;border-radius:5px;background:{{ g.bg }};color:{{ g.fg }};font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;box-shadow:{{ g.ring }}"><span style="font:14px/1 'Material Symbols Outlined'">{{ g.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis">{{ g.name }} · {{ g.dur }}</span></span></sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;color:#667085">{{ ctxLabel }}</span>
+      <button onClick="{{ auto }}" style="margin-left:auto;height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 7px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:16px/1 'Material Symbols Outlined';color:#6941C6">auto_awesome</span>Suggest best fit</button>
+    </div>
+  </div>
+
+  <sc-for list="{{ segs }}" as="g" hint-placeholder-count="2">
+    <div style="display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid {{ g.border }};border-radius:8px;background:#fff">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#1E2430;color:#fff;display:grid;place-items:center;font:600 11px 'IBM Plex Mono',monospace">{{ g.n }}</span>
+        <sc-for list="{{ g.skills }}" as="k"><span style="flex:none;height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:{{ k.bg }};color:{{ k.fg }};font-size:11.5px;font-weight:600"><span style="font:13px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for>
+        <span style="min-width:0;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.label }} · {{ g.window }}</span>
+        <span style="margin-left:auto;flex:none;font:600 12px 'IBM Plex Mono',monospace;color:#344054">{{ g.dur }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;min-height:36px;padding:4px 8px;border-radius:6px;background:{{ g.assignedBg }}">
+        <sc-if value="{{ g.hasAssignee }}">
+          <span data-person="{{ g.a.key }}" title="View profile" style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:{{ g.a.avBg }};color:{{ g.a.avFg }};font:600 10.5px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ g.a.key }}</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ g.a.name }}</span><span style="font-size:12px;color:{{ g.a.noteColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.a.note }}</span></span>
+          <button onClick="{{ g.clear }}" title="Unassign" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#fff;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+        </sc-if>
+        <sc-if value="{{ g.noAssignee }}"><span style="display:flex;align-items:center;gap:6px;color:#B54708;font-weight:500"><span style="font:17px/1 'Material Symbols Outlined'">person_alert</span>Not assigned — pick someone below</span></sc-if>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ g.sugg }}" as="u">
+          <button onClick="{{ u.pick }}" title="{{ u.tip }}" style="height:40px;display:flex;align-items:center;gap:7px;padding:0 10px 0 4px;background:{{ u.bg }};border:1px solid {{ u.border }};border-radius:20px;cursor:pointer;opacity:{{ u.op }};font-family:inherit;text-align:left">
+            <span data-person="{{ u.key }}" style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:{{ u.avBg }};color:{{ u.avFg }};font:600 10px 'IBM Plex Sans',sans-serif">{{ u.key }}</span>
+            <span style="display:flex;flex-direction:column;line-height:1.2"><span style="font-size:12.5px;font-weight:600;color:#1E2430;white-space:nowrap">{{ u.first }}<sc-if value="{{ u.best }}"><span style="margin-left:4px;font-size:10.5px;font-weight:700;color:#6941C6">BEST</span></sc-if></span><span style="font-size:11px;color:{{ u.noteColor }};white-space:nowrap">{{ u.note }}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <sc-if value="{{ hasTeam }}">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#475467">
+      <span style="font-weight:600">{{ teamLabel }}</span>
+      <sc-for list="{{ team }}" as="t"><span style="display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px 0 3px;border-radius:12px;background:#F2F4F7"><span data-person="{{ t.key }}" style="width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:{{ t.avBg }};color:{{ t.avFg }};font:600 8px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ t.key }}</span>{{ t.first }} · {{ t.part }}</span></sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:620},&quot;checklists&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;assignments&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object[]&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(a) =&gt; void&quot;},&quot;type&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Corrective&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;date&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dur&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;preferred&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;autoOnEmpty&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const EXTRA = { conveyor: 'Conveyor maintenance', press: 'Hydraulic press service', electrical: 'Electrical check', safety: 'Safety inspection' };
+class Component extends DCLogic {
+  state = { C: null, CL: null, PM: null, v: 0 };
+  componentDidMount() {
+    Promise.all([import('./collab-model.js'), import('./checklist-model.js'), import('./people-model.js')]).then(([C, CL, PM]) => this.setState({ C, CL, PM }, () => this.maybeAuto()));
+    this._chg = () => this.setState(s => ({ v: s.v + 1 }));
+    window.addEventListener('cmms-profile', this._chg); window.addEventListener('cmms-skills', this._chg);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-profile', this._chg); window.removeEventListener('cmms-skills', this._chg); }
+  componentDidUpdate(pp) { if ((pp.checklists || []).join() !== (this.props.checklists || []).join()) this.maybeAuto(true); }
+  segs() {
+    const { CL, PM } = this.state; if (!CL || !PM) return [];
+    const cls = (this.props.checklists || []).map(id => CL.load(id) || (EXTRA[id] ? CL.fromName(id, EXTRA[id]) : null)).filter(Boolean);
+    let sg = PM.segmentsOf(cls).filter(g => g.minutes > 0);
+    if (!sg.length) sg = [{ skills: PM.TYPE_SKILL[this.props.type] || [], minutes: Math.round((+this.props.dur || 1) * 60), offset: 0, label: 'Whole work order', titles: [] }];
+    return sg;
+  }
+  ctx() { const d = this.props.date || ''; const [ymd, t] = d.split('T'); return { date: ymd || this.state.PM.dayIso(1), from: t ? +t.slice(0, 2) + (+t.slice(3, 5)) / 60 : null }; }
+  emit(keys) { const sg = this.segs(); this.props.onChange && this.props.onChange(sg.map((g, i) => ({ key: keys[i] || '', skills: g.skills, minutes: g.minutes, offset: g.offset, label: g.label }))); }
+  keys() { const sg = this.segs(), a = this.props.assignments || []; return sg.map((g, i) => (a[i] && a[i].key) || ''); }
+  maybeAuto(force) { if (!this.state.PM) return; const k = this.keys(); if (force || (!k.some(Boolean) && this.props.autoOnEmpty !== false)) { if (this.props.preferred && !force) { const sg = this.segs(); const auto = this.state.PM.autoAssign(sg, this.ctx()); this.emit(sg.map((g, i) => this.state.PM.hasSkills(this.props.preferred, g.skills) ? this.props.preferred : auto[i])); } else this.emit(this.state.PM.autoAssign(this.segs(), this.ctx())); } }
+  renderVals() {
+    const { C, PM } = this.state;
+    if (!C || !PM) return { bar: [], segs: [], team: [], hasTeam: false, headTitle: 'Required skills', headSub: '', total: '', ctxLabel: '' };
+    const sg = this.segs(), keys = this.keys(), ctx = this.ctx(), tot = sg.reduce((a, g) => a + g.minutes, 0);
+    const fromCl = (this.props.checklists || []).length > 0 && sg[0].label !== 'Whole work order';
+    const win = g => ctx.from != null ? `${PM.hm(ctx.from + g.offset / 60)}–${PM.hm(ctx.from + (g.offset + g.minutes) / 60)}` : `+${PM.hm(g.offset / 60)} → +${PM.hm((g.offset + g.minutes) / 60)}`;
+    const [, mo, dd] = ctx.date.split('-');
+    const assignedTeam = [...new Set(keys.filter(Boolean))];
+    return {
+      headTitle: fromCl ? 'Required by the checklists' : 'Required skills', headSub: fromCl ? (sg.length > 1 ? `${sg.length} parts — each can go to a different person` : 'One part') : `Based on the ${(this.props.type || 'corrective').toLowerCase()} type · add a checklist for precise parts`,
+      total: PM.dur(tot), ctxLabel: `Availability checked for ${MO[+mo - 1]} ${+dd}${ctx.from != null ? ' from ' + PM.hm(ctx.from) : ' (no time set yet)'}`,
+      bar: sg.map((g, i) => { const k = g.skills.length ? PM.skill(g.skills[0]) : { icon: 'person', fg: '#475467', bg: '#EEF1F4' }; return { name: PM.skillNames(g.skills), dur: PM.dur(g.minutes), icon: k.icon, fg: k.fg, bg: k.bg, flex: Math.max(1, g.minutes), ring: keys[i] ? 'none' : 'inset 0 0 0 1.5px #F79009', tip: `${g.label} · ${PM.skillNames(g.skills)}` }; }),
+      auto: () => this.emit(PM.autoAssign(sg, ctx)),
+      segs: sg.map((g, i) => {
+        const ranked = PM.suggest(g, ctx), cur = keys[i], curR = ranked.find(r => r.key === cur), bestKey = (ranked.find(r => r.match && r.available) || {}).key;
+        const set = k => { const nk = keys.slice(); nk[i] = k; this.emit(nk); };
+        const note = r => r.missing.length ? `Missing ${r.missing.map(id => PM.skill(id).name).join(', ')}` : !r.available ? r.reason : `${PM.LEVELS[Math.max(...r.levels, 1)]} · ${r.free} h free`;
+        const a = cur ? { ...C.person(cur), noteColor: curR && (!curR.match || !curR.available) ? '#B54708' : '#0B6B4A', note: curR ? (curR.match && curR.available ? `${PM.skillNames(g.skills)} ✓ · ${curR.reason}` : note(curR)) : '' } : {};
+        return { n: i + 1, label: g.label, window: win(g), dur: PM.dur(g.minutes), skills: (g.skills.length ? g.skills : []).map(id => PM.skill(id)),
+          border: cur ? '#E4E7EC' : '#F8C98B', hasAssignee: !!cur, noAssignee: !cur, a: { ...a, key: cur }, assignedBg: cur ? '#F9FAFB' : '#FFFAF2', clear: () => set(''),
+          sugg: ranked.filter(r => r.key !== cur).slice(0, 5).map(r => { const p = C.person(r.key), ok = r.match && r.available;
+            return { key: r.key, first: r.key === C.ME ? 'You' : p.name.split(' ')[0], avBg: p.avBg, avFg: p.avFg, best: r.key === bestKey, note: note(r), noteColor: ok ? '#0B6B4A' : r.match ? '#B54708' : '#98A2B3',
+              bg: ok ? '#fff' : '#F9FAFB', border: r.key === bestKey ? '#BBA7EE' : ok ? '#D0D5DD' : '#EEF0F3', op: r.match ? 1 : 0.6, tip: ok ? `Assign ${p.name}` : `${p.name} — ${note(r)}`, pick: () => set(r.key) }; }) };
+      }),
+      hasTeam: assignedTeam.length > 0, teamLabel: assignedTeam.length > 1 ? `${assignedTeam.length} people assigned:` : 'Assigned:',
+      team: assignedTeam.map(k => { const p = C.person(k), parts = sg.map((g, i) => keys[i] === k ? i + 1 : 0).filter(Boolean); return { key: k, first: k === C.ME ? 'You' : p.name.split(' ')[0], avBg: p.avBg, avFg: p.avFg, part: parts.length === sg.length ? 'whole job' : 'part ' + parts.join(', ') }; }),
+    };
+  }
+}
+</script>
+</body>
+</html>
