@@ -1,5 +1,5 @@
 // Relix Mobile — offline support. App shell cached on install; fonts cached on first use.
-const CACHE = 'relix-mobile-v2-1';
+const CACHE = 'relix-mobile-v2-2';
 const SHELL = ['./', 'index.html', 'app.css', 'data.js', 'app.js', 'manifest.webmanifest', 'relix-logo-white.svg', 'icon-192.png', 'icon-512.png', 'icon-180.png', 'vendor/jsQR.min.js'];
 
 self.addEventListener('install', e => {

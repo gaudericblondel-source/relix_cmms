@@ -398,7 +398,8 @@
       <div class="scroll" data-k="review-${w.id}"><div class="stp">
         <div><h2>Review & close</h2><p class="d" style="margin-top:4px">${steps.length} steps · ${flags.length ? `${flags.length} anomal${flags.length > 1 ? 'ies' : 'y'}` : 'no anomaly'} · <span class="mono" data-clock="${w.id}">${dur(elapsed(r))}</span></p></div>
         ${flags.length ? `<div class="alert">${ms('warning')}<span><b>${flags.length} anomal${flags.length > 1 ? 'ies' : 'y'} detected</b><br>${flags.map(s => `${esc(s.title)} — ${esc(summary(s, r))}${s.type === 'number' ? ` (normal ${s.min}–${s.max})` : ''}`).join('<br>')}</span></div>` : ''}
-        <div class="sum">${steps.map((s, i) => `<button class="r ${flagged(s, r.answers[s.id]) ? 'flag' : ''}" data-a="goStep" data-v="${i}" style="width:100%;text-align:left">${ms(flagged(s, r.answers[s.id]) ? 'warning' : 'check_circle')}<span>${esc(s.title)}</span><span class="a">${esc(summary(s, r))}</span></button>`).join('')}</div>
+        <div class="sum"><button class="r" data-a="rvAll" aria-expanded="${!!rv.all}" style="width:100%;text-align:left">${ms('check_circle')}<span>All answers</span><span class="a" style="display:flex;align-items:center;gap:4px">${steps.length} steps${ms(rv.all ? 'keyboard_arrow_up' : 'keyboard_arrow_down', 's20')}</span></button>
+          ${rv.all ? steps.map((s, i) => `<button class="r ${flagged(s, r.answers[s.id]) ? 'flag' : ''}" data-a="goStep" data-v="${i}" style="width:100%;text-align:left;padding-left:12px">${ms(flagged(s, r.answers[s.id]) ? 'warning' : 'check', 's18')}<span>${esc(s.title)}</span><span class="a">${esc(summary(s, r))}</span></button>`).join('') : ''}</div>
         <div class="fl">Result</div>
         <div class="tri" role="group">${[['Completed', 'task_alt'], ['Partially done', 'clock_loader_40'], ['Not done', 'block']].map(([o, ic]) => `<button aria-pressed="${rv.result === o}" data-a="rv" data-v="result|${o}">${ms(ic, 's20')}${o}</button>`).join('')}</div>
         <div class="fl">Is the equipment back in service?</div>
@@ -770,6 +771,7 @@
     },
     prev() { const x = curRun(); if (!x) return; if (x.r.review) x.r.review = false; else if (x.r.path.length > 1) x.r.path.pop(); render(); },
     goStep(i) { const x = curRun(); if (!x) return; x.r.path = x.r.path.slice(0, +i + 1); x.r.review = false; render(); },
+    rvAll() { const x = curRun(); x.r.rv.all = !x.r.rv.all; render(); },
     rv(v) { const x = curRun(); const [k, val] = v.split('|'); if (k === 'follow') x.r.rv.follow = !x.r.rv.follow; else x.r.rv[k] = val; render(); },
     closeRun() {
       const x = curRun(); if (!x) return; const rv = x.r.rv;
