@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:680px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 20px 12px">
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ title }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">{{ sub }}</p></div>
+      <button onClick="{{ close }}" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:none;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 20px 12px;border-bottom:1px solid #EEF0F3">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+        <button onClick="{{ st.go }}" style="display:flex;flex-direction:column;gap:6px;padding:0;background:transparent;border:0;cursor:pointer;text-align:left;font-family:inherit">
+          <span style="height:4px;border-radius:2px;background:{{ st.bar }}"></span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:{{ st.weight }};color:{{ st.color }};white-space:nowrap"><span style="font:15px/1 'Material Symbols Outlined'">{{ st.icon }}</span>{{ st.label }}</span>
+          <span style="font-size:11px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.hint }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px">
+      <sc-if value="{{ isType }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <sc-for list="{{ classes }}" as="c">
+            <button onClick="{{ c.pick }}" style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:{{ c.bg }};border:1.5px solid {{ c.border }};border-radius:10px;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430">
+              <span style="flex:none;width:40px;height:40px;border-radius:9px;display:grid;place-items:center;background:{{ c.tileBg }};color:{{ c.tileFg }};font:22px/1 'Material Symbols Outlined'">{{ c.icon }}</span>
+              <span style="display:flex;flex-direction:column;gap:3px"><span style="font-weight:600;font-size:14px">{{ c.label }}</span><span style="font-size:12px;color:#667085;line-height:1.4">{{ c.desc }}</span></span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:#344054">Type<span style="color:#C00018"> *</span></span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <sc-for list="{{ types }}" as="t">
+            <button onClick="{{ t.pick }}" style="height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:8px;cursor:pointer;font:{{ t.font }};color:{{ t.color }}"><span style="font:24px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoc }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;font-weight:600;color:#344054">{{ locTitle }}<span style="color:#C00018"> *</span></span>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:36px;padding:4px 8px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+            <span style="display:flex;align-items:center;gap:5px;font-weight:600;color:#475467;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">factory</span>Thourotte Plant</span>
+            <sc-for list="{{ crumbs }}" as="c"><span style="font:16px/1 'Material Symbols Outlined';color:#98A2B3">chevron_right</span><button onClick="{{ c.go }}" style="height:26px;display:flex;align-items:center;gap:4px;padding:0 8px;background:{{ c.bg }};border:0;border-radius:13px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ c.color }};cursor:pointer"><span style="font-size:10.5px;font-weight:500;opacity:.7">{{ c.level }}</span>{{ c.name }}</button></sc-for>
+            <sc-if value="{{ needMore }}"><span style="font:16px/1 'Material Symbols Outlined';color:#98A2B3">chevron_right</span><span style="font-size:12.5px;color:#98A2B3;white-space:nowrap">{{ needLabel }}</span></sc-if>
+          </div>
+        </div>
+        <label style="height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:8px"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ lq }}" onInput="{{ setLq }}" placeholder="Jump to a line or step — e.g. Tin bath" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif" /></label>
+        <sc-if value="{{ hasLocHits }}">
+          <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ locHits }}" as="h"><button onClick="{{ h.pick }}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border:0;border-bottom:1px solid #F2F4F7;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430" style-hover="background:#F9FAFB"><span style="font:17px/1 'Material Symbols Outlined';color:{{ h.fg }}">{{ h.icon }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ h.name }}</span><span style="font-size:12px;color:#667085">{{ h.path }}</span></span></button></sc-for>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-height:300px">
+          <sc-for list="{{ cols }}" as="col">
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+              <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#98A2B3">{{ col.label }}</span>
+              <sc-for list="{{ col.items }}" as="n">
+                <button onClick="{{ n.pick }}" style="display:flex;align-items:center;gap:9px;min-height:52px;padding:8px 10px;background:{{ n.bg }};border:1.5px solid {{ n.border }};border-radius:8px;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430">
+                  <span style="flex:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:{{ n.tileBg }};color:{{ n.tileFg }};font:17px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.name }}</span><span style="font-size:11.5px;color:#667085">{{ n.meta }}</span></span>
+                  <sc-if value="{{ n.hasKids }}"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">chevron_right</span></sc-if>
+                  <sc-if value="{{ n.on }}"><span style="font:18px/1 'Material Symbols Outlined';color:#C00018">check_circle</span></sc-if>
+                </button>
+              </sc-for>
+              <sc-if value="{{ col.empty }}"><div style="flex:1;display:grid;place-items:center;padding:16px;border:1px dashed #E4E7EC;border-radius:8px;color:#98A2B3;text-align:center;font-size:12px">{{ col.emptyText }}</div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isIdentity }}">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Name<span style="color:#C00018"> *</span></span><input value="{{ f.name }}" onInput="{{ on.name }}" placeholder="e.g. Conveyor Line 4" style="height:42px;padding:0 12px;border:1px solid {{ errName }};border-radius:8px;font:14px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Code<span style="color:#C00018"> *</span></span><input value="{{ f.id }}" onInput="{{ on.id }}" disabled="{{ isEdit }}" style="height:42px;padding:0 12px;border:1px solid #D0D5DD;border-radius:8px;font:500 13.5px 'IBM Plex Mono',monospace;outline:none;background:{{ codeBg }}" /></label>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#344054">Status</span>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><sc-for list="{{ statuses }}" as="o"><button onClick="{{ o.pick }}" style="height:40px;display:flex;align-items:center;justify-content:center;gap:6px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:8px;font:{{ o.font }};color:{{ o.color }};cursor:pointer"><span style="width:8px;height:8px;border-radius:50%;background:{{ o.dot }}"></span>{{ o.label }}</button></sc-for></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#344054">Criticality</span>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><sc-for list="{{ crits }}" as="o"><button onClick="{{ o.pick }}" style="height:40px;display:flex;align-items:center;justify-content:center;gap:6px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:8px;font:{{ o.font }};color:{{ o.color }};cursor:pointer"><span style="width:8px;height:8px;border-radius:2px;background:{{ o.dot }}"></span>{{ o.label }}</button></sc-for></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#344054">Owner · responsible technician</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ owners }}" as="o"><button onClick="{{ o.pick }}" style="height:38px;display:flex;align-items:center;gap:7px;padding:0 12px 0 4px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:19px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:{{ o.avBg }};color:{{ o.avFg }};font:600 10px 'IBM Plex Sans',sans-serif">{{ o.key }}</span>{{ o.name }}</button></sc-for></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <sc-for list="{{ idFields }}" as="x"><label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">{{ x.label }}</span><input value="{{ x.value }}" onInput="{{ x.set }}" placeholder="{{ x.ph }}" style="height:38px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label></sc-for>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Description</span><textarea value="{{ f.desc }}" onInput="{{ on.desc }}" rows="2" placeholder="Function, particularities…" style="padding:8px 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px/1.5 'IBM Plex Sans',sans-serif;outline:none;resize:vertical"></textarea></label>
+      </sc-if>
+
+      <sc-if value="{{ isSpecs }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Cost center</span><span style="position:relative;display:flex"><select value="{{ f.costCenter }}" onChange="{{ setCc }}" style="appearance:none;-webkit-appearance:none;width:100%;height:38px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><option value="">Not allocated</option><sc-for list="{{ ccOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+          <sc-for list="{{ cfs }}" as="c"><label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">{{ c.label }}<sc-if value="{{ c.req }}"><span style="color:#C00018"> *</span></sc-if></span><span style="position:relative;display:flex"><sc-if value="{{ c.isInput }}"><input type="{{ c.type }}" value="{{ c.value }}" onInput="{{ c.onInput }}" style="width:100%;height:38px;padding:0 {{ c.padR }} 0 10px;border:1px solid {{ c.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /><sc-if value="{{ c.hasUnit }}"><span style="position:absolute;right:10px;top:10px;font-weight:600;color:#667085;pointer-events:none">{{ c.unit }}</span></sc-if></sc-if><sc-if value="{{ c.isSelect }}"><select value="{{ c.value }}" onChange="{{ c.onInput }}" style="appearance:none;-webkit-appearance:none;width:100%;height:38px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><sc-for list="{{ c.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select></sc-if></span></label></sc-for>
+        </div>
+        <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13px;font-weight:600;color:#344054">Key specifications</span><span style="font-size:12px;color:#98A2B3">shown on the asset page and used in checklists</span></span>
+        <sc-for list="{{ specs }}" as="p">
+          <div style="display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;align-items:center">
+            <input value="{{ p.k }}" onInput="{{ p.setK }}" placeholder="Name — e.g. Power" style="height:38px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;outline:none" />
+            <input value="{{ p.v }}" onInput="{{ p.setV }}" placeholder="Value — e.g. 850 kW" style="height:38px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+            <button onClick="{{ p.remove }}" title="Remove" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#F2F4F7;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">close</span></button>
+          </div>
+        </sc-for>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <sc-for list="{{ specSugg }}" as="g"><button onClick="{{ g.add }}" style="height:30px;display:flex;align-items:center;gap:4px;padding:0 10px 0 6px;background:#fff;border:1px dashed #C4CAD4;border-radius:15px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">add</span>{{ g.k }}</button></sc-for>
+          <button onClick="{{ addSpec }}" style="height:30px;display:flex;align-items:center;gap:4px;padding:0 10px 0 6px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">add</span>Custom specification</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDocs }}">
+        <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13px;font-weight:600;color:#344054">Technical documentation</span><span style="font-size:12px;color:#98A2B3">manuals, drawings, datasheets, procedures, certificates</span></span>
+        <sc-for list="{{ docs }}" as="d">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E4E7EC;border-radius:8px">
+            <span style="flex:none;width:32px;height:32px;border-radius:7px;display:grid;place-items:center;background:{{ d.bg }};color:{{ d.fg }};font:18px/1 'Material Symbols Outlined'">{{ d.icon }}</span>
+            <input value="{{ d.name }}" onInput="{{ d.rename }}" style="flex:1;min-width:0;height:32px;padding:0 6px;border:1px solid transparent;border-radius:4px;font:500 13px 'IBM Plex Sans',sans-serif;outline:none" style-focus="border-color:#D0D5DD" />
+            <span style="position:relative;display:flex"><select value="{{ d.kind }}" onChange="{{ d.setKind }}" style="appearance:none;-webkit-appearance:none;height:30px;padding:0 26px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><sc-for list="{{ docKinds }}" as="k"><option value="{{ k }}">{{ k }}</option></sc-for></select><span style="position:absolute;right:4px;top:6px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+            <span style="width:64px;text-align:right;font-size:12px;color:#98A2B3">{{ d.size }}</span>
+            <button onClick="{{ d.remove }}" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+          </div>
+        </sc-for>
+        <label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px;border:1.5px dashed #C4CAD4;border-radius:10px;cursor:pointer;color:#475467" style-hover="border-color:#C00018;background:#FFFBFB">
+          <span style="font:26px/1 'Material Symbols Outlined';color:#98A2B3">upload_file</span>
+          <span style="font-weight:600">Add documents</span><span style="font-size:12px;color:#98A2B3">PDF, images, drawings · several at once</span>
+          <input type="file" multiple="{{ true }}" onChange="{{ addFiles }}" style="display:none" />
+        </label>
+      </sc-if>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <button onClick="{{ backOrClose }}" style="height:40px;display:flex;align-items:center;gap:4px;padding:0 14px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap"><span style="font:18px/1 'Material Symbols Outlined'">{{ backIcon }}</span>{{ backLabel }}</button>
+      <span style="font-size:12.5px;color:{{ hintColor }}">{{ hint }}</span>
+      <span style="flex:1"></span>
+      <sc-if value="{{ canNext }}"><button onClick="{{ next }}" style="height:40px;display:flex;align-items:center;gap:4px;padding:0 10px 0 14px;background:{{ nextBg }};border:1px solid {{ nextBorder }};border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ nextColor }};cursor:pointer;white-space:nowrap">{{ nextLabel }}<span style="font:18px/1 'Material Symbols Outlined'">chevron_right</span></button></sc-if>
+      <sc-if value="{{ canSave }}"><button onClick="{{ save }}" style="height:40px;padding:0 18px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ saveLabel }}</button></sc-if>
+    </div>
+  </aside>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900}}">
+const STEPS = [['Type', 'category'], ['Location', 'account_tree'], ['Identity', 'badge'], ['Specifications', 'tune'], ['Documents', 'description']];
+const OWNERS = ['GD', 'PL', 'MD', 'AM', 'SM', 'SB', 'JM'];
+const blank = () => ({ cls: 'fixed', type: '', loc: '', id: '', name: '', status: 'In service', crit: 'Medium', owner: 'PL', manufacturer: '', model: '', serial: '', year: '', desc: '', specs: [], docs: [] });
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+class Component extends DCLogic {
+  state = { open: false, step: 0, f: blank(), edit: null, nav: { zone: '', line: '' }, lq: '', codeTouched: false, PM: null, C: null, tried: false };
+  componentDidMount() {
+    Promise.all([import('./plant-model.js'), import('./collab-model.js'), import('./config-model.js')]).then(([PM, C, CFG]) => this.setState({ PM, C, CFG }));
+    this._open = e => { const id = e.detail && e.detail.id, PM = this.state.PM, a = id && PM ? PM.asset(id) : null;
+      const pre = (e.detail && e.detail.loc) || '';
+      const preNode = PM && pre ? PM.node(pre) : null;
+      const f = a ? { ...blank(), ...a, specs: a.specs.map(x => [...x]), docs: a.docs.map(x => ({ ...x })) } : { ...blank(), loc: preNode && preNode.kind === 'step' ? pre : '' };
+      const ch = PM && (f.loc || pre) ? PM.chain(f.loc || pre) : [];
+      this.setState({ open: true, step: e.detail.step != null ? e.detail.step : a ? 2 : 0, f, edit: a ? a.id : null, nav: { zone: ch[0] ? ch[0].id : '', line: ch[1] ? ch[1].id : '' }, lq: '', codeTouched: !!a, tried: false }); };
+    this._key = e => { if (e.key === 'Escape' && this.state.open) this.setState({ open: false }); };
+    window.addEventListener('cmms-asset-wizard', this._open); window.addEventListener('keydown', this._key);
+    window.RelixAssetWizard = (id, o) => window.dispatchEvent(new CustomEvent('cmms-asset-wizard', { detail: { id, ...(o || {}) } }));
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-asset-wizard', this._open); window.removeEventListener('keydown', this._key); }
+  setF(p) { this.setState(s => { const f = { ...s.f, ...p }; if (!s.codeTouched && !s.edit && s.PM && (p.type || p.loc)) f.id = s.PM.suggestCode(f.type, f.loc); return { f }; }); }
+  valid(step) { const f = this.state.f; return step === 0 ? !!f.type : step === 1 ? !!f.loc : step === 2 ? !!(f.name.trim() && f.id.trim()) : true; }
+  save() {
+    const s = this.state, PM = s.PM, f = s.f;
+    for (let i = 0; i < 3; i++) if (!this.valid(i)) return this.setState({ step: i, tried: true });
+    const id = f.id.trim(), data = { ...f, id, name: f.name.trim(), specs: f.specs.filter(x => x[0].trim()), docs: f.docs };
+    PM.saveAsset(id, data);
+    this.setState({ open: false });
+    window.dispatchEvent(new CustomEvent('cmms-asset-saved', { detail: { id, created: !s.edit } }));
+  }
+  renderVals() {
+    const s = this.state, PM = s.PM, C = s.C, f = s.f, step = s.step;
+    if (!PM || !C) return { open: false, steps: [], classes: [], types: [], crumbs: [], cols: [], statuses: [], crits: [], owners: [], idFields: [], specs: [], specSugg: [], docs: [], docKinds: [], locHits: [] };
+    const mobile = f.cls === 'mobile', n = f.loc ? PM.node(f.loc) : null, ch = f.loc ? PM.chain(f.loc) : [];
+    const count = id => PM.assets().filter(a => a.loc && (a.loc === id || PM.chain(a.loc).some(x => x.id === id))).length;
+    const look = z => PM.ZONE_LOOK[z] || ['grid_view', '#475467', '#EEF1F4'];
+    const nav = s.nav, zSel = nav.zone, lSel = nav.line;
+    const item = (x, on, lvl) => { const [ic, fg, bg] = look(PM.zoneOf(x.id).id), kids = PM.children(x.id).length;
+      const icon = lvl === 0 ? ic : lvl === 1 ? 'conveyor_belt' : x.storage ? 'inventory_2' : x.bay ? 'garage' : 'grid_view';
+      return { name: x.name, icon, tileBg: on ? fg : bg, tileFg: on ? '#fff' : fg, bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : '#E4E7EC', hasKids: lvl < 2 && kids > 0 && !on, on: on && lvl === 2,
+        meta: lvl < 2 ? `${kids} ${lvl === 0 ? 'lines' : 'steps'} · ${count(x.id)} assets` : x.storage ? 'Storage area' : x.bay ? 'Parking bay' : `${count(x.id)} assets`,
+        pick: () => lvl === 0 ? this.setState({ nav: { zone: x.id, line: '' } }) : lvl === 1 ? this.setState({ nav: { zone: zSel, line: x.id } }) : this.setF({ loc: x.id }) }; };
+    const lq = s.lq.trim().toLowerCase();
+    const okErr = k => s.tried && !this.valid(k);
+    const set = k => e => { if (k === 'id') this.setState({ codeTouched: true }); this.setF({ [k]: e.target.value }); };
+    return {
+      open: s.open, close: () => this.setState({ open: false }), isEdit: !!s.edit, codeBg: s.edit ? '#F9FAFB' : '#fff',
+      title: s.edit ? `Edit ${f.name || 'asset'}` : 'New asset', sub: s.edit ? `${f.id} · ${PM.pathOf(f.loc)}` : '5 short steps · only type, location and name are required',
+      steps: STEPS.map(([label, icon], i) => ({ label, icon, bar: i === step ? '#C00018' : this.valid(i) && (i < 3 ? true : i < step) ? '#1E2430' : '#E4E7EC', color: i === step ? '#1E2430' : '#667085', weight: i === step ? 600 : 500,
+        hint: i === 0 ? (f.type || 'Required') : i === 1 ? (n ? n.name : 'Required') : i === 2 ? (f.name || 'Required') : i === 3 ? (f.specs.length ? `${f.specs.length} specs` : 'Optional') : (f.docs.length ? `${f.docs.length} files` : 'Optional'), go: () => this.setState({ step: i }) })),
+      isType: step === 0, isLoc: step === 1, isIdentity: step === 2, isSpecs: step === 3, isDocs: step === 4,
+      classes: [['fixed', 'Equipment', 'precision_manufacturing', 'Installed at a fixed place on a line — furnace, pump, conveyor…'], ['mobile', 'Mobile asset', 'forklift', 'Moved between jobs — crane, lift, instrument. Reserved when a work order needs it.']]
+        .map(([k, label, icon, desc]) => { const on = f.cls === k; return { label, icon, desc, bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : '#E4E7EC', tileBg: on ? '#C00018' : '#F2F4F7', tileFg: on ? '#fff' : '#475467', pick: () => this.setF({ cls: k, type: '' }) }; }),
+      types: (s.CFG ? s.CFG.assetTypes(f.cls).map(t => [t.name, t.icon]) : PM.TYPES[f.cls]).map(([t, icon]) => { const on = f.type === t; return { label: t, icon, bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : okErr(0) ? '#F8C98B' : '#E4E7EC', color: on ? '#A30014' : '#344054', font: on ? bold : reg, pick: () => this.setF({ type: t }) }; }),
+      locTitle: mobile ? 'Home location — where it is kept when not in use' : 'Where is it installed?',
+      crumbs: (n ? ch : [PM.node(zSel), PM.node(lSel)].filter(Boolean)).map((x, i) => ({ name: x.name, level: ['Zone', 'Line', 'Step'][i], bg: i === 2 || (n && i === ch.length - 1) ? '#1E2430' : '#fff', color: i === 2 || (n && i === ch.length - 1) ? '#fff' : '#344054',
+        go: () => this.setState({ nav: { zone: i >= 0 ? (ch[0] || PM.node(zSel) || {}).id || '' : '', line: i >= 1 ? (ch[1] || PM.node(lSel) || {}).id || '' : '' } }) })),
+      needMore: !n, needLabel: !zSel ? 'pick a zone' : !lSel ? 'pick a line' : 'pick a step',
+      lq: s.lq, setLq: e => this.setState({ lq: e.target.value }), hasLocHits: !!lq,
+      locHits: lq ? PM.NODES.filter(x => x.kind !== 'zone' && (x.name + ' ' + PM.pathOf(x.id)).toLowerCase().includes(lq)).slice(0, 6).map(x => { const [, fg] = look(PM.zoneOf(x.id).id); return { name: x.name, path: PM.pathOf(x.id), icon: x.kind === 'line' ? 'conveyor_belt' : x.storage ? 'inventory_2' : 'grid_view', fg,
+        pick: () => { const c2 = PM.chain(x.id); this.setState({ lq: '', nav: { zone: c2[0].id, line: c2[1] ? c2[1].id : '' } }); if (x.kind === 'step') this.setF({ loc: x.id }); } }; }) : [],
+      cols: [
+        { label: 'Zone', items: PM.zones().map(z => item(z, z.id === zSel, 0)), empty: false },
+        { label: 'Line', items: zSel ? PM.children(zSel).map(l => item(l, l.id === lSel, 1)) : [], empty: !zSel, emptyText: 'Pick a zone' },
+        { label: 'Step', items: lSel ? PM.children(lSel).map(st => item(st, st.id === f.loc, 2)) : [], empty: !lSel, emptyText: 'Pick a line' },
+      ],
+      f, errName: okErr(2) && !f.name.trim() ? '#F04438' : '#D0D5DD',
+      on: { name: set('name'), id: set('id'), desc: set('desc') },
+      statuses: Object.keys(PM.STATUS).map(k => { const on = f.status === k, [bg, fg] = PM.STATUS[k]; return { label: k, dot: fg, bg: on ? bg : '#fff', border: on ? fg : '#D0D5DD', color: on ? fg : '#344054', font: on ? bold : reg, pick: () => this.setF({ status: k }) }; }),
+      crits: Object.keys(PM.CRIT).map(k => { const on = f.crit === k; return { label: k, dot: PM.CRIT[k], bg: on ? (k === 'Critical' ? '#C00018' : '#FBF1F2') : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? (k === 'Critical' ? '#fff' : '#A30014') : '#344054', font: on ? bold : reg, pick: () => this.setF({ crit: k }) }; }),
+      owners: OWNERS.map(k => { const p = C.person(k), on = f.owner === k; return { key: k, name: p.name.split(' ')[0], avBg: p.avBg, avFg: p.avFg, bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : '#D0D5DD', pick: () => this.setF({ owner: k }) }; }),
+      idFields: [['manufacturer', 'Manufacturer', 'e.g. Glaston'], ['model', 'Model', 'e.g. FC500'], ['serial', 'Serial number', '—'], ['year', 'Year installed', '2026']].map(([k, label, ph]) => ({ label, ph, value: f[k], set: set(k) })),
+      specs: f.specs.map(([k, v], i) => ({ k, v, setK: e => this.setF({ specs: f.specs.map((x, j) => j === i ? [e.target.value, x[1]] : x) }), setV: e => this.setF({ specs: f.specs.map((x, j) => j === i ? [x[0], e.target.value] : x) }), remove: () => this.setF({ specs: f.specs.filter((_, j) => j !== i) }) })),
+      specSugg: (PM.SPEC_SUGGEST[f.type] || []).filter(k => !f.specs.some(x => x[0] === k)).map(k => ({ k, add: () => this.setF({ specs: [...f.specs, [k, '']] }) })),
+      addSpec: () => this.setF({ specs: [...f.specs, ['', '']] }),
+      docKinds: Object.keys(PM.DOC_KINDS),
+      docs: f.docs.map((d, i) => { const [icon, fg, bg] = PM.DOC_KINDS[d.kind] || PM.DOC_KINDS.Manual; return { ...d, icon, fg, bg, rename: e => this.setF({ docs: f.docs.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }), setKind: e => this.setF({ docs: f.docs.map((x, j) => j === i ? { ...x, kind: e.target.value } : x) }), remove: () => this.setF({ docs: f.docs.filter((_, j) => j !== i) }) }; }),
+      addFiles: e => { const fs = [...(e.target.files || [])]; const guess = nm => /manual/i.test(nm) ? 'Manual' : /drawing|diagram|dwg|p&id/i.test(nm) ? 'Drawing' : /procedure|sop/i.test(nm) ? 'Procedure' : /cert/i.test(nm) ? 'Certificate' : 'Datasheet';
+        this.setF({ docs: [...f.docs, ...fs.map(x => ({ name: x.name.replace(/\.[^.]+$/, ''), kind: guess(x.name), size: x.size > 1e6 ? (x.size / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(x.size / 1e3)) + ' KB', added: 'Today' }))] }); e.target.value = ''; },
+      canBack: step > 0, back: () => this.setState({ step: step - 1 }),
+      canNext: step < 4, next: () => this.valid(step) ? this.setState({ step: step + 1, tried: false }) : this.setState({ tried: true }), nextLabel: `Next: ${STEPS[Math.min(4, step + 1)][0]}`,
+      nextBg: step >= 2 ? '#fff' : '#1E2430', nextBorder: step >= 2 ? '#D0D5DD' : '#1E2430', nextColor: step >= 2 ? '#1E2430' : '#fff',
+      ...(() => { const CFG = s.CFG; if (!CFG) return { ccOpts: [], cfs: [] }; const site = CFG.currentSite(), setC = (k, v) => this.setState(z => ({ f: { ...z.f, custom: { ...(z.f.custom || {}), [k]: v } } }));
+        return { ccOpts: CFG.list('costCenters', { active: true }).map(c => ({ v: c.code, l: `${c.code} · ${c.name}` })), setCc: e => this.setState(z => ({ f: { ...z.f, costCenter: e.target.value } })),
+          cfs: CFG.fieldsFor('Asset', { type: f.type }).map(c => { const v = (f.custom || {})[c.code] ?? '', u = CFG.fieldUnit(c, site), err = v !== '' && CFG.validate(c, v);
+            return { label: c.name, req: !!c.required, isInput: c.type !== 'choice' && c.type !== 'boolean', isSelect: c.type === 'choice' || c.type === 'boolean', type: c.type === 'date' ? 'date' : c.type === 'text' ? 'text' : 'number', value: v, hasUnit: !!u, unit: u, padR: u ? '56px' : '10px', border: err ? '#F04438' : '#D0D5DD',
+              options: [{ v: '', l: 'Select…' }, ...(c.type === 'boolean' ? [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }] : (c.options || []).filter(Boolean).map(o => ({ v: o, l: o })))], onInput: e => setC(c.code, e.target.value) }; }) }; })(),
+      backIcon: step > 0 ? 'chevron_left' : 'close', backLabel: step > 0 ? 'Previous' : 'Cancel', backOrClose: () => step > 0 ? this.setState({ step: step - 1, tried: false }) : this.setState({ open: false }),
+      nextBg: this.valid(step) ? '#C00018' : '#F2F4F7', nextBorder: this.valid(step) ? '#C00018' : '#F2F4F7', nextColor: this.valid(step) ? '#fff' : '#98A2B3', nextLabel: 'Next step',
+      canSave: step === 4 || !!s.edit, save: () => this.save(), saveLabel: s.edit ? 'Save changes' : 'Create asset',
+      hint: s.tried && !this.valid(step) ? ['Choose a type', 'Choose a step in the plant', 'Name and code are required'][step] : step >= 2 && !s.edit ? 'Specifications and documents are optional' : '', hintColor: s.tried && !this.valid(step) ? '#B42318' : '#98A2B3',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;height:100%;min-height:0;display:flex;flex-direction:column;gap:8px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <label style="flex:none;height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:8px;background:#fff"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search checklists…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif" /></label>
+  <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ items }}" as="c" hint-placeholder-count="4">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;background:{{ c.bg }};border:1px solid {{ c.border }};border-radius:8px">
+        <button onClick="{{ c.toggle }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:0;background:transparent;border:0;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430">
+          <span style="flex:none;width:22px;height:22px;border-radius:5px;border:1.5px solid {{ c.boxBorder }};background:{{ c.boxBg }};display:grid;place-items:center;color:#fff;font:16px/1 'Material Symbols Outlined'">{{ c.boxIcon }}</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+            <span style="display:flex;align-items:center;gap:6px;min-width:0"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span><sc-if value="{{ c.suggested }}"><span style="flex:none;height:18px;display:inline-flex;align-items:center;padding:0 6px;border-radius:9px;background:#E6F4EE;color:#0B6B4A;font-size:11px;font-weight:600">Suggested</span></sc-if></span>
+            <span style="font-size:12px;color:#667085">{{ c.meta }}</span>
+          </span>
+        </button>
+        <button onClick="{{ c.preview }}" style="flex:none;height:32px;display:flex;align-items:center;gap:5px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:16px/1 'Material Symbols Outlined'">visibility</span>Preview</button>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ hasPreview }}">
+    <div style="position:absolute;inset:-4px;z-index:5;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16);overflow:hidden">
+      <div style="flex:none;display:flex;align-items:flex-start;gap:10px;padding:14px 14px 10px;border-bottom:1px solid #EEF0F3">
+        <button onClick="{{ closePreview }}" title="Back to list" style="flex:none;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">arrow_back</span></button>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:15px;font-weight:600">{{ pv.name }}</span>
+          <span style="font-size:12.5px;color:#667085;line-height:1.45">{{ pv.desc }}</span>
+        </div>
+      </div>
+      <div style="flex:none;display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #EEF0F3">
+        <sc-for list="{{ pv.stats }}" as="s"><div style="display:flex;flex-direction:column;gap:1px;padding:10px 14px;border-right:1px solid #F2F4F7"><span style="font-size:11.5px;color:#667085">{{ s.k }}</span><span style="font-size:16px;font-weight:600">{{ s.v }}</span></div></sc-for>
+      </div>
+      <sc-if value="{{ pv.hasNeeds }}">
+        <div style="flex:none;display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px 0">
+          <sc-for list="{{ pv.needs }}" as="n"><span style="height:24px;display:inline-flex;align-items:center;gap:4px;padding:0 8px 0 6px;border-radius:12px;background:#F2F4F7;color:#344054;font-size:12px;font-weight:500"><span style="font:14px/1 'Material Symbols Outlined';color:#667085">{{ n.icon }}</span>{{ n.label }}</span></sc-for>
+        </div>
+      </sc-if>
+      <ol style="flex:1;min-height:0;overflow:auto;margin:0;padding:8px 0;list-style:none">
+        <sc-for list="{{ pv.steps }}" as="s">
+          <li style="display:flex;align-items:flex-start;gap:10px;padding:7px 14px 7px {{ s.indent }}">
+            <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#F2F4F7;color:#475467;display:grid;place-items:center;font:600 11px 'IBM Plex Mono',monospace">{{ s.n }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-weight:500">{{ s.title }}</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#667085;flex-wrap:wrap"><span style="display:flex;align-items:center;gap:3px"><span style="font:13px/1 'Material Symbols Outlined'">{{ s.icon }}</span>{{ s.kind }}</span><sc-if value="{{ s.required }}"><span style="color:#B42318;font-weight:600">Required</span></sc-if><sc-if value="{{ s.hasLogic }}"><span style="display:flex;align-items:center;gap:3px;color:#2456B8;font-weight:500"><span style="font:13px/1 'Material Symbols Outlined'">alt_route</span>{{ s.logic }}</span></sc-if></span>
+            </span>
+          </li>
+        </sc-for>
+      </ol>
+      <div style="flex:none;display:flex;gap:8px;padding:12px 14px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ closePreview }}" style="height:40px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Back</button>
+        <button onClick="{{ pv.toggle }}" style="flex:1;height:40px;display:flex;align-items:center;justify-content:center;gap:6px;background:{{ pv.btnBg }};border:1px solid {{ pv.btnBorder }};border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ pv.btnColor }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ pv.btnIcon }}</span>{{ pv.btnLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:520},&quot;selected&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(ids: string[]) =&gt; void&quot;},&quot;asset&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Pump P-101&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const EXTRA = [['conveyor', 'Conveyor maintenance', 'Belt, rollers and drive checks for conveyor lines.'], ['press', 'Hydraulic press service', 'Monthly service for hydraulic presses: oil, hoses, pressure.'], ['electrical', 'Electrical check', 'Cabinet thermography, tightening and insulation test.'], ['safety', 'Safety inspection', 'Guards, emergency stops and signage check.']];
+class Component extends DCLogic {
+  state = { M: null, q: '', pv: null };
+  componentDidMount() {
+    import('./checklist-model.js').then(M => {
+      const list = [M.load('pump-seal'), M.load('standard'), ...EXTRA.map(([id, name, desc]) => ({ ...(M.load(id) || M.fromName(id, name)), desc }))];
+      this.setState({ M, list });
+    });
+  }
+  renderVals() {
+    const s = this.state, M = s.M, sel = this.props.selected || [], q = s.q.trim().toLowerCase();
+    if (!M) return { items: [], hasPreview: false, q: s.q, setQ: () => {}, pv: {} };
+    const suggest = M.checklistFor(this.props.asset || '');
+    const set = arr => this.props.onChange && this.props.onChange(arr);
+    const toggle = id => set(sel.includes(id) ? sel.filter(x => x !== id) : [...sel, id]);
+    const items = s.list.filter(c => !q || c.name.toLowerCase().includes(q)).sort((a, b) => (sel.includes(b.id) - sel.includes(a.id)) || ((b.id === suggest) - (a.id === suggest))).map(c => {
+      const on = sel.includes(c.id);
+      return { name: c.name, suggested: c.id === suggest && !!this.props.asset, meta: `${c.steps.length} steps · ~${c.est || 30} min${c.steps.some(x => x.conditional) ? ' · conditional flow' : ''}`,
+        bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : '#E4E7EC', boxBorder: on ? '#C00018' : '#C4CAD4', boxBg: on ? '#C00018' : '#fff', boxIcon: on ? 'check' : '',
+        toggle: () => toggle(c.id), preview: () => this.setState({ pv: c.id }) };
+    });
+    const c = s.pv && s.list.find(x => x.id === s.pv);
+    let pv = {};
+    if (c) {
+      const on = sel.includes(c.id);
+      const photos = c.steps.filter(x => x.type === 'photo' || x.rules.some(r => r.need === 'photo')).length, values = c.steps.filter(x => x.type === 'number').length, files = c.steps.filter(x => x.type === 'file').length, parts = c.steps.filter(x => x.type === 'parts' || x.type === 'consumables').length;
+      pv = { name: c.name, desc: c.desc || 'No description.',
+        stats: [['Steps', c.steps.length], ['Est. duration', `${c.est || 30} min`], ['Branches', c.steps.filter(x => x.conditional).length || '—']].map(([k, v]) => ({ k, v })),
+        needs: [[photos, 'photo_camera', `${photos} photo${photos > 1 ? 's' : ''}`], [values, 'speed', `${values} measured value${values > 1 ? 's' : ''}`], [files, 'attach_file', `${files} attachment${files > 1 ? 's' : ''}`], [parts, 'inventory_2', 'Parts usage']].filter(x => x[0]).map(([, icon, label]) => ({ icon, label })),
+        steps: c.steps.map((st, i) => { const lg = M.logicSummary(c, st); return { n: i + 1, title: st.title, kind: M.TYPES[st.type].label, icon: M.TYPES[st.type].icon, required: !!st.required, hasLogic: !!lg || st.conditional, logic: lg || 'Shown only on a branch', indent: st.conditional ? '34px' : '14px' }; }),
+        btnLabel: on ? 'Remove from work order' : 'Add to work order', btnIcon: on ? 'remove' : 'add', btnBg: on ? '#fff' : '#C00018', btnBorder: on ? '#D0D5DD' : '#C00018', btnColor: on ? '#B42318' : '#fff',
+        toggle: () => { toggle(c.id); this.setState({ pv: null }); } };
+      pv.hasNeeds = pv.needs.length > 0;
+    }
+    return { items, q: s.q, setQ: e => this.setState({ q: e.target.value }), hasPreview: !!c, pv, closePreview: () => this.setState({ pv: null }) };
+  }
+}
+</script>
+</body>
+</html>

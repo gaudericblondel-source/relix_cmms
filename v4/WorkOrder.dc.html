@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="workorders" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main ref="{{ mainRef }}" style="position:relative;min-height:0;overflow:hidden;padding:16px 28px 0;display:flex;flex-direction:column;gap:16px" data-screen-label="Work order detail">
+    <sc-if value="{{ editing }}">
+      <div style="position:sticky;top:-16px;z-index:20;margin:-16px -28px 0;padding:10px 28px;background:#1E2430;color:#fff;display:flex;align-items:center;gap:12px">
+        <span style="font:20px/1 'Material Symbols Outlined'">edit</span>
+        <span style="font-weight:600;font-size:14px">Editing work order</span>
+        <span style="font-size:12.5px;opacity:.7">Changes are visible to all participants once saved</span>
+        <button onClick="{{ cancelEdit }}" style="margin-left:auto;height:36px;padding:0 14px;background:transparent;border:1px solid rgba(255,255,255,.3);border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Cancel</button>
+        <button onClick="{{ saveEdit }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">check</span>Save changes</button>
+      </div>
+    </sc-if>
+
+    <nav style="flex:none;display:flex;align-items:center;gap:6px;font-size:12.5px;color:#667085">
+      <a href="WorkOrders.dc.html" style="display:flex;align-items:center;gap:4px;color:#475467;font-weight:500;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">arrow_back</span>Work orders</a>
+      <span style="font:14px/1 'Material Symbols Outlined';color:#98A2B3">chevron_right</span><span style="font-family:'IBM Plex Mono',monospace;color:#667085">{{ woId }}</span>
+    </nav>
+
+    <header style="flex:none;display:flex;align-items:flex-start;gap:14px">
+      <dc-import name="BackButton" fallback="WorkOrders.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h1 style="flex:0 1 auto;min-width:0;margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em;text-wrap:balance">{{ title }}</h1>
+            <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ st.bg }};color:{{ st.fg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ st.label }}</span>
+            <sc-if value="{{ waitOn }}"><span title="{{ waitNote }}" style="display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 3px 0 7px;border-radius:11px;font-size:12px;font-weight:600;background:#FEF3E2;color:#B54708;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">{{ waitIcon }}</span>{{ waitLabel }}<button onClick="{{ clearWait }}" title="Blocker resolved — remove the Waiting flag" style="height:18px;padding:0 6px;margin-left:2px;background:#fff;border:0;border-radius:9px;font:600 11px 'IBM Plex Sans',sans-serif;color:#B54708;cursor:pointer">Resolved</button></span></sc-if>
+            <span style="display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px 0 6px;border-radius:4px;font-size:12px;font-weight:600;background:{{ pr.bg }};color:{{ pr.fg }};white-space:nowrap"><sc-if value="{{ pr.urgent }}"><span style="font:14px/1 'Material Symbols Outlined'">bolt</span></sc-if>{{ pr.label }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ editing }}">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:22px;font-weight:600;color:#667085">{{ wo.asset }} —</span>
+            <input value="{{ e.task }}" onInput="{{ on.task }}" style="flex:1;min-width:260px;height:40px;padding:0 10px;border:1px solid #98A2B3;border-radius:6px;font:600 20px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" />
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;gap:4px"><sc-for list="{{ prioOpts }}" as="p"><button onClick="{{ p.select }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ p.bg }};border:1px solid {{ p.border }};border-radius:6px;font:{{ p.font }};color:{{ p.color }};cursor:pointer"><span style="width:8px;height:8px;border-radius:2px;background:{{ p.dot }}"></span>{{ p.label }}</button></sc-for></div>
+            <span title="The status is set by the workflow, not edited here" style="height:34px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:6px;background:{{ st.bg }};color:{{ st.fg }};font-size:13px;font-weight:600;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">lock</span>{{ st.label }}</span>
+            <span style="position:relative;display:flex" title="Waiting is a flag — the status stays the same"><span style="position:absolute;left:8px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:{{ waitSelColor }}">hourglass_top</span><select value="{{ e.waiting }}" onChange="{{ setWaitE }}" style="appearance:none;-webkit-appearance:none;height:34px;padding:0 30px 0 32px;border:1px solid {{ waitSelBorder }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:{{ waitSelBg }};outline:none"><option value="">Not waiting</option><sc-for list="{{ waitOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+            <span style="font-size:12px;color:#98A2B3">{{ statusHint }}</span>
+          </div>
+        </sc-if>
+        <div style="display:flex;align-items:center;gap:16px;color:#667085;flex-wrap:wrap">
+          <button onClick="{{ copyId }}" title="Copy work order ID" style="height:22px;display:flex;align-items:center;gap:4px;padding:0 6px;background:#F2F4F7;border:0;border-radius:4px;font:500 12px 'IBM Plex Mono',monospace;color:#475467;cursor:pointer;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">content_copy</span>{{ woId }}</button>
+          <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}"><span style="display:flex;align-items:center;gap:5px;color:{{ ty.fg }};font-weight:600"><span style="font:16px/1 'Material Symbols Outlined'">{{ ty.icon }}</span>{{ wo.type }}</span></sc-if>
+          <sc-if value="{{ editing }}"><span style="display:flex;gap:4px"><sc-for list="{{ typeOpts }}" as="t"><button onClick="{{ t.select }}" style="height:28px;display:flex;align-items:center;gap:4px;padding:0 9px 0 6px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:6px;font:{{ t.font }};color:{{ t.color }};cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for></span></sc-if>
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">location_on</span>{{ wo.loc }}</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">person</span>{{ assigneeName }}</span>
+          <span style="display:flex;align-items:center;gap:5px;color:{{ dueColor }}"><span style="font:16px/1 'Material Symbols Outlined'">event</span>{{ dueLabel }}</span>
+        </div>
+      </div>
+      <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:none;display:flex;gap:8px;align-items:center;white-space:nowrap">
+          <button onClick="{{ openChat }}" style="height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">forum</span>Discussion<sc-if value="{{ hasUnread }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#C00018;color:#fff;font:600 11px/18px 'IBM Plex Sans',sans-serif">{{ unreadN }}</span></sc-if></button>
+          <button onClick="{{ startEdit }}" style="height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">edit</span>Edit</button>
+          <sc-if value="{{ canDone }}"><button onClick="{{ markDone }}" title="Already done on site? Record it without running the intervention" style="height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#0B6B4A;cursor:pointer" style-hover="border-color:#0B6B4A;background:#F6FBF8"><span style="font:18px/1 'Material Symbols Outlined'">task_alt</span>Mark as done</button></sc-if>
+          <sc-if value="{{ canStart }}" hint-placeholder-val="{{ true }}">
+            <a href="{{ runHref }}" style="height:42px;display:flex;align-items:center;gap:6px;padding:0 18px 0 12px;background:#C00018;border-radius:6px;color:#fff;font:600 14px 'IBM Plex Sans',sans-serif"><span style="font:24px/1 'Material Symbols Outlined'">play_arrow</span>{{ startLabel }}</a>
+          </sc-if>
+        </div>
+      </sc-if>
+    </header>
+
+    <sc-if value="{{ incomplete }}">
+      <section style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#FFFAF2;border:1px solid #F8D3A5;border-radius:8px">
+        <span style="width:36px;height:36px;border-radius:50%;background:#FEF3E2;color:#B54708;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">edit_note</span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px;color:#93370D">Information incomplete</span><span style="font-size:12.5px;color:#B54708">{{ missingLabel }}</span></div>
+        <sc-if value="{{ viewing }}"><button onClick="{{ startEdit }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #F8D3A5;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#93370D;cursor:pointer">Complete now</button></sc-if>
+      </section>
+    </sc-if>
+    <sc-if value="{{ inProgress }}">
+      <section style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#F5F8FE;border:1px solid #D6E2F8;border-radius:8px">
+        <span style="width:36px;height:36px;border-radius:50%;background:#EAF1FD;color:#2456B8;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">pause</span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <span style="font-weight:600;font-size:14px">Intervention paused at step {{ run.stepNo }} of {{ run.total }} — {{ run.stepTitle }}</span>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:220px;height:6px;border-radius:3px;background:#D6E2F8;overflow:hidden"><span style="display:block;height:100%;width:{{ run.pct }};background:#2456B8"></span></span><span style="font-size:12.5px;color:#667085">{{ run.elapsed }} spent · progress saved</span></div>
+        </div>
+      </section>
+    </sc-if>
+    <sc-if value="{{ isLogged }}">
+      <section style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <span style="width:36px;height:36px;border-radius:50%;background:{{ lg.bg }};color:{{ lg.fg }};display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">{{ lg.icon }}</span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ lg.title }}</span><span style="font-size:12.5px;color:#667085">{{ lg.sub }}</span><span style="font-size:12.5px;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ lg.report }}</span></div>
+        <span style="flex:none;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:12px;background:#EEF1F4;color:#475467;font-size:12px;font-weight:600"><span style="font:14px/1 'Material Symbols Outlined'">history</span>Recorded after the fact</span>
+      </section>
+    </sc-if>
+    <sc-if value="{{ isDone }}">
+      <section style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#fff;border:1px solid #E4E7EC;border-left:3px solid {{ doneColor }};border-radius:8px">
+        <span style="width:36px;height:36px;border-radius:50%;background:{{ doneBg }};color:{{ doneColor }};display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">{{ doneIcon }}</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ doneTitle }}</span><span style="font-size:12.5px;color:#667085">{{ doneSub }}</span></div>
+        <a href="{{ runHref }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font-weight:500"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">summarize</span>View summary</a>
+      </section>
+    </sc-if>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(360px,1fr);gap:16px;margin:0 -28px;padding:0 28px">
+      <div style="min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;min-width:0;padding-bottom:24px">
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:14px;font-weight:600">Description</h2>
+          <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0;line-height:1.55;color:{{ descColor }};text-wrap:pretty">{{ desc }}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-if value="{{ hasCat }}"><span style="height:24px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:4px;background:#F2F4F7;color:#475467;font-size:12px;font-weight:500"><span style="font:14px/1 'Material Symbols Outlined'">category</span>{{ category }}</span></sc-if>
+              <sc-if value="{{ stop }}"><span style="height:24px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:4px;background:#FDECEC;color:#B42318;font-size:12px;font-weight:600"><span style="font:14px/1 'Material Symbols Outlined'">block</span>Production stop</span></sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ editing }}">
+            <textarea value="{{ e.desc }}" onInput="{{ on.desc }}" rows="4" placeholder="Context, symptoms, actions to carry out…" style="padding:10px 12px;border:1px solid #D0D5DD;border-radius:6px;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <span style="position:relative;display:flex"><select value="{{ e.cat }}" onChange="{{ on.cat }}" style="appearance:none;-webkit-appearance:none;height:36px;padding:0 30px 0 10px;border:1px solid {{ catBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Failure category…</option><sc-for list="{{ failOpts }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+              <button onClick="{{ toggleStop }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0;background:transparent;border:0;cursor:pointer;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430"><span style="position:relative;width:36px;height:20px;border-radius:10px;background:{{ stopTrack }}"><span style="position:absolute;top:2px;left:{{ stopKnob }};width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)"></span></span>Production stop</button>
+            </div>
+          </sc-if>
+        </section>
+
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 8px">
+            <h2 style="margin:0;font-size:14px;font-weight:600">Checklists</h2>
+            <span style="color:#667085">{{ clSummary }}</span>
+          </div>
+          <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ checklists }}" as="c" hint-placeholder-count="1">
+              <div style="border-top:1px solid #EEF0F3">
+                <button onClick="{{ c.toggle }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 16px;background:#FBFBFC;border:0;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430">
+                  <span style="font:18px/1 'Material Symbols Outlined';color:#667085">{{ c.chev }}</span>
+                  <span style="flex:1;font-weight:600">{{ c.name }}</span>
+                  <span style="font-size:12px;color:#667085">{{ c.meta }}</span>
+                  <a href="{{ c.href }}" style="font-weight:600;font-size:12.5px">Open</a>
+                </button>
+                <sc-if value="{{ c.open }}">
+                  <ol style="margin:0;padding:0 0 6px;list-style:none">
+                    <sc-for list="{{ c.steps }}" as="s">
+                      <li style="display:flex;align-items:center;gap:12px;padding:7px 16px 7px {{ s.indent }};border-top:1px solid #F2F4F7">
+                        <span style="width:24px;height:24px;flex:none;border-radius:50%;background:{{ s.bg }};color:{{ s.fg }};display:grid;place-items:center;font:600 11.5px 'IBM Plex Mono',monospace">{{ s.mark }}</span>
+                        <span style="flex:1;font-weight:500">{{ s.title }}</span>
+                        <sc-if value="{{ s.cond }}"><span style="height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 7px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-size:11.5px;font-weight:600"><span style="font:13px/1 'Material Symbols Outlined'">alt_route</span>Branch</span></sc-if>
+                        <span style="font-size:12px;color:#98A2B3">{{ s.kinds }}</span>
+                      </li>
+                    </sc-for>
+                  </ol>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noChecklist }}"><div style="padding:6px 16px 16px;color:#98A2B3">No checklist. Click Edit to add one or more.</div></sc-if>
+          </sc-if>
+          <sc-if value="{{ editing }}">
+            <div style="height:420px;padding:0 16px 16px"><dc-import name="ChecklistPicker" selected="{{ e.checklists }}" onChange="{{ setChecklists }}" asset="{{ wo.asset }}" style="height:100%" hint-size="100%,400px"></dc-import></div>
+          </sc-if>
+        </section>
+
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <div style="display:flex;align-items:center;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600">Reserved spare parts</h2><a href="SpareParts.dc.html" style="margin-left:auto;font-weight:600;font-size:12.5px">Add part</a></div>
+          <sc-for list="{{ parts }}" as="p">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid #F2F4F7">
+              <span style="width:32px;height:32px;border-radius:6px;background:repeating-linear-gradient(135deg,#EEF0F3 0 4px,#E4E7EC 4px 8px);display:grid;place-items:center;color:#98A2B3;font:17px/1 'Material Symbols Outlined'">settings</span>
+              <span style="flex:1;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">{{ p.name }}</span><span style="font:12px 'IBM Plex Mono',monospace;color:#667085">{{ p.ref }}</span></span>
+              <span style="font-size:12.5px;font-weight:500;color:{{ p.color }}">{{ p.stock }}</span>
+              <span style="width:48px;text-align:right;font:600 13px 'IBM Plex Mono',monospace">×{{ p.qty }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noParts }}"><div style="padding:4px 16px 14px;color:#98A2B3">No parts reserved. Technicians can add parts during the intervention.</div></sc-if>
+        </section>
+
+        <dc-import name="WOCosts" wo-key="{{ docKey }}" wo="{{ costWo }}" parts="{{ costParts }}" actual-ms="{{ costActual }}" hint-size="100%,320px"></dc-import>
+
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding-bottom:8px">
+          <h2 style="margin:0;padding:14px 16px 6px;font-size:14px;font-weight:600">Activity</h2>
+          <sc-for list="{{ activity }}" as="a">
+            <div style="display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;padding:7px 16px;align-items:start">
+              <span style="width:24px;height:24px;border-radius:50%;background:#F2F4F7;color:#475467;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ a.icon }}</span>
+              <span style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:500">{{ a.text }}</span><span style="font-size:12px;color:#667085">{{ a.who }}</span></span>
+              <span style="font-size:12px;color:#98A2B3;white-space:nowrap">{{ a.when }}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+
+      <div style="min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;min-width:0;padding-bottom:24px">
+        <section ref="{{ chatRef }}" style="background:#fff;border:1px solid {{ chatBorder }};border-radius:8px;overflow:hidden;display:flex;flex-direction:column;flex:none;height:500px">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #EEF0F3">
+            <span style="font:18px/1 'Material Symbols Outlined';color:#475467">forum</span>
+            <h2 style="margin:0;font-size:14px;font-weight:600">Discussion</h2>
+            <span style="font-size:12px;color:#98A2B3;white-space:nowrap">{{ chatSub }}</span>
+            <span style="margin-left:auto;display:flex"><sc-for list="{{ avatars }}" as="m"><span data-person="{{ m.key }}" title="{{ m.name }}" style="cursor:pointer;width:24px;height:24px;margin-left:-5px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;background:{{ m.avBg }};color:{{ m.avFg }};font:600 8.5px 'IBM Plex Sans',sans-serif">{{ m.initials }}</span></sc-for></span>
+          </div>
+          <div style="position:relative;flex:1;min-height:0"><dc-import name="ChatThread" channel="{{ chatKey }}" highlight="{{ highlight }}" style="position:absolute;inset:0" hint-size="100%,460px"></dc-import></div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <div style="display:flex;align-items:center;padding:14px 16px 6px"><h2 style="margin:0;font-size:14px;font-weight:600">People</h2><span style="margin-left:8px;font-size:12px;color:#98A2B3">{{ peopleCount }}</span></div>
+          <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:6px;padding:4px 16px 10px">
+              <span style="font-size:12px;font-weight:600;color:#667085">Assigned users · responsible for performing the work</span>
+              <sc-for list="{{ asgView }}" as="a" hint-placeholder-count="2">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:#FBFBFC;border:1px solid #EEF0F3;border-radius:8px">
+                  <span data-person="{{ a.key }}" title="View profile" style="flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:{{ a.avBg }};color:{{ a.avFg }};font:600 11px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ a.key }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="display:flex;align-items:baseline;gap:6px"><span data-person="{{ a.key }}" style="font-weight:600;cursor:pointer">{{ a.name }}</span><span style="font-size:12px;color:#667085">{{ a.role }}</span><span style="margin-left:auto;font:500 12px 'IBM Plex Mono',monospace;color:#344054">{{ a.total }}</span></span>
+                    <span style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ a.parts }}" as="g"><span title="{{ g.tip }}" style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 7px 0 5px;border-radius:11px;background:{{ g.bg }};color:{{ g.fg }};font-size:11.5px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">{{ g.icon }}</span>{{ g.text }}</span></sc-for></span>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noAsg }}"><span style="color:#B54708;display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">person_alert</span>Nobody assigned yet — click Edit to get suggestions.</span></sc-if>
+              <span style="margin-top:6px;font-size:12px;font-weight:600;color:#667085">Include in follow-up · see the chat and get updates</span>
+            </div>
+            <div style="display:flex;flex-direction:column;padding:0 0 8px">
+              <sc-for list="{{ people }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 16px">
+                  <span data-person="{{ p.key }}" title="View profile" style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:{{ p.avBg }};color:{{ p.avFg }};font:600 10.5px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ p.initials }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ p.name }}</span><span style="font-size:12px;color:#667085">{{ p.job }}</span></span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noFollow }}"><span style="padding:0 16px 6px;color:#98A2B3">Nobody in follow-up.</span></sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ editing }}">
+            <div style="display:flex;flex-direction:column;gap:18px;padding:6px 16px 16px">
+              <dc-import name="PeopleSelect" label="Assigned users" hint="Responsible for performing the work" placeholder="Select who does the work…" mode="assign" value="{{ edAssigned }}" onChange="{{ setEdAssigned }}" skills="{{ reqSkills }}" suggested="{{ suggested }}" date="{{ e.due }}" hint-size="100%,96px"></dc-import>
+              <dc-import name="PeopleSelect" label="Include in follow-up" hint="Follow progress, join the chat, get updates" placeholder="Add people to keep informed…" mode="follow" value="{{ edFollowers }}" onChange="{{ setEdFollowers }}" exclude="{{ edAssigned }}" exclude-note="Assigned to this work order" date="{{ e.due }}" hint-size="100%,76px"></dc-import>
+            </div>
+          </sc-if>
+        </section>
+
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <h2 style="margin:0;padding:14px 16px 6px;font-size:14px;font-weight:600">Details</h2>
+          <sc-if value="{{ viewing }}" hint-placeholder-val="{{ true }}">
+            <dl style="margin:0;padding:4px 16px 14px;display:grid;grid-template-columns:120px minmax(0,1fr);row-gap:9px;column-gap:12px">
+              <sc-for list="{{ details }}" as="d" hint-placeholder-count="8"><dt style="color:#667085">{{ d.k }}</dt><dd style="margin:0;font-weight:500;color:{{ d.color }}">{{ d.v }}</dd></sc-for>
+            </dl>
+          </sc-if>
+          <sc-if value="{{ editing }}">
+            <div style="display:grid;grid-template-columns:120px minmax(0,1fr);row-gap:10px;column-gap:12px;align-items:center;padding:4px 16px 16px">
+              <span style="color:#667085">Scheduled</span><input type="datetime-local" value="{{ e.due }}" onInput="{{ on.due }}" style="height:36px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+              <span style="color:#667085">Cost center</span><span style="position:relative;display:flex"><select value="{{ e.costCenter }}" onChange="{{ on.costCenter }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Not allocated</option><sc-for list="{{ ccOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+              <sc-for list="{{ cfEdit }}" as="c"><span style="color:#667085">{{ c.label }}<sc-if value="{{ c.req }}"><span style="color:#C00018"> *</span></sc-if></span><span style="position:relative;display:flex"><sc-if value="{{ c.isInput }}"><input type="{{ c.type }}" value="{{ c.value }}" onInput="{{ c.onInput }}" style="width:100%;height:36px;padding:0 {{ c.padR }} 0 10px;border:1px solid {{ c.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /><sc-if value="{{ c.hasUnit }}"><span style="position:absolute;right:10px;top:9px;font-weight:600;color:#667085;pointer-events:none">{{ c.unit }}</span></sc-if></sc-if><sc-if value="{{ c.isSelect }}"><select value="{{ c.value }}" onChange="{{ c.onInput }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid {{ c.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ c.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select></sc-if></span></sc-for>
+              <span style="color:#667085">Estimated</span><span style="position:relative;display:flex"><select value="{{ e.dur }}" onChange="{{ on.dur }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="0.5">30 min</option><option value="1">1 h</option><option value="1.5">1 h 30</option><option value="2">2 h</option><option value="3">3 h</option><option value="4">4 h</option></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:0 16px 14px">
+            <span style="font-size:12px;font-weight:600;color:#667085">Required equipment · reservable</span>
+            <sc-for list="{{ toolRows }}" as="t">
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid {{ t.border }};border-radius:8px;background:{{ t.bg }}">
+                <span style="flex:none;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:#EAF1FD;color:#2456B8;font:16px/1 'Material Symbols Outlined'">{{ t.icon }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><a href="{{ t.href }}" style="font-weight:500;color:#1E2430;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</a><span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:{{ t.color }}"><span style="font:13px/1 'Material Symbols Outlined'">{{ t.sicon }}</span>{{ t.status }}</span></span>
+                <sc-if value="{{ editing }}"><button onClick="{{ t.remove }}" title="Remove" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#F2F4F7;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button></sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noTools }}"><span style="color:#98A2B3">No reservable equipment needed.</span></sc-if>
+            <sc-if value="{{ hasConflict }}"><div style="display:flex;flex-direction:column;gap:6px;padding:8px 10px;background:#FEF6F6;border:1px solid #FBD5D5;border-radius:8px;color:#B42318;font-size:12.5px;line-height:1.45"><span><b style="font-weight:600">Not available at the scheduled time.</b> {{ conflictText }}</span><sc-if value="{{ hasNextSlot }}"><button onClick="{{ useNextSlot }}" style="align-self:flex-start;height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined';color:#0B6B4A">event_available</span>{{ nextSlotLabel }}</button></sc-if></div></sc-if>
+            <sc-if value="{{ editing }}"><span style="position:relative;display:flex"><select value="" onChange="{{ addTool }}" style="appearance:none;-webkit-appearance:none;width:100%;height:34px;padding:0 30px 0 30px;background:#fff;border:1px dashed #C4CAD4;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer;outline:none"><option value="">Add reservable equipment…</option><sc-for list="{{ toolOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;left:8px;top:8px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#667085">add</span></span></sc-if>
+          </div>
+        </section>
+
+        <dc-import name="DocLinks" kind="wo" target="{{ docKey }}" title="Documents" empty-text="No documents linked. Link procedures or drawings the technician needs on site." hint-size="100%,140px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const QS = new URLSearchParams(window.location.search);
+const Q0 = { key: QS.get('wo') || 'WO-1339859', task: QS.get('task') || 'Seal replacement', asset: QS.get('asset') || 'Pump P-101', loc: QS.get('loc') || 'Tempering Line › Heating Zone', type: QS.get('type') || 'Corrective', prio: QS.get('prio') || 'Critical', status: QS.get('status') || 'Overdue' };
+if (/P-101/.test(Q0.asset) && Q0.loc === 'Tempering Line') Q0.loc = 'Tempering Line › Heating Zone';
+const SEAL = /P-101/.test(Q0.asset);
+const PRIO = { Critical: ['#C00018', '#fff', '#C00018'], High: ['#FDECEC', '#B42318', '#E0591B'], Medium: ['#FEF3E2', '#B54708', '#E3A008'], Low: ['#EEF1F4', '#475467', '#98A2B3'] };
+const SB = { Requested: ['#F3EEFC', '#6941C6'], Overdue: ['#FDECEC', '#B42318'], Scheduled: ['#EAF1FD', '#2456B8'], 'In progress': ['#E6F4EE', '#0B6B4A'], Completed: ['#EEF1F4', '#475467'] };
+const TYPE = { Corrective: ['build', '#B54708', '#FEF3E2'], Preventive: ['event_repeat', '#2456B8', '#EAF1FD'], Predictive: ['insights', '#6941C6', '#F3EEFC'], Inspection: ['visibility', '#0E7490', '#E3F4F7'] };
+const EXTRA = { conveyor: 'Conveyor maintenance', press: 'Hydraulic press service', electrical: 'Electrical check', safety: 'Safety inspection' };
+const FINAL = { completed: ['Completed', 'task_alt', '#0B6B4A', '#E6F4EE'], partial: ['Partially completed', 'timelapse', '#B54708', '#FEF3E2'], unable: ['Unable to complete', 'block', '#B42318', '#FDECEC'] };
+const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const pad = n => String(n).padStart(2, '0');
+const hms = ms => { const t = Math.floor((ms || 0) / 1000); return `${pad(Math.floor(t / 3600))}:${pad(Math.floor(t / 60) % 60)}:${pad(t % 60)}`; };
+const fmtDue = d => { if (!d) return ''; const [ymd, t] = d.split('T'); const [, m, dd] = ymd.split('-'); return `${M[+m - 1]} ${+dd}${t ? ', ' + t : ''}`; };
+const durLabel = h => h ? (h < 1 ? `${h * 60} min` : h % 1 ? `${Math.floor(h)} h ${(h % 1) * 60}` : `${h} h`) : '';
+class Component extends DCLogic {
+  state = { C: null, CL: null, w: null, editing: QS.get('edit') === '1', e: null, openCl: {}, toast: null, v: 0,
+    run: (() => { try { return JSON.parse(localStorage.getItem('cmms.intervention.v3.' + Q0.key)); } catch (e) { return null; } })() };
+  mainRef = React.createRef(); chatRef = React.createRef();
+  componentDidMount() {
+    import('./people-model.js').then(PM => this.setState({ PM }));
+    Promise.all([import('./config-model.js'), import('./plant-model.js')]).then(([CFG, PLM]) => this.setState({ CFG, PLM }));
+    this._cfg = () => this.setState(s => ({ v: s.v + 1 })); window.addEventListener('cmms-config', this._cfg); window.addEventListener('cmms-asset', this._cfg);
+    Promise.all([import('./collab-model.js'), import('./checklist-model.js')]).then(([C, CL]) => {
+      const stored = C.getWo(Q0.key) || {};
+      { const n = C.norm(stored.status || Q0.status, stored.waiting, stored.due); Q0.status = n.status; Q0.waiting = n.waiting; if (n.overdue) Q0.late = true; if (stored.status) { stored.status = n.status; stored.waiting = n.waiting; } }
+      const w = { ...Q0, assignee: SEAL ? 'PL' : 'PL', participants: [['GD', 'Maintenance manager']], checklists: [CL.checklistFor(Q0.asset)], due: '', dur: SEAL ? 1.5 : 1, desc: '', cat: SEAL ? 'Mechanical' : '', stop: SEAL, ...stored, key: Q0.key };
+      if (!w.tools) w.tools = CL.toolsOf((w.checklists || []).map(id => CL.load(id)).filter(Boolean));
+      this.setState({ C, CL, w, e: this.state.editing ? { ...w } : null });
+      if (QS.get('chat') === '1') setTimeout(() => this.scrollToChat(), 250);
+    });
+    this._wo = () => { const C = this.state.C; if (C) this.setState(s => ({ w: { ...s.w, ...(C.getWo(Q0.key) || {}) } })); };
+    this._chat = () => this.setState(s => ({ v: s.v + 1 }));
+    window.addEventListener('cmms-wo', this._wo); window.addEventListener('cmms-chat', this._chat);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-wo', this._wo); window.removeEventListener('cmms-chat', this._chat); clearTimeout(this._t); }
+  scrollToChat() { const c = this.chatRef.current, m = c && c.parentElement; if (m && c) m.scrollTop = Math.max(0, c.offsetTop - m.offsetTop); this.setState({ chatFlash: true }); setTimeout(() => this.setState({ chatFlash: false }), 1600); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  setE(k, v) { this.setState(s => ({ e: { ...s.e, [k]: v } })); }
+  asgKeysOf(e) { return e.assigned || [...new Set(((e.assignments && e.assignments.length ? e.assignments : e.assignee ? [{ key: e.assignee }] : [])).map(x => x.key).filter(Boolean))]; }
+  folKeysOf(e) { const a = this.asgKeysOf(e); return e.followers || (e.participants || []).map(p => p[0]).filter(k => !a.includes(k)); }
+  segsOf(e) { const { PM, CL } = this.state; if (!PM || !CL) return []; const cls = (e.checklists || []).map(id => CL.load(id) || (EXTRA[id] ? CL.fromName(id, EXTRA[id]) : null)).filter(Boolean);
+    let sg = PM.segmentsOf(cls).filter(g => g.minutes > 0); if (!sg.length) sg = [{ skills: PM.TYPE_SKILL[e.type] || [], minutes: Math.round((+e.dur || 1) * 60), offset: 0, label: 'Whole work order' }]; return sg; }
+  slotOf(e) { const PL = this.state.PLM; if (!PL || !e.due || e.due.length < 16) return null; const day = PL.dayOf(e.due), from = PL.hourOf(e.due); return { day, from, to: from + (+e.dur || 1) }; }
+  conflictsOf(e) { const PL = this.state.PLM, sl = this.slotOf(e); return PL && sl ? PL.toolConflicts(e.tools || [], sl.day, sl.from, sl.to, Q0.key) : []; }
+  save() {
+    const { C, e: e0, w, PM, CFG, PLM } = this.state; if (!C || !e0) return;
+    if (this.conflictsOf(e0).length) return this.flash('Required equipment is not available at the scheduled time');
+    if (CFG) { const bad = CFG.fieldsFor('Work order').find(c => CFG.validate(c, (e0.custom || {})[c.code])); if (bad) return this.flash(`${bad.name}: ${CFG.validate(bad, (e0.custom || {})[bad.code])}`); }
+    const ak = this.asgKeysOf(e0), fk = this.folKeysOf(e0);
+    const e = { ...e0, assignee: ak[0] || '', assignments: ak.length && PM ? this.segsOf(e0).map(g => ({ key: ak.find(k => PM.hasSkills(k, g.skills)) || ak[0], skills: g.skills, minutes: g.minutes, offset: g.offset, label: g.label })) : [],
+      participants: [...ak.slice(1).map(k => [k, 'Additional technician']), ...fk.filter(k => !ak.includes(k)).map(k => [k, (e0.participants || []).find(p => p[0] === k && p[1] !== 'Additional technician') ? (e0.participants.find(p => p[0] === k) || [])[1] : 'Follow-up'])] };
+    const patch = { task: e.task.trim() || w.task, type: e.type, prio: e.prio, status: w.status, waiting: e.waiting || '', assignee: ((e.assignments || []).find(x => x.key) || {}).key || e.assignee, assignments: (e.assignments || []).filter(x => x.key), participants: e.participants, checklists: e.checklists, due: e.due, dur: +e.dur, desc: e.desc, cat: e.cat, stop: e.stop, asset: w.asset, loc: w.loc, parts: e.parts || w.parts || [], tools: e0.tools || [], costCenter: e0.costCenter || '', custom: e0.custom || {} };
+    if (PLM) { const sl = this.slotOf(e0); if (sl && (e0.tools || []).length) PLM.reserve(Q0.key, e0.tools, sl.day, sl.from, sl.to, `${w.asset} — ${patch.task}`, patch.assignee || 'GD'); else PLM.releaseReservations(Q0.key); }
+    if (patch.prio && patch.assignee && patch.cat && w.quick) patch.quick = false;
+    C.saveWo(Q0.key, patch);
+    const changes = [];
+    if (patch.assignee !== w.assignee) changes.push(`assigned to ${C.person(patch.assignee).name}`);
+    if (patch.prio !== w.prio) changes.push(`priority ${patch.prio || 'cleared'}`);
+    if ((patch.waiting || '') !== (w.waiting || '')) changes.push(patch.waiting ? `flagged ${C.waitLabel(patch.waiting)}` : 'removed the Waiting flag');
+    if (changes.length) C.post(Q0.key, 'sys', `Gaudéric Durand changed ${changes.join(', ')}`);
+    this.setState({ w: { ...w, ...patch }, editing: false, e: null });
+    this.flash('Work order updated');
+  }
+  extraVals(e, ed, w) {
+    const { CFG, PLM: PL, PM } = this.state;
+    if (!CFG || !PL || !PM) return { failOpts: ['Mechanical', 'Electrical', 'Hydraulic', 'Pneumatic', 'Instrumentation', 'Software / PLC'], ccOpts: [], cfEdit: [], toolRows: [], toolOpts: [], noTools: true, hasConflict: false, cfView: [] };
+    const site = CFG.currentSite(), sl = this.slotOf(e), confl = ed ? this.conflictsOf(e) : [], tools = e.tools || [];
+    const dn = d => new Date(2026, 8, 28 + d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const nxt = sl && confl.length ? PL.nextFreeSlot(tools, sl.day, sl.from, sl.to - sl.from, Q0.key) : null;
+    const setC = (k, v) => this.setState(st => ({ e: { ...st.e, custom: { ...(st.e.custom || {}), [k]: v } } }));
+    const cc = w.costCenter && CFG.get('costCenters', w.costCenter);
+    return {
+      failOpts: CFG.names('failures'), ccOpts: CFG.list('costCenters', { active: true }).map(c => ({ v: c.code, l: `${c.code} · ${c.name}` })),
+      cfView: [...(cc ? [{ k: 'Cost center', v: `${cc.code} · ${cc.name}` }] : []), ...CFG.fieldsFor('Work order').filter(c => (w.custom || {})[c.code] !== undefined && (w.custom || {})[c.code] !== '').map(c => ({ k: c.name, v: CFG.fmt(c, w.custom[c.code], site) }))],
+      cfEdit: CFG.fieldsFor('Work order').map(c => { const v = (e.custom || {})[c.code] ?? '', u = CFG.fieldUnit(c, site), err = v !== '' && CFG.validate(c, v);
+        return { label: c.name, req: !!c.required, isInput: c.type !== 'choice' && c.type !== 'boolean', isSelect: c.type === 'choice' || c.type === 'boolean', type: c.type === 'date' ? 'date' : c.type === 'text' ? 'text' : 'number', value: v, hasUnit: !!u, unit: u, padR: u ? '56px' : '10px', border: err ? '#F04438' : '#D0D5DD',
+          options: [{ v: '', l: 'Select…' }, ...(c.type === 'boolean' ? [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }] : (c.options || []).filter(Boolean).map(o => ({ v: o, l: o })))], onInput: ev => setC(c.code, ev.target.value) }; }),
+      toolRows: tools.map(id => { const a = PL.asset(id) || { name: id, type: '' }, c = confl.find(x => x.tool === id), own = sl && PL.reservationsOf(id).find(r => r.woKey === Q0.key);
+        return { name: a.name, icon: PL.typeIcon(a.type), href: 'AssetDetail.dc.html?id=' + encodeURIComponent(id), border: c ? '#FDA29B' : '#E4E7EC', bg: c ? '#FFFBFA' : '#fff',
+          status: c ? `Reserved ${PM.hm(c.r.from)}–${PM.hm(c.r.to)} for ${c.r.wo}` : own ? `Reserved for this work order · ${dn(own.day)} ${PM.hm(own.from)}–${PM.hm(own.to)}` : sl ? (ed ? `Available — reserved on save · ${PM.hm(sl.from)}–${PM.hm(sl.to)}` : 'Available at the scheduled time') : 'Reserved when the work order is scheduled',
+          color: c ? '#B42318' : own || sl ? '#0B6B4A' : '#667085', sicon: c ? 'event_busy' : own || sl ? 'event_available' : 'schedule',
+          remove: () => this.setState(st => ({ e: { ...st.e, tools: (st.e.tools || []).filter(x => x !== id) } })) }; }),
+      noTools: !tools.length, toolOpts: PL.mobileAssets().filter(a => !tools.includes(a.id)).map(a => ({ v: a.id, l: `${a.name} · ${a.type}` })),
+      addTool: ev => { const v = ev.target.value; ev.target.value = ''; if (v) this.setState(st => ({ e: { ...st.e, tools: [...(st.e.tools || []), v] } })); },
+      hasConflict: confl.length > 0, conflictText: confl.map(c => `${(PL.asset(c.tool) || { name: c.tool }).name} is reserved ${PM.hm(c.r.from)}–${PM.hm(c.r.to)} (${c.r.wo}).`).join(' '),
+      hasNextSlot: !!nxt, nextSlotLabel: nxt ? `Move to ${dn(nxt.day)} ${PM.hm(nxt.from)}` : '', useNextSlot: () => nxt && this.setE('due', `${PL.isoOfDay(nxt.day)}T${PM.hm(nxt.from)}`),
+    };
+  }
+  renderVals() {
+    const s = this.state, C = s.C, CL = s.CL, w = s.w || { ...Q0, participants: [], checklists: [], assignee: 'PL' }, ed = s.editing && s.e, e = s.e || w;
+    const P = k => C ? C.person(k) : { key: k, name: k, role: '', avBg: '#F2F4F7', avFg: '#475467', initials: k };
+    const run = s.run, sum = run && run.summary, done = sum && sum.mode === 'done', going = sum && !done;
+    const logged = !done && !!w.logged && w.status === 'Completed', cpl = w.completion || {};
+    const status = done ? 'Completed' : going ? 'In progress' : w.status;
+    const [sbg, sfg] = SB[status] || SB.Scheduled, [pbg, pfg] = PRIO[w.prio] || ['#F2F4F7', '#98A2B3'];
+    const fin = done ? FINAL[sum.final || 'completed'] : null, at = done && sum.completedAt ? new Date(sum.completedAt) : null, r = run && run.result;
+    const overdue = status === 'Overdue' || (!!w.late && status === 'Scheduled');
+    const missing = C && w.quick ? C.missingInfo(w) : (!w.prio ? ['Priority'] : []);
+    const cls = CL ? (e.checklists || []).map(id => CL.load(id) || (EXTRA[id] ? CL.fromName(id, EXTRA[id]) : null)).filter(Boolean) : [];
+    const asgList = (e.assignments && e.assignments.length ? e.assignments : e.assignee ? [{ key: e.assignee, skills: [], minutes: Math.round((+e.dur || 1) * 60), offset: 0, label: 'Whole work order' }] : []).filter(x => x.key);
+    const asgKeys = [...new Set(asgList.map(x => x.key))];
+    const people = (e.participants || []).filter(p => !asgKeys.includes(p[0]));
+    const edA = this.asgKeysOf(e), edF = this.folKeysOf(e), edSg = ed ? this.segsOf(e) : [];
+    const PM = this.state.PM;
+    const nMsg = C ? C.messages(Q0.key).filter(m => m.who !== 'sys').length : 0, un = C ? C.unread(Q0.key) : 0;
+    const typeOf = TYPE[ed ? e.type : w.type] || TYPE.Corrective;
+    const descText = w.desc || (SEAL ? 'Operators reported a major leak at the pump shaft during the night shift. The mechanical seal is suspected. Pump is running on the backup line — replace the seal and check the discharge pressure before handing back.' : w.quick ? 'No description yet.' : `Carry out the ${w.type.toLowerCase()} work on ${w.asset}: ${w.task.toLowerCase()}. Follow the checklist and record parts used.`);
+    return {
+      mainRef: this.mainRef, chatRef: this.chatRef,
+      wo: w, woId: C ? C.displayId(Q0.key) : Q0.key, title: `${w.asset} — ${w.task}`, editing: !!ed, viewing: !ed, e: ed ? e : {},
+      st: { label: done && sum.final !== 'completed' ? fin[0] : status, bg: done && sum.final !== 'completed' ? fin[3] : sbg, fg: done && sum.final !== 'completed' ? fin[2] : sfg },
+      pr: { label: w.prio || 'No priority', bg: pbg, fg: pfg, urgent: w.prio === 'Critical' || w.prio === 'High' }, ty: { icon: typeOf[0], fg: typeOf[1] },
+      assigneeName: (() => { const ks = C ? C.assigneesOf(w) : (w.assignee ? [w.assignee] : []); return ks.length ? ks.map(k => P(k).name.replace(/^(\S+) (\S)\S*$/, '$1 $2.')).join(' + ') : 'Unassigned'; })(),
+      dueLabel: logged ? `Done ${cpl.at ? fmtDue(cpl.at) : 'today'}` : w.due ? `Scheduled ${fmtDue(w.due)}` : overdue ? 'Due Sep 27 · 3 d late' : w.quick ? 'Started today' : status === 'Requested' ? 'Not scheduled' : 'Scheduled today, 09:00', dueColor: overdue ? '#B42318' : '#667085',
+      chatKey: Q0.key, copyId: () => { const id = C ? C.displayId(Q0.key) : Q0.key; try { navigator.clipboard.writeText(id); } catch (x) {} this.flash(`${id} copied`); },
+      canStart: !done && !logged && status !== 'Requested' && status !== 'Completed', canDone: !done && !going && !logged && (status === 'Requested' || status === 'Scheduled'),
+      markDone: () => window.CMMSQuickComplete && window.CMMSQuickComplete({ key: Q0.key, title: `${w.asset} — ${w.task}`, asset: w.asset, task: w.task, loc: w.loc, type: w.type, prio: w.prio, status, assignee: w.assignee, date: w.due || '' }),
+      isLogged: logged, lg: logged ? (() => { const f = FINAL[cpl.result || 'completed'], when = cpl.at ? fmtDue(cpl.at) : 'Today', mins = +(cpl.mins || Math.round((w.actualMs || 0) / 60000));
+        return { icon: f[1], fg: f[2], bg: f[3], title: cpl.result && cpl.result !== 'completed' ? `${f[0]} — recorded without live intervention` : 'Completed — recorded without live intervention',
+          sub: `Done by ${P(cpl.by || 'GD').name} · ${when} · ${durLabel(mins / 60) || mins + ' min'} · equipment ${cpl.operational === 'no' ? 'stopped' : 'operational'}${cpl.cause ? ' · cause: ' + cpl.cause.toLowerCase() : ''}${cpl.followUp ? ' · follow-up created' : ''}`,
+          report: cpl.report ? `“${cpl.report}”` : '' }; })() : {},
+      startLabel: going ? 'Resume intervention' : 'Start intervention', runHref: 'Intervention.dc.html' + window.location.search.replace(/&?(edit|chat|msg)=[^&]*/g, ''),
+      incomplete: missing.length > 0, missingLabel: `Missing: ${missing.join(', ')}. You can complete it during or after the intervention.`,
+      inProgress: !!going, run: going ? { stepNo: sum.stepNo, total: sum.total, stepTitle: sum.mode === 'review' ? 'Review' : sum.stepTitle, pct: Math.round((sum.stepNo - 1) / sum.total * 100) + '%', elapsed: hms(sum.elapsed) } : {},
+      isDone: !!done, doneIcon: fin ? fin[1] : '', doneColor: fin ? fin[2] : '', doneBg: fin ? fin[3] : '', doneTitle: fin ? `Intervention ${fin[0].toLowerCase()}` : '',
+      doneSub: at ? `Closed at ${pad(at.getHours())}:${pad(at.getMinutes())} · ${r ? r.minutes : 0} min · Gaudéric Durand${r && r.followUp ? ' · follow-up created' : ''}` : '',
+      desc: descText,
+      _d: w.desc || (SEAL ? 'Operators reported a major leak at the pump shaft during the night shift. The mechanical seal is suspected. Pump is running on the backup line — replace the seal and check the discharge pressure before handing back.' : w.quick ? 'No description yet.' : `Carry out the ${w.type.toLowerCase()} work on ${w.asset}: ${w.task.toLowerCase()}. Follow the checklist and record parts used.`),
+      descColor: !w.desc && w.quick ? '#98A2B3' : '#344054', category: w.cat, hasCat: !!w.cat, stop: !!w.stop,
+      clSummary: cls.length ? `${cls.length} checklist${cls.length > 1 ? 's' : ''} · ${cls.reduce((a, c) => a + c.steps.length, 0)} steps · est. ${cls.reduce((a, c) => a + (+c.est || 30), 0)} min` : '',
+      noChecklist: !cls.length,
+      checklists: cls.map((c, ci) => { const open = s.openCl[c.id] ?? ci === 0; return { name: c.name, meta: `${c.steps.length} steps · ~${c.est || 30} min`, href: 'ChecklistEditor.dc.html?id=' + c.id, open, chev: open ? 'expand_more' : 'chevron_right',
+        toggle: ev => { if (ev.target.closest('a')) return; this.setState(st => ({ openCl: { ...st.openCl, [c.id]: !open } })); },
+        steps: c.steps.map((st, i) => { const past = ci === 0 && (going && i < sum.stepNo - 1 || done); return { title: st.title, kinds: `${CL.TYPES[st.type].label}${st.required ? ' · required' : ''}`, cond: !!st.conditional, indent: st.conditional ? '40px' : '16px', mark: past ? '✓' : i + 1, bg: past ? '#E6F4EE' : '#F2F4F7', fg: past ? '#0B6B4A' : '#475467' }; }) }; }),
+      parts: SEAL ? [{ name: 'Mechanical seal 45 mm', ref: 'SEAL-M45', stock: 'Reserved by Sarah Lambert', color: '#0B6B4A', qty: 1 }] : (w.parts || []).map(p => ({ ...p, stock: 'To reserve', color: '#B54708' })), noParts: !SEAL && !(w.parts || []).length,
+      chatBorder: s.chatFlash ? '#F79009' : '#E4E7EC', chatSub: nMsg ? `${nMsg} message${nMsg > 1 ? 's' : ''}` : 'No messages yet', highlight: QS.get('msg') || '',
+      hasUnread: un > 0, unreadN: un, openChat: () => this.scrollToChat(),
+      avatars: [...asgKeys, ...people.map(p => p[0])].slice(0, 6).map(k => P(k)), peopleCount: `${people.length + asgKeys.length} ${people.length + asgKeys.length === 1 ? 'person' : 'people'}`,
+      noAsg: !asgKeys.length, setAssignments: list => this.setE('assignments', list),
+      asgView: asgKeys.map(k => { const p = P(k), mine = asgList.filter(x => x.key === k), all = asgList.length > 1 && mine.length < asgList.length;
+        return { key: k, name: k === 'GD' ? p.name + ' (you)' : p.name, role: p.role, avBg: p.avBg, avFg: p.avFg, total: PM ? PM.dur(mine.reduce((a, x) => a + (+x.minutes || 0), 0)) : '',
+          parts: mine.map(x => { const sk = PM && x.skills && x.skills.length ? PM.skill(x.skills[0]) : { icon: 'person', fg: '#475467', bg: '#EEF1F4' }; const i = asgList.indexOf(x);
+            return { icon: sk.icon, fg: sk.fg, bg: sk.bg, text: `${all ? 'Part ' + (i + 1) + ' · ' : ''}${PM ? PM.skillNames(x.skills) : ''} · ${PM ? PM.dur(+x.minutes || 0) : ''}`, tip: `${x.label} · starts at +${PM ? PM.hm((x.offset || 0) / 60) : ''}` }; }) }; }),
+      people: people.map(([k, role]) => { const p = P(k), isA = role === 'Assigned to'; return { ...p, name: k === 'GD' ? p.name + ' (you)' : p.name, job: p.role, role, isAssignee: isA, showRole: !isA && !ed, editRole: !isA && !!ed, bg: isA ? '#FBFBFC' : 'transparent',
+        setRole: ev => this.setE('participants', e.participants.map(x => x[0] === k ? [k, ev.target.value] : x)),
+        remove: () => this.setE('participants', e.participants.filter(x => x[0] !== k)),
+        makeAssignee: () => this.setState(st => ({ e: { ...st.e, assignee: k, participants: [...st.e.participants.filter(x => x[0] !== k), ...(st.e.assignee ? [[st.e.assignee, 'Additional technician']] : [])] } })) }; }),
+      roleOpts: C ? C.ROLES : [], noFollow: !people.length,
+      ...this.extraVals(e, !!ed, w),
+      edAssigned: edA, edFollowers: edF, reqSkills: [...new Set(edSg.flatMap(g => g.skills))], suggested: ed && s.PM ? [...new Set(s.PM.autoAssign(edSg, { date: (e.due || '').slice(0, 10) || s.PM.dayIso(1) }).filter(Boolean))] : [],
+      setEdAssigned: keys => this.setState(st => ({ e: { ...st.e, assigned: keys, followers: this.folKeysOf(st.e).filter(k => !keys.includes(k)) } })),
+      setEdFollowers: keys => this.setState(st => ({ e: { ...st.e, assigned: this.asgKeysOf(st.e), followers: keys } })),
+      addOpts: C && ed ? Object.keys(C.PEOPLE).filter(k => !people.some(p => p[0] === k)).map(k => { const p = P(k); return { ...p, short: p.name.split(' ')[0] + ' · ' + p.role, add: () => this.setE('participants', [...e.participants, [k, ['SL', 'CM'].includes(k) ? 'Specialist' : ['LB', 'ER', 'HP'].includes(k) ? 'Follower' : 'Additional technician']]) }; }) : [],
+      details: [['Asset', w.asset], ['Location', w.loc], ['Type', w.type], ['Priority', w.prio || 'Not set'], ['Estimated', durLabel(w.dur) || '—'], ['Requested by', w.quick ? 'Gaudéric Durand · quick intervention' : w.created ? 'Gaudéric Durand' : 'Night shift · L. Petit'], ['Request date', w.created ? 'Today' : 'Sep 26, 2026'], ['Scheduled', w.due ? fmtDue(w.due) : overdue ? 'Sep 27, 08:00' : w.quick ? '—' : 'Today, 09:00']]
+        .map(([k, v]) => ({ k, v, color: v === 'Not set' ? '#B54708' : '#1E2430' })).concat(this.extraVals(e, false, w).cfView.map(x => ({ ...x, color: '#1E2430' }))),
+      docKey: Q0.key, costWo: w, costParts: SEAL ? [{ ref: 'SEAL-M45', qty: 1 }, { ref: 'GSK-P101', qty: 1 }, { ref: 'ORG-KIT', qty: 1 }] : (w.parts || []).map(p => ({ ref: p.ref, qty: p.qty || 1 })), costActual: done && sum.elapsed ? sum.elapsed : null,
+      activity: [
+        ...(done ? [['task_alt', `Intervention ${fin[0].toLowerCase()}`, 'Gaudéric Durand', 'Today']] : going ? [['play_arrow', 'Intervention started', 'Gaudéric Durand', 'Today']] : logged ? [['history', 'Completed — recorded after the fact', `${P(cpl.loggedBy || 'GD').name}${cpl.by && cpl.by !== cpl.loggedBy ? ' · done by ' + P(cpl.by).name : ''}`, 'Today']] : []),
+        ...(w.quick ? [['bolt', 'Created from a quick intervention', 'Gaudéric Durand', 'Today']] : w.created ? [['add', 'Work order created', 'Gaudéric Durand', 'Today']] : [['event', 'Scheduled', 'Hugo Petit · Planner', 'Sep 26'], ['check', 'Request approved', 'Gaudéric Durand', 'Sep 26'], ['campaign', 'Request created', 'L. Petit · Night shift', 'Sep 26']]),
+      ].map(([icon, text, who, when]) => ({ icon, text, who, when })),
+      startEdit: () => this.setState({ editing: true, e: { ...w, status, desc: w.desc || (SEAL || !w.quick ? descText : ''), participants: [...(w.participants || [])], checklists: [...(w.checklists || [])], assignments: (w.assignments || []).map(x => ({ ...x })) } }),
+      cancelEdit: () => this.setState({ editing: false, e: null }), saveEdit: () => this.save(),
+      on: Object.fromEntries(['task', 'status', 'desc', 'cat', 'due', 'dur', 'costCenter'].map(k => [k, ev => this.setE(k, ev.target.value)])),
+      prioOpts: Object.keys(PRIO).map(p => { const on = e.prio === p; return { label: p, dot: PRIO[p][2], bg: on ? (p === 'Critical' ? '#C00018' : '#FBF1F2') : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? (p === 'Critical' ? '#fff' : '#A30014') : '#344054', font: on ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", select: () => this.setE('prio', p) }; }),
+      typeOpts: (s.CFG ? s.CFG.woTypes().map(t => t.name).concat(s.CFG.woTypes().some(t => t.name === e.type) ? [] : [e.type]) : Object.keys(TYPE)).map(t => { const on = e.type === t, [icon, fg, bg] = s.CFG ? (() => { const x = s.CFG.woType(t); return [x.icon, x.fg, x.bg]; })() : TYPE[t]; return { label: t, icon, bg: on ? bg : '#fff', border: on ? fg : '#D0D5DD', color: on ? fg : '#475467', font: on ? "600 12px 'IBM Plex Sans',sans-serif" : "500 12px 'IBM Plex Sans',sans-serif", select: () => this.setE('type', t) }; }),
+      statusOpts: C ? C.FLOW.filter(x => x === w.status || C.moveCheck(w.status, x).ok) : [w.status], statusHint: 'Status follows the workflow: approve or schedule, start the intervention, then Review & close — or Mark as done if it was already done on site',
+      waitOpts: C ? Object.entries(C.WAIT).map(([v, [l]]) => ({ v, l })) : [], setWaitE: ev => this.setE('waiting', ev.target.value), waitSelBorder: ed && e.waiting ? '#F7D9A8' : '#D0D5DD', waitSelBg: ed && e.waiting ? '#FFFAEB' : '#fff', waitSelColor: ed && e.waiting ? '#B54708' : '#98A2B3',
+      ...(() => { const wk = w.waiting || (going && run && run.paused ? 'paused' : ''); return { waitOn: !!(wk && !done), waitLabel: C && wk ? C.waitLabel(wk) : '', waitIcon: C && C.WAIT[wk] ? C.WAIT[wk][1] : 'hourglass_top' }; })(), waitNote: w.waitNote || 'Waiting',
+      clearWait: () => { C.setWaiting(Q0.key, ''); C.post(Q0.key, 'sys', 'Gaudéric Durand removed the Waiting flag'); this.setState(st => ({ w: { ...st.w, waiting: '' } })); this.flash('Waiting flag removed'); }, catBorder: ed && w.quick && !e.cat ? '#F8D3A5' : '#D0D5DD',
+      toggleStop: () => this.setE('stop', !e.stop), stopTrack: e.stop ? '#C00018' : '#D0D5DD', stopKnob: e.stop ? '18px' : '2px',
+      setChecklists: ids => this.setState(st => { const CL0 = st.CL, cur = st.e.parts || [], auto = CL0 && CL0.partsOf ? CL0.partsOf(this.segsOf ? ids.map(id => CL0.load(id) || (EXTRA[id] ? CL0.fromName(id, EXTRA[id]) : null)).filter(Boolean) : []) : [];
+        const manual = cur.filter(p => !p.auto); return { e: { ...st.e, checklists: ids, parts: [...auto.filter(a => !manual.some(p => p.ref === a.ref)).map(a => ({ ref: a.ref, name: a.name, qty: a.qty, auto: true })), ...manual] } }; }),
+      assignOpts: ['GD', 'PL', 'MD', 'AM', 'SM', 'SB', 'JM'].map(k => ({ k, l: `${P(k).name} · ${P(k).role}` })),
+      setAssignee: ev => { const k = ev.target.value; this.setState(st => ({ e: { ...st.e, assignee: k, participants: [...st.e.participants.filter(x => x[0] !== k), ...(st.e.assignee && st.e.assignee !== k ? [[st.e.assignee, 'Additional technician']] : [])] } })); },
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

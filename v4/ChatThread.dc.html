@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#fff">
+  <div ref="{{ listRef }}" style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:2px;padding:8px 0">
+    <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="4">
+      <sc-if value="{{ m.isSys }}">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:12px;color:#98A2B3"><span style="flex:1;height:1px;background:#EEF0F3"></span><span style="display:flex;align-items:center;gap:4px"><span style="font:14px/1 'Material Symbols Outlined'">info</span>{{ m.text }} · {{ m.t }}</span><span style="flex:1;height:1px;background:#EEF0F3"></span></div>
+      </sc-if>
+      <sc-if value="{{ m.isMsg }}">
+        <div data-msg="{{ m.id }}" style="display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;padding:7px 16px;background:{{ m.bg }};border-left:3px solid {{ m.edge }}">
+          <span data-person="{{ m.initials }}" title="View profile" style="width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:{{ m.avBg }};color:{{ m.avFg }};font:600 10.5px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ m.initials }}</span>
+          <div style="min-width:0;display:flex;flex-direction:column;gap:3px">
+            <span style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><span data-person="{{ m.initials }}" style="font-weight:600;cursor:pointer">{{ m.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ m.role }} · {{ m.t }}</span><sc-if value="{{ m.hasTag }}"><span style="height:18px;display:inline-flex;align-items:center;gap:3px;padding:0 6px;border-radius:4px;background:{{ m.tagBg }};color:{{ m.tagFg }};font-size:11px;font-weight:600;white-space:nowrap"><span style="font:12px/1 'Material Symbols Outlined'">{{ m.tagIcon }}</span>{{ m.tag }}</span></sc-if></span>
+            <span style="line-height:1.45;text-wrap:pretty;font-size:{{ fontSize }}"><sc-for list="{{ m.parts }}" as="p"><span data-person="{{ p.who }}" style="color:{{ p.color }};font-weight:{{ p.weight }};background:{{ p.bg }};border-radius:3px;padding:{{ p.pad }};cursor:{{ p.cursor }}">{{ p.t }}</span></sc-for></span>
+            <sc-if value="{{ m.photo }}"><span style="width:180px;height:104px;margin-top:2px;border-radius:6px;border:1px solid #E4E7EC;background:repeating-linear-gradient(135deg,#F2F4F7 0 6px,#E9ECF0 6px 12px);display:grid;place-items:center;font:11px 'IBM Plex Mono',monospace;color:#98A2B3">photo</span></sc-if>
+            <sc-if value="{{ m.hasRef }}">
+              <a href="{{ m.ref.href }}" style="align-self:flex-start;max-width:100%;display:flex;align-items:center;gap:8px;margin-top:2px;padding:5px 10px 5px 6px;border:1px solid #E4E7EC;border-radius:6px;background:#fff;color:#1E2430" style-hover="border-color:#98A2B3">
+                <span style="flex:none;width:22px;height:22px;border-radius:5px;display:grid;place-items:center;background:{{ m.ref.bg }};color:{{ m.ref.fg }};font:15px/1 'Material Symbols Outlined'">{{ m.ref.icon }}</span>
+                <span style="min-width:0;display:flex;flex-direction:column"><span style="font-size:11px;color:#98A2B3;font-weight:500">{{ m.ref.kind }}</span><span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.ref.label }}</span></span>
+                <span style="flex:none;font-size:11.5px;color:#667085;white-space:nowrap">{{ m.ref.meta }}</span>
+              </a>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </sc-for>
+    <sc-if value="{{ empty }}"><div style="margin:auto;padding:24px;text-align:center;color:#667085;max-width:280px;line-height:1.5"><span style="display:block;font:26px/1 'Material Symbols Outlined';color:#98A2B3;margin-bottom:6px">forum</span>{{ emptyText }}</div></sc-if>
+  </div>
+
+  <div style="position:relative;flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;border-top:1px solid #EEF0F3">
+    <sc-if value="{{ hasIntents }}">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ intents }}" as="q"><button onClick="{{ q.pick }}" style="height:{{ chipH }};display:flex;align-items:center;gap:5px;padding:0 10px 0 7px;background:{{ q.bg }};border:1px solid {{ q.border }};border-radius:16px;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ q.color }};cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">{{ q.icon }}</span>{{ q.label }}</button></sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasAttach }}">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-if value="{{ hasRefAttach }}"><span style="height:26px;display:flex;align-items:center;gap:5px;padding:0 4px 0 7px;background:#F2F4F7;border-radius:13px;font-size:12px;font-weight:600;color:#344054;max-width:260px"><span style="font:14px/1 'Material Symbols Outlined';color:{{ attach.fg }}">{{ attach.icon }}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ attach.label }}</span><button onClick="{{ clearRef }}" style="width:20px;height:20px;display:grid;place-items:center;padding:0;background:transparent;border:0;color:#667085;cursor:pointer;font:14px/1 'Material Symbols Outlined'">close</button></span></sc-if>
+        <sc-if value="{{ photo }}"><span style="height:26px;display:flex;align-items:center;gap:5px;padding:0 4px 0 7px;background:#F2F4F7;border-radius:13px;font-size:12px;font-weight:600;color:#344054"><span style="font:14px/1 'Material Symbols Outlined';color:#475467">image</span>Photo attached<button onClick="{{ clearPhoto }}" style="width:20px;height:20px;display:grid;place-items:center;padding:0;background:transparent;border:0;color:#667085;cursor:pointer;font:14px/1 'Material Symbols Outlined'">close</button></span></sc-if>
+        <sc-if value="{{ hasTagDraft }}"><span style="height:26px;display:flex;align-items:center;gap:5px;padding:0 4px 0 7px;background:{{ tagDraftBg }};border-radius:13px;font-size:12px;font-weight:600;color:{{ tagDraftFg }}">{{ tagDraft }}<button onClick="{{ clearTag }}" style="width:20px;height:20px;display:grid;place-items:center;padding:0;background:transparent;border:0;color:inherit;cursor:pointer;font:14px/1 'Material Symbols Outlined'">close</button></span></sc-if>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:4px;height:{{ inputH }};padding:0 4px;border:1px solid {{ inputBorder }};border-radius:8px;background:#fff">
+      <button onClick="{{ addPhoto }}" title="Add a photo" style="flex:none;width:{{ btnW }};height:{{ btnW }};display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">photo_camera</span></button>
+      <sc-if value="{{ canLink }}"><button onClick="{{ toggleLink }}" title="Link equipment, work order or part" style="flex:none;width:{{ btnW }};height:{{ btnW }};display:grid;place-items:center;background:{{ linkBg }};border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">add_link</span></button></sc-if>
+      <input ref="{{ inputRef }}" value="{{ draft }}" onInput="{{ setDraft }}" onKeyDown="{{ onKey }}" onFocus="{{ onFocus }}" onBlur="{{ onBlur }}" placeholder="{{ placeholder }}" style="flex:1;min-width:0;border:0;outline:none;font:{{ inputFont }};color:#1E2430;background:transparent" />
+      <button onClick="{{ send }}" title="Send" style="flex:none;width:{{ btnW }};height:{{ btnW }};display:grid;place-items:center;background:{{ sendBg }};border:0;border-radius:6px;color:#fff;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">send</span></button>
+    </div>
+    <sc-if value="{{ mentionOpen }}">
+      <div style="position:absolute;left:12px;right:12px;bottom:calc(100% - 4px);z-index:21;padding:4px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.14)">
+        <div style="padding:6px 8px 4px;font-size:11.5px;font-weight:600;color:#98A2B3">Mention someone</div>
+        <sc-for list="{{ mentionOpts }}" as="o">
+          <button onMouseDown="{{ o.pick }}" style="width:100%;height:38px;display:flex;align-items:center;gap:9px;padding:0 8px;background:{{ o.bg }};border:0;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7">
+            <span style="flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:{{ o.avBg }};color:{{ o.avFg }};font:600 9.5px 'IBM Plex Sans',sans-serif">{{ o.initials }}</span>
+            <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="font-weight:600">{{ o.name }}</span> <span style="color:#98A2B3">{{ o.role }}</span></span>
+            <sc-if value="{{ o.inThread }}"><span style="flex:none;font-size:11px;color:#0B6B4A;font-weight:600">{{ o.inThreadLabel }}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ linkOpen }}">
+      <div onClick="{{ toggleLink }}" style="position:fixed;inset:0;z-index:20"></div>
+      <div style="position:absolute;left:12px;right:12px;bottom:calc(100% - 4px);z-index:21;padding:4px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.14)">
+        <div style="padding:6px 8px 4px;font-size:11.5px;font-weight:600;color:#98A2B3">Link to…</div>
+        <sc-for list="{{ refOpts }}" as="r">
+          <button onClick="{{ r.pick }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:6px 8px;background:transparent;border:0;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7">
+            <span style="flex:none;width:22px;height:22px;border-radius:5px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.fg }};font:15px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+            <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600">{{ r.label }}</span>
+            <span style="flex:none;font-size:11.5px;color:#98A2B3">{{ r.kind }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:560},&quot;channel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;team&quot;,&quot;site&quot;,&quot;WO-1339859&quot;,&quot;WO-1339850&quot;],&quot;default&quot;:&quot;WO-1339859&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;highlight&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;md&quot;,&quot;lg&quot;],&quot;default&quot;:&quot;md&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;intents&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;onSent&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+const KIND = { Equipment: ['precision_manufacturing', '#475467', '#EEF1F4'], 'Work order': ['build', '#A30014', '#FBE7EA'], Intervention: ['play_circle', '#2456B8', '#EAF1FD'], 'Spare part': ['inventory_2', '#B54708', '#FEF3E2'] };
+const TAGS = { Help: ['#FDECEC', '#B42318', 'support'], Handover: ['#EAF1FD', '#2456B8', 'swap_horiz'], Reassignment: ['#FEF3E2', '#B54708', 'person_alert'], 'Missing part': ['#FEF3E2', '#B54708', 'inventory_2'], Progress: ['#E6F4EE', '#0B6B4A', 'trending_up'] };
+const INTENTS = {
+  wo: [['Help', 'Need help', 'support', 'Need help: '], ['Reassignment', 'Can someone take over?', 'person_alert', "I can't continue — can someone take over this intervention?"], ['Missing part', 'Missing part', 'inventory_2', 'Missing part: '], ['Handover', 'Handover note', 'swap_horiz', 'Handover: ']],
+  team: [['Help', 'Need assistance', 'support', 'Need assistance on '], ['Handover', 'Shift handover', 'swap_horiz', 'Shift handover: ']],
+  site: [],
+};
+class Component extends DCLogic {
+  state = { C: null, v: 0, draft: '', ref: null, photo: false, tag: '', linkOpen: false, focus: false, mi: 0 };
+  listRef = React.createRef(); inputRef = React.createRef();
+  componentDidMount() {
+    import('./collab-model.js').then(C => { this.setState({ C }, () => this.scroll(true)); if (!this.props.highlight) C.markSeen(this.props.channel); });
+    this._on = e => { if (!e.detail || e.detail.ch === this.props.channel) { if (e.detail && !e.detail.seen && this.state.C && !this.props.highlight) this.state.C.markSeen(this.props.channel); this.setState(s => ({ v: s.v + 1 }), () => this.scroll(false)); } };
+    window.addEventListener('cmms-chat', this._on);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-chat', this._on); }
+  componentDidUpdate(pp) { if (pp.channel !== this.props.channel && this.state.C) { this.state.C.markSeen(this.props.channel); this.setState({ draft: '', ref: null, photo: false, tag: '' }, () => this.scroll(true)); } }
+  scroll(first) {
+    const el = this.listRef.current; if (!el) return;
+    const hl = first && this.props.highlight && el.querySelector(`[data-msg="${this.props.highlight}"]`);
+    if (hl) el.scrollTop = Math.max(0, hl.offsetTop - el.offsetTop - 40); else el.scrollTop = el.scrollHeight;
+  }
+  send() {
+    const s = this.state, C = s.C, txt = s.draft.trim(); if (!C || (!txt && !s.photo && !s.ref)) return;
+    C.post(this.props.channel, this.props.me || C.ME, txt || (s.photo ? 'Photo' : ''), { ...(s.ref ? { ref: s.ref } : {}), ...(s.photo ? { photo: true } : {}), ...(s.tag ? { tag: s.tag } : {}) });
+    this.setState({ draft: '', ref: null, photo: false, tag: '', mi: 0 });
+    if (this.props.onSent) this.props.onSent();
+  }
+  mentionQuery() { const m = /(^|\s)@([A-Za-zÀ-ÿ]*)$/.exec(this.state.draft); return m ? m[2].toLowerCase() : null; }
+  renderVals() {
+    const s = this.state, C = s.C, ch = this.props.channel, big = this.props.size === 'lg';
+    if (!C) return { msgs: [], empty: false, intents: [], mentionOpts: [], refOpts: [], hasIntents: false, inputH: big ? '52px' : '42px', btnW: big ? '42px' : '32px', chipH: big ? '34px' : '28px', inputBorder: '#D0D5DD', sendBg: '#D0D5DD', placeholder: 'Write a message…', inputFont: "13px 'IBM Plex Sans',sans-serif", fontSize: '13px' };
+    const info = C.channelInfo(ch), members = info.members || [];
+    const msgs = C.messages(ch).map(m => {
+      if (m.who === 'sys') return { id: m.id, isSys: true, isMsg: false, text: m.text, t: m.t };
+      const p = C.person(m.who), hl = this.props.highlight === m.id, [tbg, tfg, ticon] = TAGS[m.tag] || [];
+      const k = m.ref && KIND[m.ref.kind];
+      return { id: m.id, isSys: false, isMsg: true, t: m.t, name: m.who === C.ME ? 'You' : p.name, role: p.role, initials: m.who, avBg: p.avBg, avFg: p.avFg,
+        bg: hl ? '#FFF8E6' : 'transparent', edge: hl ? '#F79009' : 'transparent', hasTag: !!m.tag, tag: m.tag, tagBg: tbg, tagFg: tfg, tagIcon: ticon, photo: !!m.photo,
+        parts: C.parse(m.text || '').map(x => ({ who: x.mention || undefined, cursor: x.mention ? 'pointer' : 'inherit', t: x.t, color: x.mention ? (x.mention === C.ME ? '#A30014' : '#2456B8') : 'inherit', weight: x.mention ? 600 : 400, bg: x.mention ? (x.mention === C.ME ? '#FBE7EA' : '#EAF1FD') : 'transparent', pad: x.mention ? '0 3px' : '0' })),
+        hasRef: !!m.ref, ref: m.ref ? { ...m.ref, icon: k[0], fg: k[1], bg: k[2] } : {} };
+    });
+    const mq = s.focus ? this.mentionQuery() : null;
+    const opts = mq === null ? [] : Object.keys(C.PEOPLE).filter(k => k !== C.ME).map(k => C.person(k)).filter(p => !mq || p.handle.toLowerCase().startsWith(mq) || p.name.toLowerCase().includes(mq))
+      .sort((a, b) => (members.includes(b.key) ? 1 : 0) - (members.includes(a.key) ? 1 : 0)).slice(0, 6);
+    const pick = p => { const d = s.draft.replace(/@([A-Za-zÀ-ÿ]*)$/, '@' + p.handle + ' '); this.setState({ draft: d, mi: 0 }); setTimeout(() => this.inputRef.current && this.inputRef.current.focus(), 0); };
+    const ints = INTENTS[this.props.intents || (info.kind === 'wo' ? 'wo' : info.kind)] || [];
+    const canSend = !!(s.draft.trim() || s.photo || s.ref);
+    const [tgb, tgf] = TAGS[s.tag] || [];
+    return {
+      msgs, empty: !msgs.length, emptyText: this.props.emptyText || (info.kind === 'dm' ? `No messages with ${info.title} yet. Say hello — only the two of you see this conversation.` : info.kind === 'wo' ? 'No messages yet. Discuss availability, parts or progress — everyone on this work order sees it.' : 'No messages yet.'),
+      fontSize: big ? '14px' : '13px', listRef: this.listRef, inputRef: this.inputRef,
+      hasIntents: ints.length > 0, chipH: big ? '34px' : '28px',
+      intents: ints.map(([tag, label, icon, pre]) => { const on = s.tag === tag; return { label, icon, bg: on ? TAGS[tag][0] : '#fff', border: on ? TAGS[tag][1] : '#E4E7EC', color: on ? TAGS[tag][1] : '#344054', pick: () => { this.setState({ tag: on ? '' : tag, draft: on ? s.draft : (s.draft.trim() ? s.draft : pre) }); setTimeout(() => this.inputRef.current && this.inputRef.current.focus(), 0); } }; }),
+      hasAttach: !!(s.ref || s.photo || s.tag), hasRefAttach: !!s.ref, attach: s.ref ? { label: s.ref.label, icon: KIND[s.ref.kind][0], fg: KIND[s.ref.kind][1] } : {},
+      clearRef: () => this.setState({ ref: null }), photo: s.photo, clearPhoto: () => this.setState({ photo: false }), addPhoto: () => this.setState({ photo: true }),
+      hasTagDraft: !!s.tag, tagDraft: s.tag, tagDraftBg: tgb, tagDraftFg: tgf, clearTag: () => this.setState({ tag: '' }),
+      canLink: info.kind !== 'wo', linkOpen: s.linkOpen, toggleLink: () => this.setState({ linkOpen: !s.linkOpen }), linkBg: s.linkOpen ? '#F2F4F7' : 'transparent',
+      refOpts: C.REFS.map(r => ({ ...r, icon: KIND[r.kind][0], fg: KIND[r.kind][1], bg: KIND[r.kind][2], pick: () => this.setState({ ref: r, linkOpen: false }) })),
+      mentionOpen: opts.length > 0, mentionOpts: opts.map((p, i) => ({ ...p, bg: i === s.mi ? '#F2F4F7' : 'transparent', inThread: members.includes(p.key), inThreadLabel: info.kind === 'wo' ? 'On this WO' : 'Member', pick: e => { e.preventDefault(); pick(p); } })),
+      draft: s.draft, setDraft: e => this.setState({ draft: e.target.value, mi: 0 }),
+      onFocus: () => this.setState({ focus: true }), onBlur: () => setTimeout(() => this.setState({ focus: false }), 120),
+      onKey: e => {
+        if (opts.length) {
+          if (e.key === 'ArrowDown') { e.preventDefault(); return this.setState({ mi: (s.mi + 1) % opts.length }); }
+          if (e.key === 'ArrowUp') { e.preventDefault(); return this.setState({ mi: (s.mi - 1 + opts.length) % opts.length }); }
+          if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); return pick(opts[s.mi] || opts[0]); }
+        }
+        if (e.key === 'Enter') { e.preventDefault(); this.send(); }
+      },
+      send: () => this.send(), sendBg: canSend ? '#C00018' : '#D0D5DD', inputBorder: s.focus ? '#98A2B3' : '#D0D5DD',
+      inputH: big ? '52px' : '42px', btnW: big ? '42px' : '32px', inputFont: big ? "15px 'IBM Plex Sans',sans-serif" : "13px 'IBM Plex Sans',sans-serif",
+      placeholder: this.props.placeholder || (info.kind === 'wo' ? 'Message everyone on this work order · @ to mention' : info.kind === 'dm' ? `Message ${info.title.split(' ')[0]} directly` : `Message ${info.title} · @ to mention`),
+    };
+  }
+}
+</script>
+</body>
+</html>

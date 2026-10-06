@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="teams" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 0;display:flex;flex-direction:column;gap:16px" data-screen-label="Teams and users">
+    <header style="flex:none;display:flex;align-items:center;gap:16px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Teams &amp; users</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">People, teams and access used for assignment and planning</p>
+      </div>
+      <button onClick="{{ primaryAction }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">{{ primaryIcon }}</span>{{ primaryLabel }}</button>
+    </header>
+
+    <div style="flex:none;display:flex;gap:4px;border-bottom:1px solid #E4E7EC">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.select }}" style="position:relative;height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;background:transparent;border:0;font:{{ t.font }};color:{{ t.color }};cursor:pointer">{{ t.label }}<span style="font-size:11px;font-weight:600;color:#475467;background:#F2F4F7;border-radius:9px;padding:1px 6px">{{ t.count }}</span><span style="position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:{{ t.bar }}"></span></button>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;margin:0 -28px;padding:0 28px 28px">
+<sc-if value="{{ isUsers }}" hint-placeholder-val="{{ true }}">
+      <section style="flex:none;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+          <label style="width:280px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px">
+            <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+            <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search by name or email…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+          </label>
+          <sc-for list="{{ selects }}" as="s" hint-placeholder-count="3">
+            <label style="position:relative;height:34px;display:flex;align-items:center;border:1px solid {{ s.border }};background:{{ s.bg }};border-radius:6px">
+              <select value="{{ s.value }}" onChange="{{ s.onChange }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 30px 0 10px;border:0;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;outline:none"><sc-for list="{{ s.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select>
+              <span style="position:absolute;right:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+            </label>
+          </sc-for>
+          <span style="margin-left:auto;color:#667085;font-size:12.5px">{{ userCount }}</span>
+        </div>
+        <div style="position:sticky;top:0;z-index:3;display:grid;grid-template-columns:minmax(220px,1.6fr) 160px minmax(130px,1fr) minmax(170px,1.4fr) 116px 110px 48px;align-items:center;height:36px;padding-left:16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+          <span>User</span><span>Role</span><span>Team</span><span>Skills</span><span>Status</span><span>Last active</span><span></span>
+        </div>
+        <sc-for list="{{ users }}" as="u" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:minmax(220px,1.6fr) 160px minmax(130px,1fr) minmax(170px,1.4fr) 116px 110px 48px;align-items:center;min-height:54px;padding-left:16px;border-bottom:1px solid #F2F4F7;opacity:{{ u.op }}" style-hover="background:#F9FAFB">
+            <span data-person="{{ u.name }}" title="View profile" style="display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer">
+              <span style="width:32px;height:32px;flex:none;border-radius:50%;background:{{ u.avBg }};color:{{ u.avFg }};display:grid;place-items:center;font-size:12px;font-weight:600">{{ u.ini }}</span>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">{{ u.name }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.email }}</span></span>
+            </span>
+            <span style="color:#344054">{{ u.role }}</span>
+            <span style="color:#475467">{{ u.team }}</span>
+            <span style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px 6px 0">
+              <sc-for list="{{ u.skills }}" as="k"><span title="{{ k.tip }}" style="height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:{{ k.bg }};color:{{ k.fg }};font-size:11.5px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for>
+              <sc-if value="{{ u.noSkills }}"><span style="color:#98A2B3">—</span></sc-if>
+            </span>
+            <span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ u.sbg }};color:{{ u.sfg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ u.status }}</span></span>
+            <span style="color:#667085">{{ u.last }}</span>
+            <span style="position:relative;display:grid;place-items:center">
+              <button onClick="{{ u.menu }}" style="width:30px;height:30px;display:grid;place-items:center;background:{{ u.menuBg }};border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:20px/1 'Material Symbols Outlined'">more_horiz</span></button>
+              <sc-if value="{{ u.menuOpen }}">
+                <div style="position:absolute;right:6px;top:{{ u.menuTop }};z-index:40;width:210px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.14);padding:6px">
+                  <sc-for list="{{ u.actions }}" as="a">
+                    <button onClick="{{ a.run }}" style="width:100%;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:{{ a.color }};cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:{{ a.iconColor }}">{{ a.icon }}</span>{{ a.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </span>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isTeams }}">
+      <section style="flex:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+        <sc-for list="{{ teams }}" as="t">
+          <div style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <span style="width:36px;height:36px;border-radius:8px;background:{{ t.bg }};color:{{ t.fg }};display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">{{ t.icon }}</span>
+              <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">{{ t.name }}</div><div style="font-size:12px;color:#667085;margin-top:2px">{{ t.spec }}</div></div>
+              <button style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:20px/1 'Material Symbols Outlined'">more_horiz</span></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="display:flex">
+                <sc-for list="{{ t.members }}" as="m"><span title="{{ m.name }}" style="width:28px;height:28px;margin-right:-6px;border-radius:50%;border:2px solid #fff;background:{{ m.bg }};color:{{ m.fg }};display:grid;place-items:center;font-size:10.5px;font-weight:600">{{ m.ini }}</span></sc-for>
+              </div>
+              <span style="margin-left:8px;color:#475467">{{ t.count }} members · lead {{ t.lead }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #F2F4F7;padding-top:10px">
+              <span style="display:flex;flex-direction:column;gap:1px"><span style="font-size:12px;color:#667085">Open WOs</span><span style="font-weight:600;font-size:15px">{{ t.open }}</span></span>
+              <span style="display:flex;flex-direction:column;gap:1px"><span style="font-size:12px;color:#667085">Overdue</span><span style="font-weight:600;font-size:15px;color:{{ t.overdueColor }}">{{ t.overdue }}</span></span>
+              <span style="display:flex;flex-direction:column;gap:1px"><span style="font-size:12px;color:#667085">Load this week</span><span style="font-weight:600;font-size:15px">{{ t.load }}</span></span>
+            </div>
+            <a href="Planning.dc.html" style="font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:4px">View team planning<span style="font:16px/1 'Material Symbols Outlined'">arrow_forward</span></a>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isRoles }}">
+      <section style="flex:none;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #EEF0F3;min-height:58px">
+          <span style="font-weight:600;font-size:14px">Permissions by role</span>
+          <span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:#FEF3E2;color:#B54708;font-size:12px;font-weight:600">Proposal · to be validated</span>
+          <sc-if value="{{ noChanges }}" hint-placeholder-val="{{ true }}">
+            <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#667085"><span style="font:16px/1 'Material Symbols Outlined'">touch_app</span>Click any cell to change access</span>
+          </sc-if>
+          <sc-if value="{{ hasChanges }}">
+            <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;color:#B54708;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:#F79009"></span>{{ changeLabel }}</span>
+            <button onClick="{{ discard }}" style="height:32px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Discard</button>
+            <button onClick="{{ saveMx }}" style="height:32px;padding:0 14px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Save changes</button>
+          </sc-if>
+        </div>
+        <div>
+          <div>
+            <div style="display:grid;grid-template-columns:{{ mxCols }};align-items:stretch;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+              <span style="display:flex;align-items:center;padding:0 16px">Module</span>
+              <sc-for list="{{ roleCols }}" as="r">
+                <div style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 6px;border-left:1px solid #F2F4F7">
+                  <sc-if value="{{ r.editable }}">
+                    <input value="{{ r.name }}" onInput="{{ r.rename }}" title="Rename role" style="width:100%;height:26px;padding:0 6px;border:1px solid transparent;border-radius:4px;background:transparent;font:600 12px 'IBM Plex Sans',sans-serif;color:#1E2430;text-align:center;outline:none" style-hover="border-color:#D0D5DD;background:#fff" style-focus="border-color:#C00018;background:#fff" />
+                  </sc-if>
+                  <sc-if value="{{ r.fixed }}"><span style="display:flex;align-items:center;gap:4px;height:26px;color:#1E2430">{{ r.name }}<sc-if value="{{ r.locked }}"><span title="System role — always full access" style="font:14px/1 'Material Symbols Outlined';color:#98A2B3">lock</span></sc-if></span></sc-if>
+                  <span style="font-weight:400;font-size:11px;color:#98A2B3">{{ r.users }}</span>
+                  <sc-if value="{{ r.removable }}"><button onClick="{{ r.remove }}" title="Remove role" style="position:absolute;top:4px;right:4px;width:20px;height:20px;padding:0;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button></sc-if>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;justify-content:center;border-left:1px solid #F2F4F7;padding:8px">
+                <button onClick="{{ addRole }}" style="height:30px;display:flex;align-items:center;gap:4px;padding:0 10px;background:#fff;border:1px dashed #C4CAD4;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer;white-space:nowrap" style-hover="border-color:#C00018;color:#C00018"><span style="font:16px/1 'Material Symbols Outlined'">add</span>Add role</button>
+              </div>
+            </div>
+            <sc-for list="{{ matrix }}" as="m">
+              <div style="display:grid;grid-template-columns:{{ mxCols }};align-items:center;min-height:46px;border-bottom:1px solid #F2F4F7">
+                <span style="padding:0 16px;font-weight:500">{{ m.module }}</span>
+                <sc-for list="{{ m.cells }}" as="c">
+                  <div style="position:relative;display:grid;place-items:center;height:100%;border-left:1px solid #F7F8FA">
+                    <button onClick="{{ c.open }}" title="{{ c.title }}" style="position:relative;height:28px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;background:{{ c.bg }};border:1px solid {{ c.border }};border-radius:14px;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ c.fg }};cursor:{{ c.cursor }}" style-hover="border-color:#98A2B3">
+                      <span style="font:16px/1 'Material Symbols Outlined'">{{ c.icon }}</span>{{ c.label }}
+                      <sc-if value="{{ c.changed }}"><span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:#F79009;border:2px solid #fff"></span></sc-if>
+                    </button>
+                    <sc-if value="{{ c.menuOpen }}">
+                      <div style="position:absolute;left:50%;top:{{ c.menuTop }};transform:translateX(-50%);z-index:40;width:220px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.14);padding:6px;text-align:left">
+                        <sc-for list="{{ c.options }}" as="o">
+                          <button onClick="{{ o.pick }}" style="width:100%;display:flex;align-items:flex-start;gap:10px;padding:7px 8px;background:{{ o.bg }};border:0;border-radius:6px;text-align:left;cursor:pointer;font-family:inherit" style-hover="background:#F2F4F7">
+                            <span style="font:18px/1 'Material Symbols Outlined';color:{{ o.color }}">{{ o.icon }}</span>
+                            <span style="flex:1;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;font-size:13px;color:#1E2430">{{ o.label }}</span><span style="font-size:11.5px;color:#667085">{{ o.desc }}</span></span>
+                            <sc-if value="{{ o.on }}"><span style="font:16px/1 'Material Symbols Outlined';color:#C00018">check</span></sc-if>
+                          </button>
+                        </sc-for>
+                        <div style="height:1px;background:#EEF0F3;margin:4px"></div>
+                        <button onClick="{{ c.applyRow }}" style="width:100%;height:30px;display:flex;align-items:center;gap:8px;padding:0 8px;background:transparent;border:0;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:16px/1 'Material Symbols Outlined'">keyboard_double_arrow_down</span>Apply to all modules for this role</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:10px 16px;font-size:12px;color:#475467;flex-wrap:wrap">
+          <sc-for list="{{ legend }}" as="l"><span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined';color:{{ l.color }}">{{ l.icon }}</span><b style="font-weight:600">{{ l.label }}</b><span style="color:#667085">{{ l.desc }}</span></span></sc-for>
+        </div>
+      </section>
+    </sc-if>
+    <sc-if value="{{ menuOpen }}"><div onClick="{{ closeMenus }}" style="position:fixed;inset:0;z-index:30"></div></sc-if>
+  </div>
+  </main>
+
+  <sc-if value="{{ drawerOpen }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:500px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+        <div style="flex:1"><h2 style="margin:0;font-size:16px;font-weight:600">Invite user</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">They'll receive an email to set their password</p></div>
+        <button onClick="{{ closeDrawer }}" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px">
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Work email<span style="color:#C00018"> *</span></span>
+          <input value="{{ f.email }}" onInput="{{ on.email }}" placeholder="name@company.com" style="height:36px;padding:0 10px;border:1px solid {{ err.email }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+          <sc-if value="{{ emailErr }}"><span style="font-size:12px;color:#B42318">Enter a valid email address</span></sc-if>
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">First name<span style="color:#C00018"> *</span></span><input value="{{ f.first }}" onInput="{{ on.first }}" style="height:36px;padding:0 10px;border:1px solid {{ err.first }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Last name<span style="color:#C00018"> *</span></span><input value="{{ f.last }}" onInput="{{ on.last }}" style="height:36px;padding:0 10px;border:1px solid {{ err.last }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Role<span style="color:#C00018"> *</span></span>
+          <sc-for list="{{ roleOpts }}" as="r" hint-placeholder-count="5">
+            <button onClick="{{ r.select }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:{{ r.bg }};border:1px solid {{ r.border }};border-radius:8px;text-align:left;cursor:pointer;font-family:inherit">
+              <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;border:{{ r.radio }};background:#fff"></span>
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;color:#1E2430;font-size:13px">{{ r.label }}</span><span style="font-size:12px;color:#667085">{{ r.desc }}</span></span>
+            </button>
+          </sc-for>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Team</span>
+          <span style="position:relative;display:flex"><select value="{{ f.team }}" onChange="{{ on.team }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">No team</option><sc-for list="{{ teamNames }}" as="t"><option value="{{ t }}">{{ t }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Site access</span>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ siteOpts }}" as="s"><button onClick="{{ s.toggle }}" style="height:32px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ s.bg }};border:1px solid {{ s.border }};border-radius:16px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined';color:{{ s.iconColor }}">{{ s.icon }}</span>{{ s.name }}</button></sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ closeDrawer }}" style="margin-left:auto;height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+        <button onClick="{{ invite }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">send</span>Send invitation</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;tab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;users&quot;,&quot;teams&quot;,&quot;roles&quot;],&quot;default&quot;:&quot;users&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ROLES = [['Administrator', 'Full access, including configuration and users'], ['Maintenance manager', 'Manages work, plans, stock and teams'], ['Planner', 'Schedules work orders and preventive plans'], ['Technician', 'Executes assigned work, consumes parts'], ['Requester', 'Submits work requests and follows them']];
+const TEAMS = [['Mechanical team', 'Mechanics, hydraulics, lubrication', 'build', '#E6F4EE', '#0B6B4A', 'Marc Dupont', 23, 3, '86%'], ['Electrical team', 'Electrical, automation, instrumentation', 'bolt', '#FEF3E2', '#B54708', 'Sophie Martin', 18, 2, '94%'], ['Float Line team', 'Dedicated line maintenance', 'conveyor_belt', '#EAF1FD', '#2456B8', 'Julie Martin', 16, 3, '78%']];
+const AV = [['#E8EEF9', '#2456B8'], ['#F3EEFC', '#6941C6'], ['#E6F4EE', '#0B6B4A'], ['#FEF3E2', '#B54708'], ['#FDECEC', '#B42318'], ['#EEF1F4', '#475467']];
+const SEED = [
+  ['Gaudéric Durand', 'Maintenance manager', '', 'All sites', 'Active', 'Now'],
+  ['Pierre Leroy', 'Technician', 'Mechanical team', 'Thourotte', 'Active', '12 min ago'],
+  ['Marc Dupont', 'Technician', 'Mechanical team', 'Thourotte', 'Active', '1 h ago'],
+  ['Sophie Martin', 'Technician', 'Electrical team', 'Thourotte', 'Active', 'Today'],
+  ['Julie Martin', 'Technician', 'Float Line team', 'Thourotte', 'Active', 'Today'],
+  ['Sofia Benali', 'Technician', 'Float Line team', 'Thourotte', 'Active', 'Yesterday'],
+  ['Claire Moreau', 'Planner', '', 'All sites', 'Active', 'Today'],
+  ['Thomas Bernard', 'Administrator', '', 'All sites', 'Active', 'Sep 24'],
+  ['Lucas Petit', 'Requester', '', 'Thourotte', 'Invited', '—'],
+  ['Nadia Haddad', 'Technician', 'Electrical team', 'Saultain', 'Deactivated', 'Jul 3'],
+].map(([name, role, team, sites, status, last], i) => ({ id: 'u' + i, name, role, team, sites, status, last, email: name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(' ', '.') + '@cmms-plant.com' }));
+const ST = { Active: ['#E6F4EE', '#0B6B4A'], Invited: ['#EAF1FD', '#2456B8'], Deactivated: ['#EEF1F4', '#475467'] };
+const MODS = ['Assets', 'Work orders', 'Maintenance plans & checklists', 'Planning', 'Spare parts', 'Documents', 'Teams & users', 'Administration'];
+const MX = [['F', 'F', 'V', 'V', 'V'], ['F', 'F', 'F', 'E', 'E'], ['F', 'F', 'E', 'V', '-'], ['F', 'F', 'F', 'V', '-'], ['F', 'F', 'V', 'E', '-'], ['F', 'F', 'E', 'E', 'V'], ['F', 'E', 'V', '-', '-'], ['F', '-', '-', '-', '-']];
+const CELL = { F: ['check_circle', '#0B6B4A', 'Full', '#E6F4EE', 'Create, edit, delete, configure'], E: ['edit', '#2456B8', 'Edit', '#EAF1FD', 'Create and edit, no delete'], V: ['visibility', '#475467', 'View', '#F2F4F7', 'Read only'], '-': ['block', '#98A2B3', 'None', '#fff', 'Module hidden'] };
+const CODES = ['F', 'E', 'V', '-'];
+const initRoles = () => ROLES.map(([name], i) => ({ id: 'r' + i, name, locked: i === 0, custom: false }));
+const initMx = () => MX.map(r => [...r]);
+let rid = 20;
+const ini = n => n.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+let uid = 50;
+class Component extends DCLogic {
+  state = { roles: initRoles(), mx: initMx(), saved: { roles: initRoles(), mx: initMx() }, cell: null, tab: this.props.tab ?? 'users', rows: SEED, q: '', role: '', team: '', status: '', menu: null, drawer: false, f: { role: 'Technician', sites: ['Thourotte'] }, errors: {}, toast: null };
+  componentDidMount() { Promise.all([import('./collab-model.js'), import('./people-model.js')]).then(([C, PM]) => { this.C = C; this.PM = PM; this.forceUpdate(); }); this._p = () => this.forceUpdate(); window.addEventListener('cmms-profile', this._p); }
+  componentWillUnmount() { window.removeEventListener('cmms-profile', this._p); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  rolesVals() {
+    const s = this.state, saved = s.saved;
+    const setCell = (ri, mi, code) => this.setState(z => ({ mx: z.mx.map((row, i) => i === mi ? row.map((c, j) => j === ri ? code : c) : row), cell: null }));
+    let changes = 0;
+    const matrix = MODS.map((module, mi) => ({ module, cells: s.roles.map((r, ri) => {
+      const code = s.mx[mi][ri], [icon, fg, label, bg] = CELL[code], key = mi + '-' + ri;
+      const savedRi = saved.roles.findIndex(x => x.id === r.id), changed = savedRi < 0 || saved.mx[mi][savedRi] !== code;
+      if (changed && savedRi >= 0) changes++;
+      return { icon, fg, label, bg, border: code === '-' ? '#E4E7EC' : bg, hoverBorder: r.locked ? (code === '-' ? '#E4E7EC' : bg) : '#98A2B3', cursor: r.locked ? 'not-allowed' : 'pointer', changed: changed && savedRi >= 0,
+        title: r.locked ? 'System role — always full access' : `${r.name} · ${module}: ${CELL[code][4]}`,
+        menuOpen: s.cell === key, menuTop: mi > MODS.length - 4 ? '-218px' : '34px',
+        open: e => { e.stopPropagation(); if (r.locked) return; this.setState({ cell: s.cell === key ? null : key, menu: null }); },
+        options: CODES.map(c => ({ icon: CELL[c][0], color: CELL[c][1], label: CELL[c][2] === 'None' ? 'No access' : CELL[c][2] + ' access', desc: CELL[c][4], on: c === code, bg: c === code ? '#FBF7F7' : 'transparent', pick: e => { e.stopPropagation(); setCell(ri, mi, c); } })),
+        applyRow: e => { e.stopPropagation(); this.setState(z => ({ mx: z.mx.map(row => row.map((c, j) => j === ri ? code : c)), cell: null })); } };
+    }) }));
+    const added = s.roles.filter(r => !saved.roles.some(x => x.id === r.id)).length + saved.roles.filter(r => !s.roles.some(x => x.id === r.id)).length;
+    const renamed = s.roles.filter(r => { const o = saved.roles.find(x => x.id === r.id); return o && o.name !== r.name; }).length;
+    const total = changes + added + renamed;
+    return {
+      matrix, mxCols: `minmax(210px,1.3fr) repeat(${s.roles.length},minmax(100px,1fr)) 120px`,
+      roleCols: s.roles.map((r, ri) => ({ name: r.name, editable: !r.locked, fixed: r.locked, locked: r.locked, removable: r.custom,
+        users: r.custom ? 'New role' : (n => `${n} user${n === 1 ? '' : 's'}`)(s.rows.filter(u => u.role === r.name).length),
+        rename: e => { const v = e.target.value; this.setState(z => ({ roles: z.roles.map(x => x.id === r.id ? { ...x, name: v } : x) })); },
+        remove: () => this.setState(z => ({ roles: z.roles.filter(x => x.id !== r.id), mx: z.mx.map(row => row.filter((_, j) => j !== ri)) })) })),
+      addRole: () => this.setState(z => { const src = z.roles.findIndex(x => x.name === 'Technician'); return { roles: [...z.roles, { id: 'r' + rid++, name: 'New role', locked: false, custom: true }], mx: z.mx.map(row => [...row, row[src >= 0 ? src : row.length - 1]]) }; }),
+      hasChanges: total > 0, noChanges: total === 0, changeLabel: `${total} unsaved change${total > 1 ? 's' : ''}`,
+      discard: () => this.setState(z => ({ roles: z.saved.roles.map(r => ({ ...r })), mx: z.saved.mx.map(r => [...r]), cell: null })),
+      saveMx: () => { this.setState(z => ({ saved: { roles: z.roles.map(r => ({ ...r, custom: false })), mx: z.mx.map(r => [...r]) }, roles: z.roles.map(r => ({ ...r, custom: false })) })); this.flash('Permissions saved · applied at next sign-in'); },
+      legend: CODES.map(c => ({ icon: CELL[c][0], color: CELL[c][1], label: CELL[c][2], desc: CELL[c][4] })),
+    };
+  }
+  renderVals() {
+    const s = this.state, q = s.q.toLowerCase(), f = s.f;
+    const list = s.rows.filter(u => (!q || (u.name + u.email).toLowerCase().includes(q)) && (!s.role || u.role === s.role) && (!s.team || u.team === s.team) && (!s.status || u.status === s.status));
+    const setStatus = (id, status, msg) => { this.setState(z => ({ rows: z.rows.map(u => u.id === id ? { ...u, status } : u), menu: null })); this.flash(msg); };
+    const users = list.map((u, i) => { const [avBg, avFg] = AV[i % AV.length], [sbg, sfg] = ST[u.status], mo = s.menu === u.id;
+      const pk = this.C && this.C.byName(u.name), PM = this.PM, sk = PM && pk ? PM.profile(pk).skills : [];
+      const skillsV = { skills: PM ? sk.slice(0, 3).map(([id, lv]) => ({ ...PM.skill(id), tip: PM.skill(id).name + ' · ' + PM.LEVELS[lv] })).concat(sk.length > 3 ? [{ name: '+' + (sk.length - 3), icon: '', fg: '#475467', bg: '#F2F4F7', tip: sk.slice(3).map(x => PM.skill(x[0]).name).join(', ') }] : []) : [], noSkills: !sk.length };
+      const act = (icon, label, run, danger) => ({ icon, label, color: danger ? '#B42318' : '#1E2430', iconColor: danger ? '#B42318' : '#667085', run: e => { e.stopPropagation(); run(); } });
+      const actions = [act('person', 'View profile', () => { this.setState({ menu: null }); window.RelixProfile && pk && window.RelixProfile(pk); }), act('edit', 'Edit skills & availability', () => { this.setState({ menu: null }); window.RelixProfile && pk && window.RelixProfile(pk, { tab: 'skills', edit: true }); })];
+      if (u.status === 'Invited') actions.push(act('forward_to_inbox', 'Resend invitation', () => { this.setState({ menu: null }); this.flash(`Invitation resent to ${u.email}`); }));
+      if (u.status === 'Deactivated') actions.push(act('person_check', 'Reactivate', () => setStatus(u.id, 'Active', `${u.name} reactivated`)));
+      else actions.push(act('person_off', 'Deactivate', () => setStatus(u.id, 'Deactivated', `${u.name} deactivated · open work orders need reassignment`), true));
+      return { ...skillsV,  ...u, ini: ini(u.name), avBg, avFg, sbg, sfg, team: u.team || '—', op: u.status === 'Deactivated' ? 0.6 : 1, menuOpen: mo, menuBg: mo ? '#EEF0F3' : 'transparent', menuTop: i > list.length - 3 && list.length > 4 ? '-90px' : '34px',
+        menu: e => { e.stopPropagation(); this.setState({ menu: mo ? null : u.id }); }, actions }; });
+    const sel = (k, ph, opts) => ({ value: s[k], border: s[k] ? '#C00018' : '#D0D5DD', bg: s[k] ? '#FBF7F7' : '#fff', options: [{ v: '', l: ph }, ...opts.map(o => ({ v: o, l: o }))], onChange: e => this.setState({ [k]: e.target.value }) });
+    const teams = TEAMS.map(([name, spec, icon, bg, fg, lead, open, overdue, load]) => { const m = s.rows.filter(u => u.team === name && u.status !== 'Deactivated');
+      return { name, spec, icon, bg, fg, lead, open, overdue, load, overdueColor: overdue ? '#B42318' : '#1E2430', count: m.length, members: m.map((u, i) => ({ name: u.name, ini: ini(u.name), bg: AV[(i + 2) % AV.length][0], fg: AV[(i + 2) % AV.length][1] })) }; });
+    const T = (k, label, count) => ({ label, count, font: s.tab === k ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: s.tab === k ? '#1E2430' : '#667085', bar: s.tab === k ? '#C00018' : 'transparent', select: () => this.setState({ tab: k }) });
+    const emailBad = s.errors.email;
+    return {
+      tabs: [T('users', 'Users', s.rows.length), T('teams', 'Teams', TEAMS.length), T('roles', 'Roles & permissions', ROLES.length)],
+      isUsers: s.tab === 'users', isTeams: s.tab === 'teams', isRoles: s.tab === 'roles',
+      primaryLabel: s.tab === 'teams' ? 'New team' : 'Invite user', primaryIcon: s.tab === 'teams' ? 'group_add' : 'person_add',
+      primaryAction: () => s.tab === 'teams' ? this.flash('Team creation form') : this.setState({ drawer: true, f: { role: 'Technician', sites: ['Thourotte'] }, errors: {} }),
+      users, q: s.q, setQ: e => this.setState({ q: e.target.value }), userCount: `${list.length} users`,
+      selects: [sel('role', 'All roles', ROLES.map(r => r[0])), sel('team', 'All teams', TEAMS.map(t => t[0])), sel('status', 'Any status', Object.keys(ST))],
+      teams, ...this.rolesVals(),
+      menuOpen: !!s.menu || !!s.cell, closeMenus: () => this.setState({ menu: null, cell: null }),
+      drawerOpen: s.drawer, closeDrawer: () => this.setState({ drawer: false }), f,
+      on: Object.fromEntries(['email', 'first', 'last', 'team'].map(k => [k, e => { const v = e.target.value; this.setState(z => ({ f: { ...z.f, [k]: v }, errors: { ...z.errors, [k]: 0 } })); }])),
+      err: { email: s.errors.email ? '#F04438' : '#D0D5DD', first: s.errors.first ? '#F04438' : '#D0D5DD', last: s.errors.last ? '#F04438' : '#D0D5DD' }, emailErr: !!emailBad,
+      roleOpts: ROLES.map(([label, desc]) => ({ label, desc, bg: f.role === label ? '#FBF1F2' : '#fff', border: f.role === label ? '#C00018' : '#E4E7EC', radio: f.role === label ? '5px solid #C00018' : '1.5px solid #C4CAD4', select: () => this.setState(z => ({ f: { ...z.f, role: label } })) })),
+      teamNames: TEAMS.map(t => t[0]),
+      siteOpts: ['Thourotte', 'Saultain'].map(name => { const on = (f.sites || []).includes(name); return { name, bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', icon: on ? 'check' : 'add', iconColor: on ? '#C00018' : '#98A2B3', toggle: () => this.setState(z => ({ f: { ...z.f, sites: on ? z.f.sites.filter(x => x !== name) : [...(z.f.sites || []), name] } })) }; }),
+      invite: () => { const errors = {}; if (!/^\S+@\S+\.\S+$/.test(f.email || '')) errors.email = 1; if (!f.first) errors.first = 1; if (!f.last) errors.last = 1; if (Object.keys(errors).length) return this.setState({ errors });
+        this.setState(z => ({ rows: [...z.rows, { id: 'u' + uid++, name: `${f.first} ${f.last}`, email: f.email, role: f.role, team: f.team || '', sites: (f.sites || []).length > 1 ? 'All sites' : (f.sites || ['—'])[0], status: 'Invited', last: '—' }], drawer: false }));
+        this.flash(`Invitation sent to ${f.email}`); },
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<nav style="width:{{ width }};height:100%;box-sizing:border-box;background:#34050D;padding:12px 12px 10px;display:flex;flex-direction:column;gap:2px;font-family:'IBM Plex Sans',system-ui,sans-serif;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;transition:width .18s ease">
+  <sc-for list="{{ primary }}" as="it" hint-placeholder-count="7">
+    <a href="{{ it.href }}" onClick="{{ it.click }}" onMouseEnter="{{ it.enter }}" onMouseLeave="{{ leave }}" aria-label="{{ it.label }}" aria-expanded="{{ it.expanded }}" style="position:relative;flex:none;height:38px;display:flex;align-items:center;gap:12px;padding:0 {{ it.pad }};justify-content:{{ it.justify }};border-radius:6px;background:{{ it.bg }};color:{{ it.color }};text-decoration:none;font-size:13.5px;font-weight:{{ it.weight }};white-space:nowrap" style-hover="background:rgba(255,255,255,.08);color:#fff">
+      <span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:{{ it.bar }}"></span>
+      <span style="font:20px/1 'Material Symbols Outlined';flex:none">{{ it.icon }}</span>
+      <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">{{ it.label }}</span></sc-if>
+      <sc-if value="{{ it.chevron }}"><span style="font:18px/1 'Material Symbols Outlined';opacity:.6;transform:{{ it.chevRot }};transition:transform .15s">expand_more</span></sc-if>
+    </a>
+    <sc-if value="{{ it.showChildren }}">
+      <div style="flex:none;display:flex;flex-direction:column;gap:1px;margin:0 0 4px 21px;padding-left:12px;border-left:1px solid rgba(255,255,255,.12)">
+        <sc-for list="{{ it.children }}" as="c">
+          <a href="{{ c.href }}" style="height:32px;display:flex;align-items:center;padding:0 10px;border-radius:6px;background:{{ c.bg }};color:{{ c.color }};text-decoration:none;font-size:13px;font-weight:{{ c.weight }};white-space:nowrap" style-hover="background:rgba(255,255,255,.08);color:#fff">{{ c.label }}</a>
+        </sc-for>
+      </div>
+    </sc-if>
+  </sc-for>
+  <div style="flex:1;min-height:16px"></div>
+  <div style="flex:none;height:1px;background:rgba(255,255,255,.1);margin:0 4px 8px"></div>
+  <sc-for list="{{ secondary }}" as="it" hint-placeholder-count="3">
+    <a href="{{ it.href }}" onMouseEnter="{{ it.enter }}" onMouseLeave="{{ leave }}" aria-label="{{ it.label }}" style="position:relative;flex:none;height:38px;display:flex;align-items:center;gap:12px;padding:0 {{ it.pad }};justify-content:{{ it.justify }};border-radius:6px;background:{{ it.bg }};color:{{ it.color }};text-decoration:none;font-size:13.5px;font-weight:{{ it.weight }};white-space:nowrap" style-hover="background:rgba(255,255,255,.08);color:#fff">
+      <span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:{{ it.bar }}"></span>
+      <span style="font:20px/1 'Material Symbols Outlined';flex:none">{{ it.icon }}</span>
+      <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ true }}"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">{{ it.label }}</span></sc-if>
+    </a>
+  </sc-for>
+  <div style="flex:none;height:1px;background:rgba(255,255,255,.1);margin:8px 4px 6px"></div>
+  <button onClick="{{ toggle }}" onMouseEnter="{{ toggleEnter }}" onMouseLeave="{{ leave }}" aria-label="{{ toggleLabel }}" style="flex:none;height:38px;display:flex;align-items:center;gap:12px;padding:0 {{ togglePad }};justify-content:{{ toggleJustify }};background:transparent;border:0;border-radius:6px;color:rgba(255,255,255,.62);font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:rgba(255,255,255,.08);color:#fff">
+    <span style="font:20px/1 'Material Symbols Outlined';flex:none">{{ toggleIcon }}</span>
+    <sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">{{ toggleLabel }}</span></sc-if>
+  </button>
+  <sc-if value="{{ hasTip }}">
+    <div style="position:fixed;left:70px;top:{{ tipTop }};z-index:100;transform:translateY(-50%);height:28px;display:flex;align-items:center;padding:0 10px;background:#1E2430;color:#fff;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(16,24,40,.25);pointer-events:none">{{ tipLabel }}</div>
+  </sc-if>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:232,&quot;height&quot;:844},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;dashboard&quot;,&quot;assets&quot;,&quot;workorders&quot;,&quot;planning&quot;,&quot;parts&quot;,&quot;plans&quot;,&quot;checklists&quot;,&quot;documents&quot;,&quot;teams&quot;,&quot;suppliers&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const KEY = 'cmms.nav.collapsed', SKEY = 'cmms.nav.setup';
+const rd = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v === '1'; } catch (e) { return d; } };
+class Component extends DCLogic {
+  state = { tip: null, collapsed: rd(KEY, false), setupOpen: null };
+  componentDidMount() {
+    this._on = e => this.setState({ collapsed: !!e.detail, tip: null });
+    window.addEventListener('cmms-nav', this._on);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-nav', this._on); }
+  toggle() { const c = !this.state.collapsed; try { localStorage.setItem(KEY, c ? '1' : '0'); } catch (e) {} this.setState({ collapsed: c, tip: null }); window.dispatchEvent(new CustomEvent('cmms-nav', { detail: c })); }
+  renderVals() {
+    const a = this.props.active ?? 'home', col = this.state.collapsed;
+    const tipAt = (label) => e => { if (!col) return; const r = e.currentTarget.getBoundingClientRect(); this.setState({ tip: { label, top: r.top + r.height / 2 } }); };
+    const mk = (key, label, icon, href, children) => {
+      const kids = (children || []).map(([k, l, h]) => ({ label: l, href: h, bg: k === a ? 'rgba(255,255,255,.1)' : 'transparent', color: k === a ? '#fff' : 'rgba(255,255,255,.66)', weight: k === a ? 600 : 400 }));
+      const act = key === a, childAct = (children || []).some(c => c[0] === a), on = act || (col && childAct);
+      const open = kids.length ? (this.state.setupOpen ?? rd(SKEY, childAct || true)) : false;
+      return { label, icon, href, enter: tipAt(label), showLabel: !col, chevron: !col && kids.length > 0, chevRot: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+        showChildren: !col && kids.length > 0 && open, children: kids, expanded: kids.length ? String(open) : undefined,
+        click: kids.length ? e => { if (col) return; e.preventDefault(); const v = !open; try { localStorage.setItem(SKEY, v ? '1' : '0'); } catch (x) {} this.setState({ setupOpen: v }); } : undefined,
+        pad: col ? '0' : '12px', justify: col ? 'center' : 'flex-start', bg: on ? 'rgba(255,255,255,.1)' : 'transparent', color: on || childAct ? '#fff' : 'rgba(255,255,255,.74)', weight: on ? 600 : 500, bar: on ? '#E0243A' : 'transparent' };
+    };
+    return {
+      width: col ? '64px' : '232px', expanded: !col,
+      hasTip: col && !!this.state.tip, tipLabel: this.state.tip ? this.state.tip.label : '', tipTop: this.state.tip ? this.state.tip.top + 'px' : '0px', leave: () => this.setState({ tip: null }),
+      toggle: () => this.toggle(), toggleLabel: col ? 'Expand menu' : 'Collapse menu', toggleIcon: col ? 'left_panel_open' : 'left_panel_close',
+      togglePad: col ? '0' : '12px', toggleJustify: col ? 'center' : 'flex-start', toggleEnter: tipAt('Expand menu'),
+      primary: [
+        mk('home', 'Home', 'home', 'Main.dc.html'),
+        mk('dashboard', 'Site dashboard', 'monitoring', 'SiteDashboard.dc.html'),
+        mk('assets', 'Assets', 'precision_manufacturing', 'Assets.dc.html'),
+        mk('workorders', 'Work orders', 'build', 'WorkOrders.dc.html'),
+        mk('planning', 'Planning', 'calendar_month', 'Planning.dc.html'),
+        mk('parts', 'Spare parts', 'inventory_2', 'SpareParts.dc.html'),
+        mk('setup', 'Maintenance setup', 'event_repeat', 'MaintenancePlans.dc.html', [['plans', 'Maintenance plans', 'MaintenancePlans.dc.html'], ['checklists', 'Checklists', 'Checklists.dc.html']]),
+        mk('documents', 'Documents', 'description', 'Documents.dc.html'),
+      ],
+      secondary: [mk('teams', 'Teams & users', 'group', 'TeamsUsers.dc.html'), mk('suppliers', 'Suppliers', 'local_shipping', 'Suppliers.dc.html'), mk('admin', 'Site configuration', 'settings', 'Administration.dc.html')],
+    };
+  }
+}
+</script>
+</body>
+</html>

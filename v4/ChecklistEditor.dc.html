@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="checklists" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="min-height:0;display:flex;flex-direction:column;overflow:hidden" data-screen-label="Checklist editor">
+    <div style="flex:none;padding:14px 28px 0;display:flex;flex-direction:column;gap:6px;background:#fff;border-bottom:1px solid #E4E7EC">
+      <div style="display:flex;align-items:center;gap:10px">
+        <dc-import name="BackButton" fallback="Checklists.dc.html" hint-size="34px,34px"></dc-import>
+        <input value="{{ name }}" onInput="{{ setName }}" placeholder="Checklist name" style="flex:1;min-width:0;height:36px;padding:0 8px;border:1px solid transparent;border-radius:6px;font:600 22px 'IBM Plex Sans',sans-serif;letter-spacing:-.01em;color:#1E2430;background:transparent;outline:none" style-hover="border-color:#E4E7EC" style-focus="border-color:#C00018;background:#fff" />
+        <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:12px;font-size:12px;font-weight:600;background:{{ statusBg }};color:{{ statusFg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ statusLabel }}</span>
+        <sc-if value="{{ dirty }}"><span style="font-size:12.5px;color:#B54708;white-space:nowrap">Unsaved changes</span></sc-if>
+        <button onClick="{{ preview }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">play_circle</span>Preview</button>
+        <button onClick="{{ saveDraft }}" style="height:34px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="background:#F9FAFB">Save draft</button>
+        <button onClick="{{ publish }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">publish</span>Publish</button>
+      </div>
+      <input value="{{ desc }}" onInput="{{ setDesc }}" placeholder="Add a short description" style="height:28px;margin-left:36px;padding:0 8px;border:1px solid transparent;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#475467;background:transparent;outline:none" style-hover="border-color:#E4E7EC" style-focus="border-color:#C00018;background:#fff" />
+      <div style="display:flex;align-items:center;gap:16px;min-height:46px;padding-left:44px">
+        <div style="display:flex;align-items:center;gap:16px;color:#667085;font-size:12.5px;flex-wrap:wrap;white-space:nowrap;min-width:0">
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">format_list_numbered</span><b style="font-weight:600;color:#1E2430">{{ stepCount }}</b> steps</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">alt_route</span><b style="font-weight:600;color:#1E2430">{{ logicCount }}</b> with conditions</span>
+          <sc-if value="{{ hasSegs }}">
+            <span title="Total of step durations, by required expertise — used to suggest people and plan the work order" style="display:flex;align-items:center;gap:8px;padding-left:16px;border-left:1px solid #E4E7EC">
+              <span style="display:flex;align-items:center;gap:5px"><span style="font:16px/1 'Material Symbols Outlined'">engineering</span>Expertise needed</span>
+              <span style="display:flex;width:120px;height:8px;border-radius:4px;overflow:hidden;gap:1px;background:#E4E7EC"><sc-for list="{{ segs }}" as="g"><span title="{{ g.tip }}" style="flex:{{ g.flex }};background:{{ g.fg }}"></span></sc-for></span>
+              <sc-for list="{{ segs }}" as="g"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:{{ g.fg }}"></span><span style="color:#344054">{{ g.name }}</span><b style="font:600 12px 'IBM Plex Mono',monospace;color:#1E2430">{{ g.dur }}</b></span></sc-for>
+              <span style="color:#98A2B3">· total</span><b style="font:600 12px 'IBM Plex Mono',monospace;color:#1E2430">{{ totalLabel }}</b>
+            </span>
+          </sc-if>
+          <span style="display:flex;align-items:center;gap:5px;padding-left:16px;border-left:1px solid #E4E7EC"><span style="font:16px/1 'Material Symbols Outlined'">history</span>{{ updatedLabel }}</span>
+        </div>
+        <div style="margin-left:auto;display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
+            <button onClick="{{ v.select }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};font:{{ v.font }};color:{{ v.color }};cursor:pointer;white-space:nowrap"><span style="font:18px/1 'Material Symbols Outlined'">{{ v.icon }}</span>{{ v.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:212px minmax(0,1fr) {{ panelW }}">
+      <aside style="min-height:0;overflow:auto;background:#fff;border-right:1px solid #E4E7EC;padding:12px 10px 16px;display:flex;flex-direction:column;gap:4px">
+        <span style="padding:0 6px 6px;font-size:12px;color:#667085;line-height:1.45">{{ paletteHint }}</span>
+        <sc-for list="{{ palette }}" as="g" hint-placeholder-count="2">
+          <div style="padding:8px 6px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="p">
+            <div draggable="true" onDragStart="{{ p.drag }}" onDragEnd="{{ p.end }}" onClick="{{ p.click }}" title="{{ p.tip }}" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid transparent;border-radius:6px;cursor:grab;user-select:none" style-hover="background:#F6F7F9;border-color:#E4E7EC">
+              <span style="width:24px;height:24px;flex:none;border-radius:5px;background:{{ p.bg }};color:{{ p.fg }};display:grid;place-items:center;font:15px/1 'Material Symbols Outlined'">{{ p.icon }}</span>
+              <span style="flex:1;font-weight:500">{{ p.label }}</span>
+              <span style="font:15px/1 'Material Symbols Outlined';color:#D0D5DD">drag_indicator</span>
+            </div>
+          </sc-for>
+        </sc-for>
+      </aside>
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div onDragOver="{{ listOver }}" onDrop="{{ listDrop }}" style="min-height:0;overflow:auto;padding:20px 28px 60px">
+          <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ rows }}" as="s" hint-placeholder-count="6">
+              <div draggable="{{ s.draggable }}" onDragStart="{{ s.drag }}" onDragOver="{{ s.over }}" onDragEnd="{{ s.end }}" style="position:relative;margin-left:{{ s.indent }};opacity:{{ s.op }}">
+                <sc-if value="{{ s.lineTop }}"><span style="position:absolute;left:0;right:0;top:-6px;height:3px;border-radius:2px;background:#C00018"></span></sc-if>
+                <sc-if value="{{ s.isBranch }}"><span style="position:absolute;left:-22px;top:-8px;width:16px;height:36px;border-left:2px solid #BCD0F5;border-bottom:2px solid #BCD0F5;border-bottom-left-radius:8px"></span></sc-if>
+                <div style="background:{{ s.bg }};border:1px solid {{ s.border }};box-shadow:{{ s.ring }};border-radius:8px">
+                  <div onClick="{{ s.toggle }}" style="display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 12px 8px 6px;cursor:pointer">
+                    <span title="Drag to reorder" style="font:18px/1 'Material Symbols Outlined';color:#C4CAD4;cursor:grab">drag_indicator</span>
+                    <span style="width:24px;font:600 12px 'IBM Plex Mono',monospace;color:#98A2B3;text-align:right">{{ s.n }}</span>
+                    <span style="width:30px;height:30px;flex:none;border-radius:6px;background:{{ s.ibg }};color:{{ s.ifg }};display:grid;place-items:center;font:17px/1 'Material Symbols Outlined'">{{ s.icon }}</span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                      <span style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ s.titleColor }}">{{ s.title }}</span>
+                      <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#667085;min-width:0">
+                        <span style="white-space:nowrap">{{ s.meta }}</span>
+                        <sc-if value="{{ s.hasLogic }}"><span style="display:inline-flex;align-items:center;gap:3px;min-width:0;height:20px;padding:0 7px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-weight:500"><span style="font:13px/1 'Material Symbols Outlined'">alt_route</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.logic }}</span></span></sc-if>
+                        <sc-if value="{{ s.isBranch }}"><span style="display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:10px;background:#F2F4F7;color:#475467;font-weight:500;white-space:nowrap">Only when an answer leads here</span></sc-if>
+                        <sc-if value="{{ s.isDetached }}"><span style="display:inline-flex;align-items:center;gap:3px;height:20px;padding:0 7px;border-radius:10px;background:#FEF3E2;color:#B54708;font-weight:500;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">link_off</span>Not connected</span></sc-if>
+                      </span>
+                    </span>
+                    <span style="flex:none;display:flex;align-items:center;gap:6px;color:#98A2B3">
+                      <sc-if value="{{ s.hasMedia }}"><span title="Supporting content" style="display:inline-flex;align-items:center;gap:3px;font-size:12px"><span style="font:15px/1 'Material Symbols Outlined'">perm_media</span>{{ s.mediaCount }}</span></sc-if>
+                      <sc-if value="{{ s.hasMin }}"><span title="{{ s.minTip }}" style="font:500 12px 'IBM Plex Mono',monospace;color:#667085">{{ s.minLabel }}</span></sc-if>
+                    </span>
+                    <span style="font:20px/1 'Material Symbols Outlined';color:#98A2B3">{{ s.chev }}</span>
+                  </div>
+                  <sc-if value="{{ s.open }}">
+                    <div style="padding:14px 16px 12px 70px;border-top:1px solid #F2F4F7">
+                      <dc-import name="StepEditor" step="{{ s.data }}" steps="{{ allSteps }}" checklist-id="{{ clId }}" on-change="{{ s.change }}" on-remove="{{ s.remove }}" on-duplicate="{{ s.duplicate }}" focus="{{ focus }}" focus-nonce="{{ focusNonce }}" hint-size="100%,220px"></dc-import>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+            <div onDragOver="{{ endOver }}" onClick="{{ endClick }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;margin-top:4px;border:1.5px dashed {{ endBorder }};background:{{ endBg }};border-radius:8px;color:{{ endFg }};font-weight:500;cursor:default">
+              <span style="font:20px/1 'Material Symbols Outlined'">add_circle</span>{{ endLabel }}
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFlow }}">
+        <div style="position:relative;min-width:0;min-height:0;display:flex;flex-direction:column">
+          <div style="position:absolute;left:12px;top:12px;right:12px;z-index:5;display:flex;align-items:center;gap:8px;pointer-events:none">
+            <div style="pointer-events:auto;display:flex;align-items:center;background:#fff;border:1px solid #D0D5DD;border-radius:6px;height:32px">
+              <button onClick="{{ zoomOut }}" title="Zoom out" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">remove</span></button>
+              <span style="width:46px;text-align:center;font:500 12px 'IBM Plex Mono',monospace;border-left:1px solid #EEF0F3;border-right:1px solid #EEF0F3;line-height:30px">{{ zoomLabel }}</span>
+              <button onClick="{{ zoomIn }}" title="Zoom in" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">add</span></button>
+            </div>
+            <button onClick="{{ tidy }}" title="Re-arrange all blocks from Start to End" style="pointer-events:auto;height:32px;display:flex;align-items:center;gap:6px;padding:0 12px 0 9px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">auto_fix_high</span>Tidy up</button>
+            <span style="pointer-events:auto;height:32px;display:flex;align-items:center;gap:6px;padding:0 12px 0 9px;background:{{ flowBg }};border:1px solid {{ flowBorder }};border-radius:6px;font-weight:500;color:{{ flowFg }};white-space:nowrap"><span style="font:17px/1 'Material Symbols Outlined'">{{ flowIcon }}</span>{{ flowLabel }}</span>
+            <span style="margin-left:auto;min-width:0;height:32px;display:flex;align-items:center;gap:6px;padding:0 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(255,255,255,.92);border-radius:6px;font-size:12px;color:{{ hintColor }}"><span style="font:15px/1 'Material Symbols Outlined'">{{ hintIcon }}</span>{{ canvasHint }}</span>
+          </div>
+          <div ref="{{ canvasRef }}" onPointerDown="{{ panStart }}" onPointerMove="{{ panMove }}" onPointerUp="{{ panEnd }}" onPointerLeave="{{ panEnd }}" onDragOver="{{ canvasOver }}" onDrop="{{ canvasDrop }}" style="flex:1;overflow:auto;cursor:{{ panCursor }};user-select:none;background-color:#F6F7F9;background-image:radial-gradient(#DDE1E7 1px,transparent 1px);background-size:18px 18px">
+            <div style="position:relative;width:{{ fw }};height:{{ fh }}">
+              <div ref="{{ innerRef }}" style="position:absolute;left:0;top:0;width:{{ rawW }};height:{{ rawH }};transform:scale({{ zoom }});transform-origin:0 0">
+                <svg width="{{ rawW }}" height="{{ rawH }}" style="position:absolute;inset:0;overflow:visible">
+                  <defs>
+                    <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#98A2B3"></path></marker>
+                    <marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#C00018"></path></marker>
+                    <marker id="fc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2456B8"></path></marker>
+                  </defs>
+                  <sc-for list="{{ edges }}" as="e">
+                    <path d="{{ e.d }}" fill="none" stroke="{{ e.color }}" stroke-width="{{ e.w }}" stroke-dasharray="{{ e.dash }}" marker-end="{{ e.marker }}" opacity="{{ e.op }}" style="pointer-events:none"></path>
+                    <path d="{{ e.d }}" fill="none" stroke="transparent" stroke-width="14" onClick="{{ e.select }}" style="pointer-events:stroke;cursor:pointer"></path>
+                  </sc-for>
+                  <sc-if value="{{ linking }}"><path d="{{ linkPath }}" fill="none" stroke="#C00018" stroke-width="2" stroke-dasharray="5 4" style="pointer-events:none"></path></sc-if>
+                </svg>
+                <sc-for list="{{ nodes }}" as="n">
+                  <div data-node-id="{{ n.id }}" onPointerDown="{{ n.down }}" onDragOver="{{ n.over }}" onDrop="{{ n.drop }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:{{ n.w }};height:{{ n.h }};background:{{ n.bg }};border:{{ n.border }};box-shadow:{{ n.shadow }};border-radius:{{ n.radius }};opacity:{{ n.op }};cursor:{{ n.cursor }};z-index:{{ n.z }}">
+                    <sc-if value="{{ n.isStep }}">
+                      <div style="height:100%;display:flex;align-items:center;gap:10px;padding:0 12px">
+                        <span style="width:32px;height:32px;flex:none;border-radius:7px;background:{{ n.ibg }};color:{{ n.ifg }};display:grid;place-items:center;font:18px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                          <span style="font-size:11px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.meta }}</span>
+                          <span style="font-weight:600;font-size:13px;line-height:1.25;color:#1E2430;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ n.title }}</span>
+                        </span>
+                      </div>
+                      <sc-if value="{{ n.detached }}"><span style="position:absolute;right:8px;top:-10px;height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 7px;border-radius:10px;background:#FEF3E2;border:1px solid #F7D9A8;color:#B54708;font:600 10.5px 'IBM Plex Sans',sans-serif;white-space:nowrap"><span style="font:12px/1 'Material Symbols Outlined'">link_off</span>Not connected</span></sc-if>
+                    </sc-if>
+                    <sc-if value="{{ n.isTerminal }}">
+                      <div style="height:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;color:{{ n.fg }}"><span style="font:18px/1 'Material Symbols Outlined'">{{ n.icon }}</span>{{ n.title }}</div>
+                      <sc-if value="{{ n.removable }}"><button data-handle="1" onClick="{{ n.removeEnd }}" title="Remove this End block" style="position:absolute;right:-8px;top:-8px;width:22px;height:22px;display:grid;place-items:center;background:#fff;border:1px solid #D0D5DD;border-radius:50%;color:#667085;cursor:pointer"><span style="font:14px/1 'Material Symbols Outlined'">close</span></button></sc-if>
+                    </sc-if>
+                    <sc-if value="{{ n.edgeOut }}">
+                      <div data-handle="1" onPointerDown="{{ n.edgeDown }}" title="Drag from the edge to connect — or click, then click the next block" style="position:absolute;left:14px;right:14px;bottom:-9px;height:18px;display:flex;align-items:center;justify-content:center;cursor:crosshair">
+                        <span style="position:absolute;left:0;right:0;top:8px;height:3px;border-radius:2px;background:{{ n.edgeLine }}"></span>
+                        <span style="position:relative;width:20px;height:20px;border-radius:50%;background:{{ n.edgeKnobBg }};border:1.5px solid {{ n.edgeKnob }};display:grid;place-items:center;color:{{ n.edgeKnob }};font:14px/1 'Material Symbols Outlined'">south</span>
+                      </div>
+                    </sc-if>
+                    <sc-for list="{{ n.ports }}" as="h">
+                      <div data-handle="1" onPointerDown="{{ h.down }}" title="{{ h.tip }}" style="position:absolute;left:{{ h.x }};bottom:-11px;transform:translateX(-50%);height:22px;display:flex;align-items:center;gap:4px;padding:0 8px 0 4px;border-radius:11px;background:{{ h.bg }};border:1.5px solid {{ h.color }};cursor:crosshair;white-space:nowrap">
+                        <span style="width:10px;height:10px;border-radius:50%;background:{{ h.color }}"></span><span style="font:600 11px 'IBM Plex Sans',sans-serif;color:{{ h.color }}">{{ h.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ edgeSel }}">
+                  <div style="position:absolute;left:{{ edgeSel.x }};top:{{ edgeSel.y }};transform:translate(-50%,-50%);z-index:12;display:flex;gap:4px;padding:3px;background:#fff;border:1px solid #D0D5DD;border-radius:16px;box-shadow:0 4px 12px rgba(16,24,40,.12)" data-handle="1">
+                    <button onClick="{{ edgeSel.insert }}" title="Insert a step on this connection" style="width:26px;height:26px;display:grid;place-items:center;background:#fff;border:0;border-radius:50%;color:#1E2430;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:17px/1 'Material Symbols Outlined'">add</span></button>
+                    <sc-if value="{{ edgeSel.canRemove }}"><button onClick="{{ edgeSel.remove }}" title="Remove this connection" style="width:26px;height:26px;display:grid;place-items:center;background:#fff;border:0;border-radius:50%;color:#B42318;cursor:pointer" style-hover="background:#FEF3F2"><span style="font:17px/1 'Material Symbols Outlined'">link_off</span></button></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ plusMenu }}">
+                  <div data-handle="1" style="position:absolute;left:{{ plusMenu.x }};top:{{ plusMenu.y }};transform:translateX(-50%);z-index:20;width:300px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.16);padding:8px">
+                    <sc-for list="{{ plusGroups }}" as="g">
+                      <div style="padding:4px 6px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+                        <sc-for list="{{ g.items }}" as="t"><button onClick="{{ t.pick }}" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;background:transparent;border:0;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="width:22px;height:22px;border-radius:5px;background:{{ t.bg }};color:{{ t.fg }};display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sel }}">
+        <aside style="min-height:0;display:flex;flex-direction:column;background:#fff;border-left:1px solid #E4E7EC">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">Step {{ sel.n }}</span>
+            <button onClick="{{ closeSel }}" title="Close" style="margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:14px">
+            <dc-import name="StepEditor" step="{{ sel.data }}" steps="{{ allSteps }}" checklist-id="{{ clId }}" on-change="{{ sel.change }}" on-remove="{{ sel.remove }}" on-duplicate="{{ sel.duplicate }}" focus="{{ focus }}" focus-nonce="{{ focusNonce }}" hint-size="100%,300px"></dc-import>
+          </div>
+        </aside>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;flow&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const URLQ = new URLSearchParams(window.location.search);
+const FONT = w => `${w} 13px 'IBM Plex Sans',sans-serif`;
+const PAL_LIST = [
+  ['Questions', [['yesno', 'Yes / No', 'rule', 'Two answers, each with its own next step'], ['number', 'Measurement'], ['single', 'Single choice'], ['multi', 'Multiple choice'], ['text', 'Short text'], ['comment']]],
+  ['Actions', [['instruction', 'Instruction'], ['confirm', 'Checkbox list'], ['photo'], ['file', 'Attachment'], ['parts', 'Spare parts used'], ['consumables', 'Consumables used']]],
+];
+const PAL_FLOW = [...PAL_LIST, ['Flow', [['end', 'End block', 'flag', 'Add another way to finish'], ['media:image', 'Image → drop on a step', 'image'], ['media:pdf', 'Document → drop on a step', 'picture_as_pdf']]]];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const NW = 240, NH = 72, TW = 190, TH = 46, ROWH = 140, COLW = 290, TOP = 70;
+class Component extends DCLogic {
+  state = { ready: false, cl: null, saved: '', view: URLQ.get('view') === 'flow' ? 'flow' : (this.props.view ?? 'list'), expanded: null, selected: null, drag: null, pal: null, ins: null, zoom: 1, link: null, nodeDrag: null, edge: null, plus: null, focus: '', focusNonce: 0, toast: null, panning: false };
+  canvasRef = React.createRef(); innerRef = React.createRef();
+  componentDidMount() {
+    import('./checklist-model.js').then(M => { const id = URLQ.get('id') || 'pump-seal'; const cl = M.load(id) || M.fromName(id, URLQ.get('name') || 'New checklist'); this.setState({ ready: true, cl, saved: JSON.stringify(cl) }); });
+    import('./people-model.js').then(PM => { this.PM = PM; this.forceUpdate(); });
+    import('./docs-model.js');
+    this._mv = e => {
+      const nd = this._nd; if (nd) { const p = this.toCanvas(e); if (!nd.moved && Math.hypot(p.x - nd.px, p.y - nd.py) > 4) nd.moved = true; if (nd.moved) this.setState({ nodeDrag: { id: nd.id, x: nd.ox + p.x - nd.px, y: nd.oy + p.y - nd.py } }); return; }
+      const L = this._link; if (!L) return; const p = this.toCanvas(e); if (Math.hypot(p.x - L.x1, p.y - L.y1) > 6) L.moved = true;
+      const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest('[data-node-id]'); this.setState(z => ({ link: { ...z.link, x2: p.x, y2: p.y, over: t ? t.getAttribute('data-node-id') : null } }));
+    };
+    this._up = e => {
+      const nd = this._nd; if (nd) { this._nd = null; if (nd.moved) { const d = this.state.nodeDrag; this.mut(cl => { cl.layout = { ...(cl.layout || {}), [nd.id]: { x: Math.round(d.x), y: Math.round(d.y) } }; }); this.setState({ nodeDrag: null }); } else if (this._link && this._link.sticky) { this.finishLink(nd.id); } else if (nd.id !== 'START' && !this.M.isEnd(nd.id)) this.select(nd.id); else this.setState({ selected: null, edge: null }); return; }
+      const L = this._link; if (!L) return;
+      if (!L.moved && !L.sticky) { L.sticky = true; return; }
+      const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest('[data-node-id]');
+      if (t) this.finishLink(t.getAttribute('data-node-id')); else if (!L.sticky) this.cancelLink();
+    };
+    this._key = e => { if (e.key === 'Escape') { this.cancelLink(); this.setState({ plus: null, edge: null }); } };
+    window.addEventListener('pointermove', this._mv); window.addEventListener('pointerup', this._up); window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { window.removeEventListener('pointermove', this._mv); window.removeEventListener('pointerup', this._up); window.removeEventListener('keydown', this._key); }
+  get M() { return window.CMMSChecklist; }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2800); }
+  toCanvas(e) { const r = this.innerRef.current.getBoundingClientRect(), z = this.state.zoom; return { x: (e.clientX - r.left) / z, y: (e.clientY - r.top) / z }; }
+  mut(fn) { this.setState(z => { const cl = this.M.clone(z.cl); fn(cl); return { cl }; }); }
+  patch(id, p) { this.mut(cl => { cl.steps = cl.steps.map(s => s.id === id ? { ...s, ...p } : s); }); }
+  removeStep(id) { this.mut(cl => { cl.steps = cl.steps.filter(s => s.id !== id); this.M.cleanRefs(cl, id); }); this.setState(z => ({ selected: z.selected === id ? null : z.selected, expanded: z.expanded === id ? null : z.expanded, edge: null })); }
+  duplicate(id) { const M = this.M; this.mut(cl => { const i = cl.steps.findIndex(s => s.id === id); const c = { ...M.clone(cl.steps[i]), id: M.uid(), title: cl.steps[i].title + ' (copy)' }; cl.steps.splice(i + 1, 0, c); if (cl.layout && cl.layout[id]) cl.layout[c.id] = { x: cl.layout[id].x + 30, y: cl.layout[id].y + 30 }; }); }
+  select(id, focus) { this.setState(z => ({ selected: id, expanded: id, plus: null, edge: null, focus: focus || '', focusNonce: focus ? z.focusNonce + 1 : z.focusNonce })); }
+  newOf(key, o = {}) { const M = this.M; const t = M.TYPES[key]; return M.newStep('', key, { required: key === 'yesno' || key === 'number', ...o, title: o.title || '' }); }
+  // ----- list view
+  addAt(key, index) {
+    if (key === 'end' || key.startsWith('media:')) return;
+    const prev = this.state.cl.steps[index - 1];
+    const s = this.newOf(key, { conditional: !!(prev && prev.conditional && index < this.state.cl.steps.length) });
+    this.mut(cl => { cl.steps.splice(index, 0, s); });
+    this.setState({ expanded: s.id, selected: this.state.view === 'flow' ? s.id : null, ins: null, pal: null });
+    this.flash(`${this.M.TYPES[key].label} step added — give it a title`);
+  }
+  // ----- workflow graph
+  applyLink(cl, from, when, tgt) {
+    const M = this.M;
+    if (from === 'START') { if (!M.isEnd(tgt)) cl.start = tgt; return; }
+    const st = cl.steps.find(s => s.id === from); if (!st || tgt === from || tgt === 'START') return;
+    const port = when && when !== '*';
+    if (port) { st.rules = st.rules.filter(r => !(r.when === when && (r.action === 'goto' || r.action === 'finish'))); st.rules.push(M.isEnd(tgt) ? { when, action: 'finish', end: tgt } : { when, action: 'goto', target: tgt }); }
+    else if (M.isEnd(tgt)) { st.after = 'finish'; st.afterEnd = tgt; st.afterTarget = ''; }
+    else { st.after = 'goto'; st.afterTarget = tgt; }
+  }
+  finishLink(tgt) {
+    const L = this._link; this._link = null; this.setState({ link: null }); if (!L) return;
+    if (!tgt || tgt === 'START' || tgt === L.from) return;
+    const M = this.M, cl = this.state.cl, label = M.isEnd(tgt) ? 'End' : ((cl.steps.find(s => s.id === tgt) || {}).title || 'Untitled step');
+    this.mut(c => this.applyLink(c, L.from, L.when, tgt));
+    this.flash(`Connected${L.label ? ' · ' + L.label : ''} → ${label}`);
+  }
+  cancelLink() { if (this._link) { this._link = null; this.setState({ link: null }); } }
+  startLink(e, from, when, label, x, y) { e.stopPropagation(); e.preventDefault(); this._link = { from, when, label, x1: x, y1: y }; this.setState({ link: { x1: x, y1: y, x2: x, y2: y, from }, edge: null, plus: null }); }
+  disconnect(from, when, explicit) {
+    this.mut(cl => { const st = cl.steps.find(s => s.id === from); if (!st) return; const port = when && when !== '*';
+      if (port && st.rules.some(r => r.when === when && (r.action === 'goto' || r.action === 'finish'))) st.rules = st.rules.filter(r => !(r.when === when && (r.action === 'goto' || r.action === 'finish')));
+      else { st.after = 'none'; st.afterTarget = ''; } });
+    this.setState({ edge: null }); this.flash('Connection removed');
+  }
+  insertOnEdge(from, when, target, key, pos) {
+    const M = this.M, s = this.newOf(key, { conditional: true });
+    if (M.isEnd(target)) { s.after = 'finish'; s.afterEnd = target; } else { s.after = 'goto'; s.afterTarget = target; }
+    this.mut(cl => { const i = from === 'START' ? -1 : cl.steps.findIndex(x => x.id === from); cl.steps.splice(i + 1, 0, s); this.applyLink(cl, from, when, s.id); cl.layout = { ...(cl.layout || {}), [s.id]: { x: Math.round(pos.x - NW / 2), y: Math.round(pos.y - NH / 2) } }; });
+    this.select(s.id);
+  }
+  addFree(key, pos) {
+    const M = this.M;
+    if (key === 'end') { this.mut(cl => { const ends = M.endsOf(cl); let k = 2; while (ends.includes('END-' + k)) k++; const id = 'END-' + k; cl.ends = [...ends, id]; cl.layout = { ...(cl.layout || {}), [id]: { x: Math.round(pos.x - TW / 2), y: Math.round(pos.y - TH / 2) } }; }); return this.flash('End block added — connect a step to it'); }
+    if (key.startsWith('media:')) return;
+    const s = this.newOf(key, { conditional: true, after: 'none' });
+    this.mut(cl => { cl.steps.push(s); cl.layout = { ...(cl.layout || {}), [s.id]: { x: Math.round(pos.x - NW / 2), y: Math.round(pos.y - NH / 2) } }; });
+    this.select(s.id); this.flash('Step placed — connect it to include it in the flow');
+  }
+  attachMedia(id, key) { const M = this.M, k = key.split(':')[1], st = this.state.cl.steps.find(s => s.id === id); if (!st) return; this.patch(id, { media: [...st.media, { kind: k, name: `New ${M.MEDIA[k][0].toLowerCase()}` }] }); this.select(id, 'media'); this.flash(`${M.MEDIA[k][0]} attached to “${st.title || 'step'}”`); }
+  autoLayout(cl, onlyMissing) {
+    const M = this.M, steps = cl.steps, idx = id => steps.findIndex(x => x.id === id), ends = M.endsOf(cl);
+    const outs = id => { const st = steps.find(x => x.id === id); return st ? M.outputsOf(cl, st).map(o => o.target).filter(Boolean) : []; };
+    const depth = {}, first = M.firstStep(cl); if (!M.isEnd(first)) depth[first] = 1;
+    let changed = true, guard = 0;
+    while (changed && guard++ < steps.length + 3) { changed = false; Object.keys(depth).forEach(id => outs(id).forEach(t => { if (M.isEnd(t)) return; const d = depth[id] + 1; if (depth[t] == null || (d > depth[t] && idx(t) > idx(id))) { depth[t] = d; changed = true; } })); }
+    const maxD = Math.max(0, ...Object.values(depth)), rows = {};
+    steps.forEach(s => { if (depth[s.id] != null) (rows[depth[s.id]] = rows[depth[s.id]] || []).push(s.id); });
+    const CX = 420, pos = {}, place = (ids, d, w, h) => ids.forEach((id, k) => { pos[id] = { x: Math.round(CX + (k - (ids.length - 1) / 2) * COLW - w / 2), y: TOP + d * ROWH + (NH - h) / 2 }; });
+    place(['START'], 0, TW, TH); Object.keys(rows).forEach(d => place(rows[d], +d, NW, NH)); place(ends, maxD + 1, TW, TH);
+    const widest = Math.max(1, ...Object.values(rows).map(r => r.length), ends.length), freeX = CX + widest * COLW / 2 + 120;
+    steps.filter(s => depth[s.id] == null).forEach((s, i) => { pos[s.id] = { x: freeX, y: TOP + (i + 1) * (NH + 40) }; });
+    const minX = Math.min(...Object.values(pos).map(p => p.x)); if (minX < 60) Object.values(pos).forEach(p => { p.x += 60 - minX; });
+    if (!onlyMissing) return pos;
+    const cur = { ...(cl.layout || {}) }; Object.keys(pos).forEach(id => { if (!cur[id]) cur[id] = pos[id]; }); return cur;
+  }
+  save(status) {
+    const M = this.M, now = new Date(), stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const cl = M.markDetached({ ...M.clone(this.state.cl), status, updated: stamp, updatedBy: 'G. Durand' });
+    const off = cl.steps.filter(s => s.detached).length;
+    M.save(cl); this.setState({ cl, saved: JSON.stringify(cl) });
+    this.flash((status === 'published' ? 'Published — new interventions use this version' : 'Draft saved') + (off ? ` · ${off} unconnected step${off > 1 ? 's are' : ' is'} kept aside and won't run` : ''));
+  }
+
+  flow() {
+    const M = this.M, s = this.state, cl = s.cl, steps = cl.steps, ends = M.endsOf(cl);
+    const layout = this.autoLayout(cl, true), nd = s.nodeDrag;
+    const P = id => nd && nd.id === id ? { x: nd.x, y: nd.y } : layout[id];
+    const reach = M.reachable(cl), L = s.link;
+    const box = id => { const p = P(id); if (!p) return null; const term = id === 'START' || M.isEnd(id); return { x: p.x, y: p.y, w: term ? TW : NW, h: term ? TH : NH }; };
+    const edges = [];
+    const curve = (sx, sy, tx, ty) => { const dy = ty - sy; const c = dy > 40 ? dy / 2 : 80 + Math.min(120, Math.abs(tx - sx) / 4); const p1 = [sx, sy + c], p2 = [tx, ty - c]; return { d: `M${sx} ${sy}C${p1[0]} ${p1[1]} ${p2[0]} ${p2[1]} ${tx} ${ty - 2}`, mx: (sx + 3 * p1[0] + 3 * p2[0] + tx) / 8, my: (sy + 3 * p1[1] + 3 * p2[1] + ty) / 8 }; };
+    const pushEdge = (from, when, explicit, sx, sy, target, active, faded) => { const b = box(target); if (!b) return; const c = curve(sx, sy, b.x + b.w / 2, b.y); const on = s.edge && s.edge.from === from && s.edge.when === when;
+      edges.push({ d: c.d, color: on ? '#C00018' : active ? '#C00018' : explicit ? '#2456B8' : '#98A2B3', w: on || active ? 2.2 : 1.6, dash: explicit ? '' : '6 4', op: faded ? 0.5 : 1, marker: on || active ? 'url(#fb)' : explicit ? 'url(#fc)' : 'url(#fa)',
+        select: e => { e.stopPropagation(); this.setState({ edge: { from, when, target, explicit, x: c.mx, y: c.my }, plus: null }); } }); };
+    const first = M.firstStep(cl), sb = box('START');
+    if (sb) pushEdge('START', null, !!cl.start, sb.x + TW / 2, sb.y + TH, M.isEnd(first) ? ends[0] : first, false, false);
+    const linkValid = id => L && id !== 'START' && id !== L.from;
+    const nodes = [];
+    nodes.push(...['START', ...ends].map(id => { const b = box(id), isS = id === 'START', hot = L && L.over === id && linkValid(id), ok = linkValid(id), reached = isS || reach.has(id);
+      return { id, x: b.x + 'px', y: b.y + 'px', w: TW + 'px', h: TH + 'px', isTerminal: true, isStep: false, title: isS ? 'Start' : 'End', icon: isS ? 'play_arrow' : 'flag', removable: !isS && ends.length > 1,
+        removeEnd: e => { e.stopPropagation(); this.mut(c => { c.ends = M.endsOf(c).filter(x => x !== id); c.steps.forEach(st => { st.rules.forEach(r => { if (r.end === id) delete r.end; }); if (st.afterEnd === id) delete st.afterEnd; }); if (c.layout) delete c.layout[id]; }); },
+        fg: isS ? '#0B6B4A' : '#475467', bg: isS ? '#E6F4EE' : reached ? '#EEF1F4' : '#F9FAFB', border: hot ? '2px solid #0B6B4A' : L && ok ? '2px dashed #12A06E' : `1px ${reached ? 'solid' : 'dashed'} ${isS ? '#A6DDC4' : '#D0D5DD'}`, radius: '23px', shadow: 'none', op: 1, cursor: L ? 'copy' : 'move', z: 3,
+        ports: [], edgeOut: isS, edgeLine: 'transparent', edgeKnob: '#0B6B4A', edgeKnobBg: '#fff',
+        edgeDown: e => this.startLink(e, 'START', null, '', b.x + TW / 2, b.y + TH),
+        down: e => { if (e.button !== 0 || e.target.closest('[data-handle]')) return; e.stopPropagation(); const p = this.toCanvas(e); this._nd = { id, px: p.x, py: p.y, ox: b.x, oy: b.y, moved: false }; },
+        over: () => {}, drop: () => {} }; }));
+    steps.forEach((st, i) => {
+      const b = box(st.id); if (!b) return;
+      const T = M.TYPES[st.type], [ibg, ifg] = M.GROUP_COLORS[T.group], on = s.selected === st.id, inFlow = reach.has(st.id);
+      const outs = M.outputsOf(cl, st), single = outs.length === 1 && !outs[0].when;
+      outs.forEach((o, j) => { const px = single ? NW / 2 : (j + 1) / (outs.length + 1) * NW; if (o.target) pushEdge(st.id, o.when, o.explicit, b.x + px, b.y + NH + (single ? 0 : 10), o.target, on || s.selected === o.target, !inFlow); });
+      const hot = L && L.over === st.id && linkValid(st.id), ok = linkValid(st.id);
+      nodes.push({ id: st.id, x: b.x + 'px', y: b.y + 'px', w: NW + 'px', h: NH + 'px', isStep: true, isTerminal: false, title: st.title || 'Untitled step', meta: `${i + 1} · ${T.label}${st.required ? ' · Required' : ''}`, detached: !inFlow,
+        icon: T.icon, ibg, ifg, op: inFlow || on || hot ? 1 : 0.78, z: on ? 4 : 2, cursor: L ? 'copy' : 'move',
+        bg: inFlow ? '#fff' : '#F9FAFB', border: hot ? '2px solid #0B6B4A' : L && ok ? '2px dashed #12A06E' : on ? '2px solid #C00018' : inFlow ? '1px solid #D9DEE5' : '1.5px dashed #C4CAD4', radius: '10px', shadow: on ? '0 0 0 4px rgba(192,0,24,.1)' : inFlow ? '0 1px 2px rgba(16,24,40,.06)' : 'none',
+        edgeOut: single, edgeLine: outs[0] && outs[0].target ? 'transparent' : '#F5B5B5', edgeKnob: outs[0] && outs[0].target ? (outs[0].explicit ? '#2456B8' : '#98A2B3') : '#C00018', edgeKnobBg: '#fff',
+        edgeDown: e => this.startLink(e, st.id, null, '', b.x + NW / 2, b.y + NH),
+        ports: single ? [] : outs.map((o, j) => { const px = (j + 1) / (outs.length + 1) * NW, open = !o.target, c = open ? '#C00018' : o.explicit ? '#2456B8' : '#667085';
+          return { x: px + 'px', label: o.label, color: c, bg: open ? '#FDECEC' : o.explicit ? '#EAF1FD' : '#fff', tip: `${o.label}: drag to connect — or click, then click the next block`, down: e => this.startLink(e, st.id, o.when, o.label, b.x + px, b.y + NH + 10) }; }),
+        down: e => { if (e.button !== 0 || e.target.closest('[data-handle]')) return; e.stopPropagation(); const p = this.toCanvas(e); this._nd = { id: st.id, px: p.x, py: p.y, ox: b.x, oy: b.y, moved: false }; },
+        over: e => { if (s.pal && s.pal.startsWith('media:')) e.preventDefault(); }, drop: e => { const k = e.dataTransfer.getData('text/plain'); if (k && k.startsWith('media:')) { e.preventDefault(); e.stopPropagation(); this.attachMedia(st.id, k); this.setState({ pal: null }); } } });
+    });
+    const all = Object.keys(layout).map(id => box(id)).filter(Boolean);
+    const rawW = Math.max(900, ...all.map(b => b.x + b.w + 200)), rawH = Math.max(600, ...all.map(b => b.y + b.h + 160));
+    const connected = steps.filter(x => reach.has(x.id)).length, off = steps.length - connected, endOk = ends.some(e => reach.has(e));
+    const status = !steps.length ? ['info', 'Drop a step from the left to start', '#fff', '#D0D5DD', '#475467'] : !endOk ? ['error', 'No path reaches an End block', '#FEF3F2', '#F5B5B5', '#B42318'] : off ? ['warning', `${connected} steps in the flow · ${off} not connected`, '#FFFAEB', '#F7D9A8', '#B54708'] : ['check_circle', `Valid flow · Start → ${connected} steps → End`, '#ECFDF3', '#A6DDC4', '#0B6B4A'];
+    const E = s.edge;
+    return { nodes, edges, rawW: rawW + 'px', rawH: rawH + 'px', fw: rawW * s.zoom + 'px', fh: rawH * s.zoom + 'px',
+      linking: !!L, linkPath: L ? `M${L.x1} ${L.y1}C${L.x1} ${L.y1 + 60} ${L.x2} ${L.y2 - 60} ${L.x2} ${L.y2}` : '',
+      flowIcon: status[0], flowLabel: status[1], flowBg: status[2], flowBorder: status[3], flowFg: status[4],
+      canvasHint: L ? (this._link && this._link.sticky ? 'Now click the block to connect to · Esc to cancel' : 'Release on a highlighted block') : 'Drag blocks anywhere · drag from a block’s bottom edge to connect · click a line to edit it',
+      hintIcon: L ? 'conversion_path' : 'touch_app', hintColor: L ? '#0B6B4A' : '#667085',
+      edgeSel: E ? { x: E.x + 'px', y: E.y + 'px', canRemove: E.from !== 'START', remove: () => this.disconnect(E.from, E.when, E.explicit), insert: () => this.setState({ plus: { x: E.x, y: E.y + 20, edge: E } }) } : null };
+  }
+
+  renderVals() {
+    const M = this.M, s = this.state;
+    if (!s.ready || !M) return { name: '', desc: '', views: [], rows: [], isList: true, isFlow: false, palette: [], nodes: [], edges: [], segs: [] };
+    const cl = s.cl, steps = cl.steps, isFlow = s.view === 'flow';
+    const views = [['list', 'Checklist', 'checklist'], ['flow', 'Workflow', 'account_tree']].map(([k, label, icon]) => ({ label, icon, bg: s.view === k ? '#fff' : 'transparent', shadow: s.view === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: FONT(s.view === k ? 600 : 500), color: s.view === k ? '#1E2430' : '#667085', select: () => { this.cancelLink(); this.setState({ view: k, plus: null, edge: null }); } }));
+    const dirty = JSON.stringify(cl) !== s.saved;
+    const up = cl.updated ? (() => { const [d, t] = cl.updated.split('T'), [, m, dd] = d.split('-'); return `Updated ${MONTHS[+m - 1]} ${+dd}, ${t} by ${cl.updatedBy}`; })() : 'Never saved';
+    const mk = st => ({ data: st, change: p => this.patch(st.id, p), remove: () => this.removeStep(st.id), duplicate: () => this.duplicate(st.id) });
+    const reach = M.reachable(cl);
+    const rows = steps.map((st, i) => {
+      const T = M.TYPES[st.type], [ibg, ifg] = M.GROUP_COLORS[T.group], open = s.expanded === st.id && !isFlow, logic = M.logicSummary(cl, st);
+      return { ...mk(st), n: i + 1, title: st.title || 'Untitled step — click to name it', titleColor: st.title ? '#1E2430' : '#98A2B3', icon: T.icon, ibg, ifg,
+        hasMin: !!+st.minutes, minLabel: +st.minutes ? st.minutes + ' min' : '', minTip: 'Estimated duration',
+        meta: `${T.label} · ${st.required ? 'Required' : 'Optional'}`, hasLogic: !!logic, logic, isBranch: st.conditional && reach.has(st.id), isDetached: !reach.has(st.id), indent: st.conditional ? '36px' : '0',
+        hasMedia: st.media.length > 0, mediaCount: st.media.length, open, chev: open ? 'expand_less' : 'expand_more', bg: reach.has(st.id) ? '#fff' : '#FCFCFD',
+        border: open ? '#C00018' : '#E4E7EC', ring: open ? '0 0 0 3px rgba(192,0,24,.08)' : 'none', op: s.drag === i ? 0.4 : 1, draggable: open ? 'false' : 'true', lineTop: s.pal && s.ins === i,
+        toggle: () => this.setState({ expanded: open ? null : st.id, focus: '' }),
+        drag: e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/row', String(i)); this.setState({ drag: i }); },
+        over: e => { e.preventDefault(); if (this.state.pal) { const r = e.currentTarget.getBoundingClientRect(), k = e.clientY < r.top + r.height / 2 ? i : i + 1; if (this.state.ins !== k) this.setState({ ins: k }); return; }
+          const from = this.state.drag; if (from === null || from === i) return; this.mut(c => { const [m] = c.steps.splice(from, 1); c.steps.splice(i, 0, m); }); this.setState({ drag: i }); },
+        end: () => this.setState({ drag: null }) };
+    });
+    const palDef = isFlow ? PAL_FLOW : PAL_LIST;
+    const palette = palDef.map(([g, items]) => ({ label: g, items: items.map(([key, label, icon, tip]) => { const t = M.TYPES[key], [bg, fg] = t ? M.GROUP_COLORS[t.group] : key === 'end' ? ['#EEF1F4', '#475467'] : ['#F3EEFC', '#6941C6'];
+      return { label: label || t.label, icon: icon || t.icon, bg, fg, tip: tip || (isFlow ? 'Drag onto the canvas' : 'Drag into the checklist, or click to add at the end'),
+        drag: e => { e.dataTransfer.setData('text/plain', key); e.dataTransfer.effectAllowed = 'copy'; this.setState({ pal: key, plus: null, drag: null }); },
+        end: () => this.setState({ pal: null, ins: null }),
+        click: () => { if (!isFlow) return this.addAt(key, steps.length); if (key.startsWith('media:')) { if (s.selected) this.attachMedia(s.selected, key); else this.flash('Select a step first, or drop it on a step'); return; }
+          const sel = s.selected && steps.find(x => x.id === s.selected);
+          if (sel && key !== 'end') { const o = M.outputsOf(cl, sel)[0], b = this.autoLayout(cl, true)[sel.id]; if (o.target) return this.insertOnEdge(sel.id, o.when, o.target, key, { x: b.x + NW / 2, y: b.y + NH + ROWH / 2 }); }
+          const el = this.canvasRef.current, z = s.zoom; this.addFree(key, { x: ((el ? el.scrollLeft + el.clientWidth - 200 : 900)) / z, y: ((el ? el.scrollTop : 0) + 140) / z }); } }; }) }));
+    const PM = this.PM, sg = PM ? PM.segmentsOf([cl]) : [], tot = sg.reduce((a, g) => a + g.minutes, 0);
+    const base = {
+      name: cl.name, setName: e => { const v = e.target.value; this.mut(c => { c.name = v; }); },
+      desc: cl.desc, setDesc: e => { const v = e.target.value; this.mut(c => { c.desc = v; }); },
+      statusLabel: cl.status === 'published' ? 'Published' : 'Draft', statusBg: cl.status === 'published' ? '#E6F4EE' : '#FEF3E2', statusFg: cl.status === 'published' ? '#0B6B4A' : '#B54708',
+      dirty, updatedLabel: up, stepCount: steps.length, logicCount: steps.filter(x => x.rules.length || x.after !== 'next').length,
+      views, isList: !isFlow, isFlow, palette, paletteHint: isFlow ? 'Drag a block anywhere on the canvas, then connect it. Click a block to insert it after the selected step.' : 'Drag a step type into the checklist — or click it to add it at the end. Then fill in the details.',
+      saveDraft: () => this.save('draft'), publish: () => this.save('published'),
+      preview: () => { M.savePreview(M.markDetached(M.clone(cl))); window.location.href = 'Intervention.dc.html?preview=1'; },
+      allSteps: steps, clId: cl.id, focus: s.focus, focusNonce: s.focusNonce, rows,
+      hasSegs: !!PM && sg.length > 0 && tot > 0, totalLabel: PM ? PM.dur(tot) : '',
+      segs: PM ? Object.values(sg.reduce((acc, g) => { const nm = PM.skillNames(g.skills); const k = g.skills.length ? PM.skill(g.skills[0]) : { fg: '#98A2B3' }; acc[nm] = acc[nm] || { name: nm, fg: k.fg, min: 0 }; acc[nm].min += g.minutes; return acc; }, {})).map(g => ({ name: g.name, dur: PM.dur(g.min), fg: g.fg, flex: Math.max(1, g.min), tip: `${g.name} · ${PM.dur(g.min)}` })) : [],
+      listOver: e => { if (this.state.pal) e.preventDefault(); },
+      listDrop: e => { const key = e.dataTransfer.getData('text/plain'); if (!this.state.pal || !key) return; e.preventDefault(); const i = this.state.ins == null ? steps.length : this.state.ins; this.addAt(key, i); },
+      endOver: e => { if (!this.state.pal) return; e.preventDefault(); e.stopPropagation(); if (this.state.ins !== steps.length) this.setState({ ins: steps.length }); },
+      endClick: () => {}, endLabel: s.pal ? 'Drop here to add at the end' : steps.length ? 'Drag a step type here from the left panel' : 'Start by dragging a step type here from the left panel',
+      endBorder: s.pal && s.ins === steps.length ? '#C00018' : '#D0D5DD', endBg: s.pal && s.ins === steps.length ? '#FBF1F2' : 'transparent', endFg: s.pal ? '#C00018' : '#98A2B3',
+      toast: s.toast,
+    };
+    const selSt = isFlow && steps.find(x => x.id === s.selected);
+    if (!isFlow) return { ...base, panelW: '0px', sel: null, nodes: [], edges: [] };
+    const pm = s.plus;
+    return { ...base, ...this.flow(), panelW: selSt ? '400px' : '0px',
+      sel: selSt ? { ...mk(selSt), n: steps.indexOf(selSt) + 1 } : null, closeSel: () => this.setState({ selected: null }),
+      plusMenu: pm ? { x: pm.x + 'px', y: pm.y + 'px' } : null,
+      plusGroups: PAL_LIST.map(([g, items]) => ({ label: g, items: items.map(([key, label, icon]) => { const t = M.TYPES[key], [bg, fg] = M.GROUP_COLORS[t.group]; return { label: label || t.label, icon: icon || t.icon, bg, fg, pick: () => { const E = pm.edge; this.setState({ plus: null, edge: null }); this.insertOnEdge(E.from, E.when, E.target, key, { x: E.x, y: E.y }); } }; }) })),
+      canvasRef: this.canvasRef, innerRef: this.innerRef, zoom: s.zoom, zoomLabel: Math.round(s.zoom * 100) + '%',
+      zoomIn: () => this.setState({ zoom: Math.min(1.4, +(s.zoom + 0.1).toFixed(2)) }), zoomOut: () => this.setState({ zoom: Math.max(0.4, +(s.zoom - 0.1).toFixed(2)) }),
+      tidy: () => { this.mut(c => { c.layout = this.autoLayout(c, false); }); this.flash('Blocks re-arranged from Start to End'); },
+      panCursor: s.panning ? 'grabbing' : 'grab',
+      canvasOver: e => { if (this.state.pal) e.preventDefault(); },
+      canvasDrop: e => { const key = e.dataTransfer.getData('text/plain'); this.setState({ pal: null }); if (!key) return; e.preventDefault(); if (key.startsWith('media:')) return this.flash('Drop images and documents on a step'); this.addFree(key, this.toCanvas(e)); },
+      panStart: e => { if (e.button !== 0 || e.target.closest('[data-node-id],[data-handle],button')) return; const el = this.canvasRef.current; this._pan = { x: e.clientX, y: e.clientY, l: el.scrollLeft, t: el.scrollTop, moved: false }; this.setState({ panning: true }); },
+      panMove: e => { const p = this._pan, el = this.canvasRef.current; if (!p || !el) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; if (Math.abs(dx) + Math.abs(dy) > 4) p.moved = true; el.scrollLeft = p.l - dx; el.scrollTop = p.t - dy; },
+      panEnd: () => { const p = this._pan; if (!p) return; this._pan = null; this.setState({ panning: false }); if (!p.moved) { this.cancelLink(); this.setState({ selected: null, edge: null, plus: null }); } },
+    };
+  }
+}
+</script>
+</body>
+</html>

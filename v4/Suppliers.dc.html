@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="suppliers" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:14px" data-screen-label="Suppliers">
+    <header style="flex:none;display:flex;align-items:center;gap:12px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Suppliers &amp; providers</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ subtitle }}</p>
+      </div>
+      <button onClick="{{ openNew }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New supplier</button>
+    </header>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <label style="width:300px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px">
+        <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+        <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search name, contact, email, category…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+      </label>
+      <label style="position:relative;height:34px;display:flex;align-items:center;border:1px solid {{ catBorder }};background:{{ catBg }};border-radius:6px">
+        <select value="{{ cat }}" onChange="{{ setCat }}" style="appearance:none;-webkit-appearance:none;height:32px;padding:0 30px 0 10px;border:0;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;outline:none"><option value="">All categories</option><sc-for list="{{ cats }}" as="c"><option value="{{ c }}">{{ c }}</option></sc-for></select>
+        <span style="position:absolute;right:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+      </label>
+      <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+        <sc-for list="{{ typeSeg }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.select }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;background:{{ t.bg }};border:0;border-radius:5px;box-shadow:{{ t.shadow }};font:{{ t.font }};color:{{ t.color }};cursor:pointer;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}<span style="font-weight:500;color:#98A2B3">{{ t.count }}</span></button></sc-for>
+      </div>
+      <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+        <sc-for list="{{ statusSeg }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.select }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px;background:{{ t.bg }};border:0;border-radius:5px;box-shadow:{{ t.shadow }};font:{{ t.font }};color:{{ t.color }};cursor:pointer;white-space:nowrap">{{ t.label }}<span style="font-weight:500;color:#98A2B3">{{ t.count }}</span></button></sc-for>
+      </div>
+      <sc-if value="{{ hasFilters }}"><button onClick="{{ reset }}" style="height:34px;padding:0 8px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Reset</button></sc-if>
+      <span style="margin-left:auto;font-size:12.5px;color:#667085">{{ countLabel }}</span>
+    </div>
+
+    <section style="flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+      <div style="flex:1;min-height:0;overflow:auto">
+        <div style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:minmax(240px,2fr) minmax(170px,1.2fr) 150px minmax(200px,1.3fr) 170px 90px 104px 84px;align-items:center;min-width:1140px;height:38px;padding-left:16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+          <span>Supplier</span><span>Main contact</span><span>Phone</span><span>Email</span><span>Provides</span><span>Lead time</span><span>Status</span><span></span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+          <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(240px,2fr) minmax(170px,1.2fr) 150px minmax(200px,1.3fr) 170px 90px 104px 84px;align-items:center;min-width:1140px;min-height:60px;padding-left:16px;border-bottom:1px solid #F2F4F7;cursor:pointer;background:{{ r.bg }};opacity:{{ r.op }}" style-hover="background:#F9FAFB">
+            <span style="display:flex;align-items:center;gap:12px;min-width:0;padding-right:10px">
+              <sc-if value="{{ r.hasImage }}"><img src="{{ r.image }}" alt="" style="flex:none;width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+              <sc-if value="{{ r.noImage }}"><span style="flex:none;width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:{{ r.color }};color:#fff;font:700 13px 'IBM Plex Sans',sans-serif;letter-spacing:.02em">{{ r.initials }}</span></sc-if>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.category }}</span></span>
+            </span>
+            <span style="min-width:0;display:flex;flex-direction:column;gap:2px;padding-right:10px"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.contact }}</span><span style="font-size:12px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.role }}</span></span>
+            <span style="padding-right:10px"><a href="{{ r.tel }}" onClick="{{ r.stop }}" style="display:inline-flex;align-items:center;gap:5px;color:#344054;font-variant-numeric:tabular-nums;white-space:nowrap" style-hover="color:#C00018"><span style="font:15px/1 'Material Symbols Outlined';color:#98A2B3">call</span>{{ r.phone }}</a></span>
+            <span style="min-width:0;padding-right:10px"><a href="{{ r.mail }}" onClick="{{ r.stop }}" style="display:flex;align-items:center;gap:5px;min-width:0;color:#344054" style-hover="color:#C00018"><span style="flex:none;font:15px/1 'Material Symbols Outlined';color:#98A2B3">mail</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.email }}</span></a></span>
+            <span style="display:flex;flex-direction:column;gap:3px;padding-right:8px"><span style="display:flex;gap:4px"><sc-for list="{{ r.typeChips }}" as="t"><span title="{{ t.tip }}" style="height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 6px 0 4px;border-radius:10px;background:{{ t.bg }};color:{{ t.fg }};font-size:11px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</span></sc-for></span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.offerSub }}</span></span>
+            <span style="color:#475467">{{ r.lead }}</span>
+            <span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span></span>
+            <span style="display:flex;justify-content:flex-end;gap:2px;padding-right:10px">
+              <button onClick="{{ r.edit }}" title="Edit supplier" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3;color:#1E2430"><span style="font:18px/1 'Material Symbols Outlined'">edit</span></button>
+              <button onClick="{{ r.del }}" title="Delete supplier" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+            </span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ empty }}"><div style="padding:48px;text-align:center;color:#667085"><span style="display:block;font:28px/1 'Material Symbols Outlined';color:#98A2B3;margin-bottom:8px">search_off</span>No supplier matches these filters.</div></sc-if>
+      </div>
+    </section>
+  </main>
+</div>
+
+<sc-if value="{{ detailOpen }}">
+  <div onClick="{{ closeAll }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:520px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:flex-start;gap:14px;padding:18px 20px 16px;border-bottom:1px solid #EEF0F3">
+      <sc-if value="{{ d.hasImage }}"><img src="{{ d.image }}" alt="" style="flex:none;width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+      <sc-if value="{{ d.noImage }}"><span style="flex:none;width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:{{ d.color }};color:#fff;font:700 20px 'IBM Plex Sans',sans-serif">{{ d.initials }}</span></sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+        <h2 style="margin:0;font-size:18px;font-weight:600">{{ d.name }}</h2>
+        <span style="color:#667085">{{ d.category }}</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ d.sbg }};color:{{ d.sfg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ d.status }}</span><span style="display:flex;color:#F79009"><sc-for list="{{ d.stars }}" as="st"><span style="font:16px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ st.fill }};color:{{ st.color }}">star</span></sc-for></span></span>
+      </div>
+      <button onClick="{{ closeAll }}" title="Close" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:10px;padding:14px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+        <span style="display:flex;align-items:center;gap:10px"><span style="flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1px solid #E4E7EC;color:#475467;font:18px/1 'Material Symbols Outlined'">person</span><span style="display:flex;flex-direction:column"><span style="font-weight:600">{{ d.contact }}</span><span style="font-size:12px;color:#667085">{{ d.role }}</span></span></span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <a href="{{ d.tel }}" style="height:38px;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font-weight:500" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined';color:#0B6B4A">call</span>{{ d.phone }}</a>
+          <a href="{{ d.mail }}" style="height:38px;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font-weight:500" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined';color:#2456B8">mail</span>Send email</a>
+        </div>
+      </div>
+      <dl style="margin:0;display:grid;grid-template-columns:130px minmax(0,1fr);row-gap:9px;column-gap:12px">
+        <sc-for list="{{ d.info }}" as="x"><dt style="color:#667085">{{ x.k }}</dt><dd style="margin:0;font-weight:500;word-break:break-word"><sc-if value="{{ x.isLink }}"><a href="{{ x.href }}" target="_blank">{{ x.v }}</a></sc-if><sc-if value="{{ x.isText }}">{{ x.v }}</sc-if></dd></sc-for>
+      </dl>
+      <sc-if value="{{ d.hasNotes }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:600;font-size:14px">Notes</span><p style="margin:0;color:#475467;line-height:1.5;white-space:pre-wrap">{{ d.notes }}</p></div></sc-if>
+      <sc-if value="{{ d.hasService }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-size:14px">Rates</span><span style="font-size:12px;color:#98A2B3">used to cost interventions</span></span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <sc-for list="{{ d.headRates }}" as="x"><span style="display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px"><span style="font-size:12px;color:#667085">{{ x.k }}</span><span style="font:600 15px 'IBM Plex Mono',monospace">{{ x.v }}</span></span></sc-for>
+          </div>
+          <sc-for list="{{ d.rates }}" as="x"><div style="display:flex;align-items:center;gap:10px;min-height:38px;padding:0 2px;border-top:1px solid #F2F4F7"><span style="flex:1;min-width:0;font-weight:500">{{ x.name }}</span><span style="font-size:12px;color:#667085">{{ x.unit }}</span><span style="min-width:80px;text-align:right;font:600 13px 'IBM Plex Mono',monospace">{{ x.price }}</span></div></sc-for>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column">
+        <span style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:600;font-size:14px">Spare parts supplied</span><span style="font-size:12px;color:#98A2B3">{{ d.partsCount }}</span></span>
+        <sc-for list="{{ d.parts }}" as="p">
+          <a href="{{ p.href }}" style="display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #F2F4F7;color:#1E2430" style-hover="background:#FAFAFB">
+            <sc-if value="{{ p.hasImage }}"><img src="{{ p.image }}" alt="" style="width:34px;height:34px;border-radius:6px;object-fit:cover" /></sc-if>
+            <sc-if value="{{ p.noImage }}"><span style="width:34px;height:34px;border-radius:6px;background:#F2F4F7;display:grid;place-items:center;color:#98A2B3;font:17px/1 'Material Symbols Outlined'">inventory_2</span></sc-if>
+            <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span><span style="font:12px 'IBM Plex Mono',monospace;color:#667085">{{ p.ref }} · {{ p.supplierRef }}</span></span>
+            <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;font-size:11.5px;font-weight:600;background:{{ p.sbg }};color:{{ p.sfg }};white-space:nowrap">{{ p.status }}</span>
+          </a>
+        </sc-for>
+        <sc-if value="{{ d.noParts }}"><span style="padding:8px 0;color:#98A2B3">No spare parts linked yet. Pick this supplier in a spare part form.</span></sc-if>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <button onClick="{{ d.del }}" style="height:38px;display:flex;align-items:center;gap:5px;padding:0 12px 0 10px;background:#fff;border:1px solid #FDA29B;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer" style-hover="background:#FEF3F2"><span style="font:17px/1 'Material Symbols Outlined'">delete</span>Delete</button>
+      <span style="flex:1"></span>
+      <button onClick="{{ d.edit }}" style="height:38px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">edit</span>Edit supplier</button>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ formOpen }}">
+  <div onClick="{{ closeAll }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:520px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;background:#F2F4F7;color:#344054;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">local_shipping</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ formTitle }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">Fields marked * are required</p></div>
+      <button onClick="{{ closeAll }}" title="Close" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <sc-if value="{{ fImg.has }}"><img src="{{ fImg.src }}" alt="" style="flex:none;width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+        <sc-if value="{{ fImg.none }}"><span style="flex:none;width:72px;height:72px;border-radius:10px;display:grid;place-items:center;background:{{ fImg.color }};color:#fff;font:700 22px 'IBM Plex Sans',sans-serif">{{ fImg.initials }}</span></sc-if>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;font-weight:600;color:#344054">Logo or photo</span>
+          <div style="display:flex;gap:6px">
+            <button onClick="{{ pickImage }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined'">upload</span>{{ fImg.btn }}</button>
+            <sc-if value="{{ fImg.has }}"><button onClick="{{ clearImage }}" style="height:34px;padding:0 10px;background:transparent;border:0;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer">Remove</button></sc-if>
+          </div>
+          <span style="font-size:11.5px;color:#98A2B3">PNG or JPG · resized automatically</span>
+          <input ref="{{ fileRef }}" type="file" accept="image/*" onChange="{{ onFile }}" style="display:none" />
+        </div>
+      </div>
+      <sc-for list="{{ groups }}" as="g">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">{{ g.title }}</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <sc-for list="{{ g.fields }}" as="f">
+              <label style="grid-column:{{ f.span }};display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13px;font-weight:600;color:#344054">{{ f.label }}<sc-if value="{{ f.req }}"><span style="color:#C00018"> *</span></sc-if></span>
+                <sc-if value="{{ f.isInput }}"><input type="{{ f.type }}" value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" style="height:40px;padding:0 12px;border:1px solid {{ f.border }};border-radius:8px;font:14px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" style-focus="border-color:#98A2B3" /></sc-if>
+                <sc-if value="{{ f.isSelect }}"><span style="position:relative;display:flex"><select value="{{ f.value }}" onChange="{{ f.onInput }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 32px 0 12px;border:1px solid {{ f.border }};border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ f.options }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:10px;top:10px;pointer-events:none;font:20px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></sc-if>
+                <sc-if value="{{ f.isTextarea }}"><textarea value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" rows="3" style="padding:10px 12px;border:1px solid #D0D5DD;border-radius:8px;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea></sc-if>
+                <sc-if value="{{ f.isSeg }}"><div style="display:flex;gap:6px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" style="height:36px;padding:0 12px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:8px;font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.l }}</button></sc-for></div></sc-if>
+                <sc-if value="{{ f.isStars }}"><div style="display:flex;gap:2px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" title="{{ o.tip }}" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;cursor:pointer;color:{{ o.color }};font:22px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ o.fill }}" style-hover="background:#FEF3E2">star</button></sc-for></div></sc-if>
+                <sc-if value="{{ f.hasError }}"><span style="font-size:12px;color:#B42318">{{ f.error }}</span></sc-if>
+              </label>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">What they provide</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ fTypes }}" as="t"><button onClick="{{ t.toggle }}" style="height:38px;display:flex;align-items:center;gap:6px;padding:0 12px 0 9px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:8px;font:{{ t.font }};color:{{ t.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for></div>
+        <sc-if value="{{ fHasRates }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <sc-if value="{{ fIsService }}"><label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">Hourly rate (€/h)</span><input type="number" min="0" value="{{ fHourly }}" onInput="{{ setHourly }}" placeholder="e.g. 85" style="height:40px;padding:0 12px;border:1px solid #D0D5DD;border-radius:8px;font:14px 'IBM Plex Mono',monospace;outline:none" /></label></sc-if>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">{{ travelLabel }}</span><input type="number" min="0" value="{{ fTravel }}" onInput="{{ setTravel }}" placeholder="e.g. 120" style="height:40px;padding:0 12px;border:1px solid #D0D5DD;border-radius:8px;font:14px 'IBM Plex Mono',monospace;outline:none" /></label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;font-weight:600;color:#344054">Service &amp; rental rates</span>
+            <sc-for list="{{ fRates }}" as="r">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 96px 30px;gap:6px;align-items:center">
+                <input value="{{ r.name }}" onInput="{{ r.setName }}" placeholder="e.g. Annual inspection" style="height:36px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+                <span style="position:relative;display:flex"><select value="{{ r.unit }}" onChange="{{ r.setUnit }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 24px 0 8px;border:1px solid #D0D5DD;border-radius:6px;font:12.5px 'IBM Plex Sans',sans-serif;background:#fff;outline:none"><sc-for list="{{ unitOpts }}" as="u"><option value="{{ u.v }}">{{ u.l }}</option></sc-for></select><span style="position:absolute;right:4px;top:9px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+                <input type="number" min="0" value="{{ r.price }}" onInput="{{ r.setPrice }}" placeholder="€" style="height:36px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Mono',monospace;text-align:right;outline:none" />
+                <button onClick="{{ r.remove }}" title="Remove rate" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+              </div>
+            </sc-for>
+            <button onClick="{{ addRate }}" style="align-self:flex-start;height:32px;display:flex;align-items:center;gap:4px;padding:0 10px 0 6px;background:transparent;border:1px dashed #C4CAD4;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">add</span>Add a rate</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <span style="flex:1;min-width:0;font-size:12.5px;color:#B42318">{{ formError }}</span>
+      <button onClick="{{ closeAll }}" style="height:40px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Cancel</button>
+      <button onClick="{{ save }}" style="height:40px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">check</span>{{ saveLabel }}</button>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ confirmOpen }}">
+  <div onClick="{{ closeConfirm }}" style="position:fixed;inset:0;z-index:80;background:rgba(16,24,40,.4)"></div>
+  <div style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:81;width:420px;display:flex;flex-direction:column;gap:14px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <span style="flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#FEF3F2;color:#B42318;font:22px/1 'Material Symbols Outlined'">delete</span>
+      <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:16px;font-weight:600">{{ confirm.title }}</h3><p style="margin:6px 0 0;color:#475467;line-height:1.5">{{ confirm.text }}</p></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button onClick="{{ closeConfirm }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+      <button onClick="{{ confirm.ok }}" style="height:38px;padding:0 14px;background:#B42318;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Delete supplier</button>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const STATUS = { Active: ['#E6F4EE', '#0B6B4A'], 'On hold': ['#FEF3E2', '#B54708'], Inactive: ['#EEF1F4', '#475467'] };
+const TERMS = ['30 days', '45 days', '60 days', '90 days', 'On receipt'];
+const TYPEC = { parts: ['Parts', 'inventory_2', '#EEF1F4', '#475467'], service: ['Services', 'engineering', '#F3EEFC', '#6941C6'], rental: ['Rental', 'forklift', '#FEF3E2', '#B54708'] };
+const CATS = ['Furnace OEM service', 'Inspection & certification', 'Equipment rental', 'Electrical contractor', 'Bearings & transmission', 'Belts & transmission', 'Hydraulics & filtration', 'Instrumentation', 'Seals', 'Lubricants', 'Sensors & encoders', 'Electrical & drives', 'Compressed air', 'Pumps & spare kits', 'Fasteners & consumables', 'Services & contractors'];
+const COLORS = ['#0F4C9B', '#C8102E', '#00843D', '#6941C6', '#0E7490', '#B54708', '#344054'];
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+const QS = new URLSearchParams(location.search);
+class Component extends DCLogic {
+  state = { PA: null, v: 0, q: QS.get('q') || '', cat: '', st: '', detail: QS.get('id') || null, form: null, confirm: null, toast: null };
+  fileRef = React.createRef();
+  componentDidMount() {
+    import('./parts-model.js').then(PA => this.setState({ PA }));
+    this._r = () => this.setState(s => ({ v: s.v + 1 })); window.addEventListener('cmms-suppliers', this._r); window.addEventListener('cmms-parts', this._r);
+    this._k = e => { if (e.key === 'Escape') this.setState({ form: null, detail: null, confirm: null }); }; window.addEventListener('keydown', this._k);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-suppliers', this._r); window.removeEventListener('cmms-parts', this._r); window.removeEventListener('keydown', this._k); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  edit(sp) { this.setState({ detail: null, form: { id: sp ? sp.id : null, f: sp ? { ...sp, leadDays: String(sp.leadDays ?? '') } : { status: 'Active', rating: 3, terms: '60 days', types: ['parts'], rates: [], hourly: '', travel: '', category: CATS[0], color: COLORS[Math.floor(Math.random() * COLORS.length)], image: '' }, errors: {} } }); }
+  askDelete(sp) { const n = this.state.PA.partsOfSupplier(sp.id).length;
+    this.setState({ confirm: { title: `Delete ${sp.name}?`, text: n ? `${n} spare part${n > 1 ? 's' : ''} will no longer have a supplier. Their stock and history are kept. This cannot be undone.` : 'This cannot be undone.',
+      ok: () => { this.state.PA.deleteSupplier(sp.id); this.setState({ confirm: null, detail: null, form: null }); this.flash(`${sp.name} deleted`); } } }); }
+  save() {
+    const { PA, form } = this.state, f = form.f, errors = {};
+    if (!(f.name || '').trim()) errors.name = 'Required';
+    if (f.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) errors.email = 'Enter a valid email';
+    if (f.phone && !/^[+\d][\d\s().-]{5,}$/.test(f.phone)) errors.phone = 'Enter a valid phone number';
+    if (f.leadDays !== '' && f.leadDays != null && (isNaN(+f.leadDays) || +f.leadDays < 0)) errors.leadDays = 'Days, 0 or more';
+    if (!form.id && PA.suppliers().some(x => x.name.toLowerCase() === (f.name || '').trim().toLowerCase())) errors.name = 'A supplier with this name exists';
+    if (Object.keys(errors).length) return this.setState({ form: { ...form, errors, error: 'Check the highlighted fields' } });
+    const id = PA.saveSupplier(form.id, { ...f, name: f.name.trim(), leadDays: f.leadDays === '' ? '' : +f.leadDays, types: (f.types && f.types.length ? f.types : ['parts']), hourly: f.hourly === '' || f.hourly == null ? '' : +f.hourly, travel: f.travel === '' || f.travel == null ? '' : +f.travel, rates: (f.rates || []).filter(r => (r.name || '').trim()).map(r => ({ ...r, price: +r.price || 0 })) });
+    if (!id) return this.setState({ form: { ...form, error: 'Storage is full — use a smaller image' } });
+    this.setState({ form: null, detail: id }); this.flash(`${f.name.trim()} ${form.id ? 'updated' : 'added'}`);
+  }
+  renderVals() {
+    const s = this.state, PA = s.PA;
+    if (!PA) return { rows: [], statusSeg: [], cats: CATS, subtitle: 'Vendors of spare parts, consumables and services', groups: [] };
+    const all = PA.suppliers(), parts = PA.parts(), q = s.q.trim().toLowerCase();
+    const list = all.filter(x => (!s.ty || PA.typesOf(x).includes(s.ty)) && (!q || [x.name, x.contact, x.email, x.category, x.phone].join(' ').toLowerCase().includes(q)) && (!s.cat || x.category === s.cat) && (!s.st || x.status === s.st));
+    const look = x => ({ hasImage: !!x.image, noImage: !x.image, image: x.image, color: x.color || '#475467', initials: PA.initials(x.name) });
+    const rows = list.map(x => { const n = parts.filter(p => p.supplier === x.id).length, [sbg, sfg] = STATUS[x.status] || STATUS.Active;
+      const ty = PA.typesOf(x), svc = ty.includes('service') || ty.includes('rental');
+      return { ...x, ...look(x), typeChips: ty.map(t => ({ label: TYPEC[t][0], icon: TYPEC[t][1], bg: TYPEC[t][2], fg: TYPEC[t][3], tip: PA.SUP_TYPES[t][0] })), offerSub: [n ? `${n} part${n > 1 ? 's' : ''}` : '', x.hourly ? `€${x.hourly}/h` : '', svc && (x.rates || []).length ? `${x.rates.length} rate${x.rates.length > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') || '—', parts: n || '—', partsColor: n ? '#1E2430' : '#C4CAD4', lead: x.leadDays !== '' && x.leadDays != null ? `${x.leadDays} day${x.leadDays == 1 ? '' : 's'}` : '—', sbg, sfg, status: x.status,
+        contact: x.contact || '—', role: x.role || '', phone: x.phone || '—', email: x.email || '—', tel: x.phone ? 'tel:' + x.phone.replace(/\s/g, '') : '#', mail: x.email ? 'mailto:' + x.email : '#', bg: s.detail === x.id ? '#FBF7F7' : '#fff', op: x.status === 'Inactive' ? 0.6 : 1,
+        stop: e => e.stopPropagation(), open: () => this.setState({ detail: x.id }), edit: e => { e.stopPropagation(); this.edit(x); }, del: e => { e.stopPropagation(); this.askDelete(x); } }; });
+    const ds = s.detail && PA.supplier(s.detail);
+    let d = {};
+    if (ds) { const [sbg, sfg] = STATUS[ds.status] || STATUS.Active, ps = parts.filter(p => p.supplier === ds.id);
+      d = { ...ds, ...look(ds), sbg, sfg, contact: ds.contact || 'No contact yet', role: ds.role || '', phone: ds.phone || 'No phone', tel: ds.phone ? 'tel:' + ds.phone.replace(/\s/g, '') : '#', mail: ds.email ? 'mailto:' + ds.email : '#',
+        stars: [1, 2, 3, 4, 5].map(i => ({ fill: i <= (ds.rating || 0) ? 1 : 0, color: i <= (ds.rating || 0) ? '#F79009' : '#D0D5DD' })),
+        info: [['Email', ds.email, ds.email ? 'mailto:' + ds.email : ''], ['Mobile', ds.mobile, ds.mobile ? 'tel:' + ds.mobile.replace(/\s/g, '') : ''], ['Website', ds.website, ds.website ? 'https://' + ds.website.replace(/^https?:\/\//, '') : ''], ['Address', ds.address], ['Customer account', ds.account], ['Payment terms', ds.terms], ['Lead time', ds.leadDays !== '' && ds.leadDays != null ? `${ds.leadDays} days` : '']]
+          .filter(([, v]) => v).map(([k, v, href]) => ({ k, v, href: href || '#', isLink: !!href, isText: !href })),
+        hasService: PA.typesOf(ds).some(t => t !== 'parts'), headRates: [...(ds.hourly ? [['Hourly rate', `€${ds.hourly} / h`]] : []), ...(ds.travel ? [[PA.typesOf(ds).includes('service') ? 'Travel / call-out' : 'Delivery & pick-up', `€${ds.travel} / visit`]] : [])].map(([k, v]) => ({ k, v })),
+        rates: (ds.rates || []).map(r => ({ name: r.name, unit: PA.RATE_UNITS[r.unit] || '', price: '€' + (+r.price || 0).toLocaleString('en-US') })),
+        hasNotes: !!ds.notes, partsCount: ps.length ? `${ps.length}` : '', noParts: !ps.length,
+        parts: ps.map(p => { const [st, pbg, pfg] = PA.status(p); return { ...p, hasImage: !!p.image, noImage: !p.image, supplierRef: p.supplierRef || '—', status: st, sbg: pbg, sfg: pfg, href: 'SpareParts.dc.html?q=' + encodeURIComponent(p.ref) }; }),
+        edit: () => this.edit(ds), del: () => this.askDelete(ds) }; }
+    const fm = s.form, f = fm ? fm.f : {};
+    const fld = (key, label, kind, x = {}) => { const err = fm && fm.errors[key];
+      return { label, req: !!x.req, span: x.full ? '1 / -1' : 'auto', isInput: kind === 'text' || kind === 'number' || kind === 'email' || kind === 'tel', isSelect: kind === 'select', isTextarea: kind === 'textarea', isSeg: kind === 'seg', isStars: kind === 'stars',
+        type: kind === 'number' ? 'number' : kind, value: f[key] ?? '', ph: x.ph || '', border: err ? '#F04438' : '#D0D5DD', hasError: !!err, error: err || '',
+        onInput: e => { const v = e.target.value; this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, [key]: v }, errors: { ...z.form.errors, [key]: '' }, error: '' } })); },
+        options: kind === 'seg' ? Object.keys(STATUS).map(k => { const on = f[key] === k; return { l: k, bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? '#A30014' : '#344054', font: on ? bold : reg, select: e => { e.preventDefault(); this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, [key]: k } } })); } }; })
+          : kind === 'stars' ? [1, 2, 3, 4, 5].map(i => ({ tip: `${i} / 5`, fill: i <= (f.rating || 0) ? 1 : 0, color: i <= (f.rating || 0) ? '#F79009' : '#D0D5DD', select: e => { e.preventDefault(); this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, rating: i } } })); } }))
+          : x.options || [] }; };
+    return {
+      subtitle: `${all.length} suppliers & providers · ${all.filter(x => x.status === 'Active').length} active · spare parts, external services and equipment rental`,
+      q: s.q, setQ: e => this.setState({ q: e.target.value }), cat: s.cat, setCat: e => this.setState({ cat: e.target.value }), cats: [...new Set([...CATS, ...all.map(x => x.category).filter(Boolean)])],
+      catBorder: s.cat ? '#C00018' : '#D0D5DD', catBg: s.cat ? '#FBF7F7' : '#fff',
+      statusSeg: [['', 'All'], ...Object.keys(STATUS).map(k => [k, k])].map(([k, label]) => { const on = s.st === k; return { label, count: k ? all.filter(x => x.status === k).length : all.length, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => this.setState({ st: k }) }; }),
+      hasFilters: !!(q || s.cat || s.st || s.ty), reset: () => this.setState({ q: '', cat: '', st: '', ty: '' }), countLabel: `${list.length} of ${all.length} suppliers`,
+      rows, empty: !rows.length, openNew: () => this.edit(null),
+      detailOpen: !!ds && !fm, d, closeAll: () => this.setState({ detail: null, form: null }),
+      formOpen: !!fm, formTitle: fm && fm.id ? `Edit ${f.name || 'supplier'}` : 'New supplier', saveLabel: fm && fm.id ? 'Save changes' : 'Create supplier', formError: fm ? fm.error || '' : '',
+      fileRef: this.fileRef, pickImage: () => this.fileRef.current && this.fileRef.current.click(),
+      onFile: e => { const file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return; PA.readImage(file, 240).then(src => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, image: src } } }))).catch(() => this.flash('This file is not an image')); },
+      clearImage: () => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, image: '' } } })),
+      fImg: { has: !!f.image, none: !f.image, src: f.image, color: f.color || '#475467', initials: PA.initials(f.name || '?'), btn: f.image ? 'Replace' : 'Upload image' },
+      groups: fm ? [
+        { title: 'Company', fields: [fld('name', 'Supplier name', 'text', { req: 1, full: 1, ph: 'e.g. SKF France' }), fld('category', 'Category', 'select', { options: [...new Set([...CATS, f.category].filter(Boolean))] }), fld('status', 'Status', 'seg'),
+          fld('website', 'Website', 'text', { ph: 'www.example.com' }), fld('account', 'Customer account no.', 'text', { ph: 'Your account at this supplier' }), fld('address', 'Address', 'text', { full: 1 })] },
+        { title: 'Main contact', fields: [fld('contact', 'Name', 'text', { ph: 'e.g. Claire Fontaine' }), fld('role', 'Role', 'text', { ph: 'e.g. Key account manager' }), fld('phone', 'Phone', 'tel', { ph: '+33 1 23 45 67 89' }), fld('mobile', 'Mobile', 'tel', { ph: '+33 6 12 34 56 78' }), fld('email', 'Email', 'email', { full: 1, ph: 'name@supplier.com' })] },
+        { title: 'Terms', fields: [fld('leadDays', 'Lead time (days)', 'number', { ph: '0' }), fld('terms', 'Payment terms', 'select', { options: TERMS }), fld('rating', 'Rating', 'stars', { full: 1 }), fld('notes', 'Notes', 'textarea', { full: 1, ph: 'Minimum order, delivery days, framework contract…' })] },
+      ] : [],
+      typeSeg: [['', 'All', 'apps'], ['parts', 'Spare parts', 'inventory_2'], ['service', 'Services', 'engineering'], ['rental', 'Rental', 'forklift']].map(([k, label, icon]) => { const on = (s.ty || '') === k; return { label, icon, count: k ? all.filter(x => PA.typesOf(x).includes(k)).length : all.length, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => this.setState({ ty: k }) }; }),
+      ...(() => { if (!fm) return { fTypes: [], fRates: [], unitOpts: [] }; const ty = f.types && f.types.length ? f.types : ['parts'], setF = p => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, ...p } } })), rates = f.rates || [];
+        return { fTypes: Object.entries(PA.SUP_TYPES).map(([k, [label, icon]]) => { const on = ty.includes(k); return { label, icon, bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? '#A30014' : '#344054', font: on ? bold : reg, toggle: e => { e.preventDefault(); const n = on ? ty.filter(x => x !== k) : [...ty, k]; setF({ types: n.length ? n : ['parts'] }); } }; }),
+          fHasRates: ty.includes('service') || ty.includes('rental'), fIsService: ty.includes('service'), fHourly: f.hourly ?? '', fTravel: f.travel ?? '', travelLabel: ty.includes('service') ? 'Travel / call-out fee (€ per visit)' : 'Delivery fee (€ per visit)',
+          setHourly: e => setF({ hourly: e.target.value }), setTravel: e => setF({ travel: e.target.value }), unitOpts: Object.entries(PA.RATE_UNITS).map(([v, l]) => ({ v, l })),
+          fRates: rates.map((r, i) => { const up = p => setF({ rates: rates.map((x, j) => j === i ? { ...x, ...p } : x) }); return { name: r.name, unit: r.unit, price: r.price, setName: e => up({ name: e.target.value }), setUnit: e => up({ unit: e.target.value }), setPrice: e => up({ price: e.target.value }), remove: () => setF({ rates: rates.filter((_, j) => j !== i) }) }; }),
+          addRate: e => { e.preventDefault(); setF({ rates: [...rates, { id: 'r-' + Date.now().toString(36), name: '', unit: ty.includes('rental') && !ty.includes('service') ? 'day' : 'visit', price: '' }] }); } }; })(),
+      save: () => this.save(),
+      confirmOpen: !!s.confirm, confirm: s.confirm || {}, closeConfirm: () => this.setState({ confirm: null }), toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="planning" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:18px 24px 18px;display:flex;flex-direction:column;gap:12px" data-screen-label="Planning">
+    <header style="flex:none;display:flex;align-items:center;gap:16px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Planning</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ summary }}</p>
+      </div>
+      <sc-if value="{{ isMaint }}" hint-placeholder-val="{{ true }}"><button onClick="{{ createWo }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>Create work order</button></sc-if>
+    </header>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;padding:3px;background:#EEF0F3;border-radius:8px">
+        <sc-for list="{{ tracks }}" as="k" hint-placeholder-count="2">
+          <button onClick="{{ k.select }}" title="{{ k.tip }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 12px 0 9px;background:{{ k.bg }};border:0;border-radius:6px;box-shadow:{{ k.shadow }};font:{{ k.font }};color:{{ k.color }};cursor:pointer;white-space:nowrap"><span style="font:17px/1 'Material Symbols Outlined';color:{{ k.iconColor }}">{{ k.icon }}</span>{{ k.label }}</button>
+        </sc-for>
+      </div>
+      <span style="width:1px;height:22px;background:#E4E7EC;margin:0 2px"></span>
+      <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="5">
+        <div style="position:relative">
+          <button onClick="{{ fl.toggle }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 8px 0 10px;background:{{ fl.bg }};border:1px solid {{ fl.border }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="border-color:#98A2B3">
+            <span style="font:17px/1 'Material Symbols Outlined';color:#667085">{{ fl.icon }}</span>{{ fl.label }}
+            <sc-if value="{{ fl.hasValue }}"><span style="max-width:150px;height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#1E2430;color:#fff;font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis">{{ fl.valueLabel }}</span></sc-if>
+            <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+          </button>
+          <sc-if value="{{ fl.open }}">
+            <div onClick="{{ closeDd }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;left:0;top:40px;z-index:41;width:270px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16);overflow:hidden">
+              <sc-if value="{{ fl.hasSearch }}">
+                <div style="padding:8px;border-bottom:1px solid #EEF0F3"><label style="height:32px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:17px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ aq }}" onInput="{{ setAq }}" placeholder="Search line or equipment…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif" /></label></div>
+              </sc-if>
+              <div style="max-height:320px;overflow:auto;padding:4px">
+                <sc-for list="{{ fl.options }}" as="o">
+                  <button onClick="{{ o.toggle }}" style="width:100%;min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px 0 {{ o.pad }};background:transparent;border:0;border-radius:6px;font:{{ o.font }};color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7">
+                    <span style="flex:none;width:16px;height:16px;border-radius:4px;border:1.5px solid {{ o.boxBorder }};background:{{ o.boxBg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ o.boxIcon }}</span>
+                    <sc-if value="{{ o.hasDot }}"><span style="flex:none;width:8px;height:8px;border-radius:2px;background:{{ o.dot }}"></span></sc-if>
+                    <sc-if value="{{ o.hasIcon }}"><span style="flex:none;font:16px/1 'Material Symbols Outlined';color:#98A2B3">{{ o.icon }}</span></sc-if>
+                    <sc-if value="{{ o.hasAv }}"><span style="flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:{{ o.avBg }};color:{{ o.avFg }};font:600 8.5px 'IBM Plex Sans',sans-serif">{{ o.ini }}</span></sc-if>
+                    <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.label }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;padding:8px 10px;border-top:1px solid #EEF0F3;background:#F9FAFB">
+                <button onClick="{{ fl.clear }}" style="padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Clear</button>
+                <button onClick="{{ closeDd }}" style="margin-left:auto;height:28px;padding:0 12px;background:#1E2430;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Done</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{ isMaint }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative">
+          <button onClick="{{ toggleMore }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;background:{{ moreBg }};border:1px solid {{ moreBorder }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="border-color:#98A2B3"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">tune</span>More filters<sc-if value="{{ moreCount }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#1E2430;color:#fff;font:600 11px/18px 'IBM Plex Sans',sans-serif;text-align:center">{{ moreCount }}</span></sc-if></button>
+          <sc-if value="{{ moreOpen }}">
+            <div onClick="{{ closeDd }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;left:0;top:40px;z-index:41;width:400px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16);display:flex;flex-direction:column">
+              <div style="display:flex;flex-direction:column;gap:14px;padding:14px 16px">
+                <sc-for list="{{ moreGroups }}" as="g">
+                  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:#667085">{{ g.label }}</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ g.options }}" as="o"><button onClick="{{ o.toggle }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 11px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:15px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:{{ o.color }};cursor:pointer;white-space:nowrap"><sc-if value="{{ o.hasDot }}"><span style="width:8px;height:8px;border-radius:2px;background:{{ o.dot }}"></span></sc-if>{{ o.label }}</button></sc-for></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;padding:8px 12px 8px 16px;border-top:1px solid #EEF0F3;background:#F9FAFB;border-radius:0 0 10px 10px">
+                <button onClick="{{ clearMore }}" style="padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Clear</button>
+                <button onClick="{{ closeDd }}" style="margin-left:auto;height:30px;padding:0 14px;background:#1E2430;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Done</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ anyFilter }}"><button onClick="{{ clearAll }}" style="height:34px;display:flex;align-items:center;gap:4px;padding:0 8px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">close</span>Clear filters</button></sc-if>
+    </div>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) {{ panelW }};gap:12px">
+      <section style="min-width:0;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #EEF0F3">
+          <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+              <button onClick="{{ m.select }}" style="height:28px;padding:0 14px;background:{{ m.bg }};border:0;border-radius:5px;box-shadow:{{ m.shadow }};font:{{ m.font }};color:{{ m.color }};cursor:pointer">{{ m.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <button onClick="{{ prev }}" title="Previous" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">chevron_left</span></button>
+            <button onClick="{{ next }}" title="Next" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">chevron_right</span></button>
+          </div>
+          <span style="font-weight:600;font-size:14px;white-space:nowrap">{{ rangeLabel }}</span>
+          <button onClick="{{ today }}" style="height:30px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Today</button>
+          <sc-if value="{{ showWl }}"><button onClick="{{ openWl }}" title="Hours planned per technician this week" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 10px 0 8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="border-color:#98A2B3"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">bar_chart</span>Workload</button></sc-if>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:4px" aria-label="Technician colours">
+            <sc-for list="{{ legend }}" as="p"><button onClick="{{ p.toggle }}" title="{{ p.tip }}" aria-label="{{ p.tip }}" style="position:relative;flex:none;width:26px;height:26px;padding:0;display:grid;place-items:center;background:{{ p.bg }};border:1.5px solid {{ p.border }};border-radius:50%;font:600 9.5px 'IBM Plex Sans',sans-serif;color:{{ p.color }};cursor:pointer;opacity:{{ p.op }}">{{ p.ini }}<sc-if value="{{ p.hasFlag }}"><span style="position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:{{ p.flagColor }};border:1.5px solid #fff"></span></sc-if></button></sc-for>
+          </span>
+
+        </div>
+
+        <sc-if value="{{ dragInfo }}">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F5F8FE;border-bottom:1px solid #D6E2F8;font-size:12.5px;color:#1E3A8A;flex-wrap:wrap">
+            <span style="font:17px/1 'Material Symbols Outlined'">auto_awesome</span>
+            <span style="font-weight:600">{{ dragTitle }}</span>
+            <sc-for list="{{ dragSegs }}" as="g"><span style="height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:{{ g.bg }};color:{{ g.fg }};font-size:11.5px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">{{ g.icon }}</span>{{ g.text }}</span></sc-for>
+            <sc-for list="{{ dragTools }}" as="t"><span style="height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:#fff;border:1px solid #C9D8F5;color:#2456B8;font-size:11.5px;font-weight:600;white-space:nowrap"><span style="font:13px/1 'Material Symbols Outlined'">forklift</span>{{ t }}</span></sc-for>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:12px;color:#475467"><span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:12px;border-radius:2px;background:repeating-linear-gradient(135deg,#E4E7EC 0 3px,#D0D5DD 3px 6px)"></span>No qualified person</span><span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:12px;border-radius:2px;background:repeating-linear-gradient(135deg,#E7EEFB 0 3px,#C9D8F5 3px 6px)"></span>Mobile asset reserved</span></span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isAuto }}">
+          <div style="flex:1;min-height:0;overflow:auto">
+            <div style="display:flex;align-items:flex-start;gap:10px;margin:12px 12px 4px;padding:10px 12px;background:#F5F8FE;border:1px solid #D6E2F8;border-radius:8px;color:#1E3A8A;line-height:1.45">
+              <span style="font:18px/1 'Material Symbols Outlined'">info</span>
+              <span><b style="font-weight:600">Autonomous maintenance</b> = short routine standards run by production operators (cleaning, inspection, lubrication, tightening). They are kept out of the maintenance team's schedule. An anomaly found during a round becomes a work request in the maintenance backlog.</span>
+            </div>
+            <div style="display:flex;gap:16px;padding:8px 14px;font-size:12.5px;color:#475467;flex-wrap:wrap">
+              <sc-for list="{{ autoKpis }}" as="k"><span style="display:flex;align-items:center;gap:6px"><span style="font:17px/1 'Material Symbols Outlined';color:{{ k.color }}">{{ k.icon }}</span><b style="font-weight:600;color:#1E2430;font-variant-numeric:tabular-nums">{{ k.value }}</b>{{ k.label }}</span></sc-for>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:10px;color:#667085"><span style="display:flex;align-items:center;gap:4px"><span style="font:15px/1 'Material Symbols Outlined';color:#0B6B4A">check_circle</span>Done</span><span style="display:flex;align-items:center;gap:4px"><span style="font:15px/1 'Material Symbols Outlined';color:#B42318">cancel</span>Missed</span><span style="display:flex;align-items:center;gap:4px"><span style="font:15px/1 'Material Symbols Outlined';color:#B54708">report</span>Anomaly raised</span><span style="display:flex;align-items:center;gap:4px"><span style="font:15px/1 'Material Symbols Outlined';color:#C4CAD4">radio_button_unchecked</span>Planned</span></span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(260px,1.6fr) repeat(7,minmax(70px,1fr));border-top:1px solid #EEF0F3">
+              <span style="position:sticky;top:0;z-index:2;padding:8px 14px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">Standard · run by</span>
+              <sc-for list="{{ autoHead }}" as="d"><span style="position:sticky;top:0;z-index:2;padding:8px 6px;background:{{ d.bg }};border-bottom:1px solid #EEF0F3;border-left:1px solid #F2F4F7;text-align:center;font-size:12px;font-weight:600;color:{{ d.color }}">{{ d.label }}</span></sc-for>
+              <sc-for list="{{ autoRows }}" as="r">
+                <sc-if value="{{ r.isLine }}"><span style="grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:10px 14px 4px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3"><span style="font:15px/1 'Material Symbols Outlined'">account_tree</span>{{ r.line }}<span style="text-transform:none;letter-spacing:0;font-weight:500">{{ r.lineMeta }}</span></span></sc-if>
+                <sc-if value="{{ r.isTask }}">
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:1px;padding:7px 14px;border-bottom:1px solid #F2F4F7"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.task }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.meta }}</span></span>
+                  <sc-for list="{{ r.cells }}" as="c"><span title="{{ c.tip }}" style="display:flex;align-items:center;justify-content:center;gap:3px;border-bottom:1px solid #F2F4F7;border-left:1px solid #F2F4F7;background:{{ c.bg }};font:500 11.5px 'IBM Plex Sans',sans-serif;color:{{ c.fg }}"><sc-if value="{{ c.has }}"><span style="font:17px/1 'Material Symbols Outlined';color:{{ c.fg }};font-variation-settings:'FILL' {{ c.fill }}">{{ c.icon }}</span><span>{{ c.text }}</span></sc-if></span></sc-for>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;min-height:0;overflow:auto;position:relative">
+            <div style="min-width:{{ gridMin }}">
+              <div style="display:grid;grid-template-columns:{{ gridCols }};position:sticky;top:0;z-index:8;background:#fff;border-bottom:1px solid #E4E7EC">
+                <span></span>
+                <sc-for list="{{ columns }}" as="c">
+                  <div onClick="{{ c.openDay }}" title="{{ c.dayTip }}" style="min-width:0;display:flex;flex-direction:column;gap:5px;padding:8px 10px;border-left:1px solid #F2F4F7;background:{{ c.headBg }};cursor:{{ c.headCursor }}" style-hover="background:{{ c.headHover }}">
+                    <sc-if value="{{ c.isDay }}">
+                      <span style="display:flex;align-items:baseline;gap:6px;min-width:0"><span style="font-size:12px;color:{{ c.subColor }};font-weight:500">{{ c.top }}</span><span style="font-size:15px;font-weight:600;color:{{ c.mainColor }}">{{ c.main }}</span></span>
+                    </sc-if>
+                    <sc-if value="{{ c.isPerson }}">
+                      <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                        <span data-person="{{ c.ini }}" title="View profile" style="flex:none;width:26px;height:26px;border-radius:50%;background:{{ c.avBg }};color:{{ c.avFg }};display:grid;place-items:center;font:600 10px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ c.ini }}</span>
+                        <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.main }}</span><span title="{{ c.team }}" style="font-size:11.5px;color:{{ c.teamColor }};font-weight:{{ c.teamWeight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.team }}</span></span>
+                      </span>
+                      <span style="display:flex;align-items:center;gap:8px">
+                        <span style="flex:1;height:6px;border-radius:3px;background:#EEF0F3;overflow:hidden;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ c.loadW }};background:{{ c.loadColor }};border-radius:3px"></span></span>
+                        <span style="flex:none;font-size:11.5px;font-weight:600;color:{{ c.loadColor }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ c.load }}</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <span style="padding:6px 8px 0 0;text-align:right;font-size:11px;color:#98A2B3;border-top:1px solid #EEF0F3;white-space:nowrap">All day</span>
+                <sc-for list="{{ columns }}" as="c">
+                  <div onClick="{{ c.allDayClick }}" title="{{ c.allDayTip }}" style="min-width:0;min-height:28px;display:flex;flex-direction:column;gap:2px;padding:3px 4px;border-left:1px solid #F2F4F7;border-top:1px solid #EEF0F3;background:{{ c.headBg }};cursor:pointer" style-hover="background:#F9FAFB">
+                    <sc-for list="{{ c.allDay }}" as="a">
+                      <sc-if value="{{ a.isEvent }}"><button onClick="{{ a.open }}" title="{{ a.tip }}" style="height:20px;display:flex;align-items:center;gap:4px;padding:0 6px;background:{{ a.bg }};border:1px solid {{ a.border }};border-radius:4px;font:600 11px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;min-width:0;text-align:left"><sc-if value="{{ a.crit }}"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#C00018"></span></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.label }}</span></button></sc-if>
+                      <sc-if value="{{ a.isAbs }}"><span title="{{ a.tip }}" style="height:20px;display:flex;align-items:center;gap:4px;padding:0 6px;border-radius:4px;background:repeating-linear-gradient(135deg,#F6F7F9 0 5px,#EEF0F3 5px 10px);font:500 11px 'IBM Plex Sans',sans-serif;color:#475467;min-width:0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ a.dot }}"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.label }}</span></span></sc-if>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:{{ gridCols }};position:relative">
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ hours }}" as="h"><div style="height:52px;padding:3px 8px 0 0;text-align:right;font:11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ h.label }}</div></sc-for>
+                </div>
+                <sc-for list="{{ columns }}" as="c">
+                  <div onDragLeave="{{ c.leave }}" style="position:relative;min-width:0;border-left:1px solid #F2F4F7;background:{{ c.bodyBg }}">
+                    <sc-for list="{{ c.slots }}" as="sl"><div onDragOver="{{ sl.over }}" onDrop="{{ sl.drop }}" onClick="{{ sl.click }}" title="{{ sl.tip }}" style="height:26px;border-top:1px solid {{ sl.line }};background:{{ sl.bg }};cursor:{{ sl.cursor }}" style-hover="background:{{ sl.hoverBg }}"></div></sc-for>
+                    <sc-for list="{{ c.blocks }}" as="b"><div title="{{ b.label }}" style="position:absolute;left:0;right:0;top:{{ b.top }};height:{{ b.h }};background:repeating-linear-gradient(135deg,#F6F7F9 0 6px,#ECEEF2 6px 12px);pointer-events:none;z-index:1;display:flex;justify-content:center;padding-top:6px;overflow:hidden"><span style="font-size:11.5px;font-weight:600;color:#98A2B3;white-space:nowrap">{{ b.text }}</span></div></sc-for>
+                    <sc-for list="{{ c.events }}" as="e">
+                      <div draggable="true" onDragStart="{{ e.dragStart }}" onDragEnd="{{ e.dragEnd }}" onClick="{{ e.open }}" title="{{ e.tip }}" style="position:absolute;top:{{ e.top }};height:{{ e.h }};left:{{ e.left }};width:{{ e.width }};padding:3px 6px;background:{{ e.bg }};border:1px solid {{ e.border }};border-radius:5px;overflow:hidden;cursor:grab;display:flex;flex-direction:column;opacity:{{ e.op }};z-index:2;pointer-events:{{ e.pe }};box-shadow:{{ e.shadow }}" style-hover="z-index:7;min-width:170px;box-shadow:0 4px 12px rgba(16,24,40,.12)">
+                        <span style="display:flex;align-items:center;gap:4px;min-width:0">
+                          <sc-if value="{{ e.crit }}"><span title="Critical priority" style="flex:none;width:6px;height:6px;border-radius:50%;background:#C00018"></span></sc-if>
+                          <span style="flex:1;min-width:0;font-size:12px;font-weight:600;line-height:16px;color:#1E2430;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.asset }}</span>
+                          <sc-if value="{{ e.waiting }}"><span title="{{ e.waitTip }}" style="flex:none;font:13px/1 'Material Symbols Outlined';color:#B54708">hourglass_top</span></sc-if>
+                          <sc-if value="{{ e.done }}"><span title="Completed" style="flex:none;font:13px/1 'Material Symbols Outlined';color:#0B6B4A">check</span></sc-if>
+                        </span>
+                        <sc-if value="{{ e.showTask }}"><span style="font-size:11.5px;line-height:15px;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.task }}</span></sc-if>
+                        <sc-if value="{{ e.showTime }}"><span style="margin-top:auto;font:500 11px 'IBM Plex Mono',monospace;color:{{ e.timeColor }};white-space:nowrap">{{ e.time }}</span></sc-if>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ c.hasSugg }}">
+                      <div style="position:absolute;left:2px;right:2px;top:{{ c.sgTop }};height:{{ c.sgH }};border:2px dashed #2456B8;background:rgba(36,86,184,.08);border-radius:6px;pointer-events:none;z-index:6;padding:3px 6px;display:flex;align-items:flex-start;gap:4px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#1E3A8A;overflow:hidden"><span style="font:14px/1 'Material Symbols Outlined'">auto_awesome</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.sgLabel }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ c.hasPreview }}">
+                      <div style="position:absolute;left:2px;right:2px;top:{{ c.pvTop }};height:{{ c.pvH }};border:2px dashed {{ c.pvBorder }};background:{{ c.pvBg }};border-radius:6px;pointer-events:none;z-index:6;padding:3px 6px;display:flex;flex-direction:column;gap:2px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:{{ c.pvColor }};overflow:hidden"><span style="display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">{{ c.pvIcon }}</span>{{ c.pvLabel }}</span><sc-for list="{{ c.pvParts }}" as="q"><span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#344054;white-space:nowrap;background:rgba(255,255,255,.8);border-radius:4px;padding:1px 4px;align-self:flex-start"><span style="width:14px;height:14px;border-radius:50%;display:grid;place-items:center;background:{{ q.avBg }};color:{{ q.avFg }};font:600 7px 'IBM Plex Sans',sans-serif">{{ q.key }}</span>{{ q.text }}</span></sc-for></div>
+                    </sc-if>
+                    <sc-if value="{{ c.isToday }}"><div style="position:absolute;left:0;right:0;top:{{ nowTop }};height:0;border-top:2px solid #C00018;z-index:5;pointer-events:none"><span style="position:absolute;left:-5px;top:-6px;width:10px;height:10px;border-radius:50%;background:#C00018"></span></div></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMonth }}">
+          <div style="flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(104px,1fr)">
+            <sc-for list="{{ monthHead }}" as="d"><div style="padding:8px 10px;font-size:12px;font-weight:600;color:#667085;border-bottom:1px solid #EEF0F3">{{ d }}</div></sc-for>
+            <sc-for list="{{ monthDays }}" as="d">
+              <div onClick="{{ d.click }}" onDragOver="{{ d.over }}" onDrop="{{ d.drop }}" style="padding:6px 8px;border-right:1px solid #F2F4F7;border-bottom:1px solid #F2F4F7;display:flex;flex-direction:column;gap:3px;background:{{ d.bg }};cursor:pointer;min-width:0">
+                <span style="display:flex;align-items:center;gap:6px"><span style="min-width:24px;height:24px;padding:0 6px;border-radius:12px;display:grid;place-items:center;font-size:12.5px;font-weight:600;background:{{ d.numBg }};color:{{ d.numColor }}">{{ d.n }}</span><span style="margin-left:auto;font-size:11px;color:#98A2B3">{{ d.load }}</span></span>
+                <sc-for list="{{ d.events }}" as="e"><span style="display:flex;align-items:center;gap:4px;padding:2px 6px 2px 4px;border-radius:4px;background:{{ e.bg }};font-size:11.5px;font-weight:500;color:#1E2430;white-space:nowrap;overflow:hidden"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ e.fg }}"></span><span style="overflow:hidden;text-overflow:ellipsis">{{ e.label }}</span></span></sc-for>
+                <sc-if value="{{ d.more }}"><span style="font-size:11.5px;color:#667085;font-weight:500;padding-left:4px">{{ d.more }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <aside onDragOver="{{ panelOver }}" onDragLeave="{{ panelLeave }}" onDrop="{{ panelDrop }}" style="min-width:0;min-height:0;display:flex;flex-direction:column;background:{{ panelBg }};border:1px {{ panelBorderStyle }} {{ panelBorder }};border-radius:8px;overflow:hidden">
+        <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 12px 10px;border-bottom:1px solid #EEF0F3">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font:18px/1 'Material Symbols Outlined';color:#475467">event_busy</span>
+              <h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">Not scheduled</h2>
+              <span style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#FEF3E2;color:#B54708;font-size:11.5px;font-weight:600">{{ backlogCount }}</span>
+              <span style="font-size:12px;color:#98A2B3;white-space:nowrap">{{ backlogHours }}</span>
+              <button onClick="{{ togglePanel }}" title="Collapse panel" style="margin-left:auto;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:19px/1 'Material Symbols Outlined'">right_panel_close</span></button>
+            </div>
+<span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">drag_pan</span>Drag onto the planning or use Suggest a slot</span>
+          </div>
+          <sc-if value="{{ dropHint }}">
+            <div style="flex:none;margin:10px 10px 0;padding:14px;border:2px dashed #C00018;border-radius:8px;background:#FFF8F8;color:#A30014;font-weight:600;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:20px/1 'Material Symbols Outlined'">undo</span>Drop here to unschedule</div>
+          </sc-if>
+          <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:10px">
+            <sc-for list="{{ backlog }}" as="u" hint-placeholder-count="5">
+              <div draggable="true" onDragStart="{{ u.dragStart }}" onDragEnd="{{ u.dragEnd }}" style="flex:none;display:flex;flex-direction:column;gap:4px;padding:8px 10px 8px 6px;background:#fff;border:1px solid {{ u.border }};border-radius:8px;cursor:grab;opacity:{{ u.op }};box-shadow:{{ u.shadow }}" style-hover="border-color:#98A2B3;box-shadow:0 2px 6px rgba(16,24,40,.08)">
+                <div style="display:flex;align-items:center;gap:6px;min-width:0">
+                  <span style="flex:none;font:17px/1 'Material Symbols Outlined';color:#C4CAD4">drag_indicator</span>
+                  <button onClick="{{ u.filterType }}" title="{{ u.typeTip }}" style="flex:none;height:22px;display:flex;align-items:center;gap:4px;padding:0 7px 0 4px;background:{{ u.typeBg }};border:0;border-radius:5px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:{{ u.typeFg }};cursor:pointer"><span style="font:14px/1 'Material Symbols Outlined'">{{ u.icon }}</span>{{ u.type }}</button>
+                  <span style="margin-left:auto"></span>
+                  <sc-if value="{{ u.urgent }}"><span style="flex:none;display:inline-flex;align-items:center;gap:2px;height:22px;padding:0 7px 0 4px;border-radius:4px;font-size:11.5px;font-weight:600;background:{{ u.pbg }};color:{{ u.pfg }}"><span style="font:14px/1 'Material Symbols Outlined'">bolt</span>{{ u.prio }}</span></sc-if>
+                  <sc-if value="{{ u.normal }}"><span style="flex:none;font-size:12px;color:#98A2B3">{{ u.prio }}</span></sc-if>
+                </div>
+                <div style="min-width:0;display:flex;flex-direction:column;gap:1px;padding-left:23px">
+                  <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.asset }}</span>
+                  <span style="font-size:12.5px;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.task }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;padding-left:23px">
+                  <div style="display:flex;gap:2px;height:20px">
+                    <sc-for list="{{ u.segs }}" as="g"><span title="{{ g.tip }}" style="flex:{{ g.flex }};min-width:0;display:flex;align-items:center;gap:3px;padding:0 5px;border-radius:4px;background:{{ g.bg }};color:{{ g.fg }};font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden"><span style="flex:none;font:12px/1 'Material Symbols Outlined'">{{ g.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis">{{ g.text }}</span><sc-if value="{{ g.hasWho }}"><span data-person="{{ g.who }}" style="flex:none;margin-left:auto;width:14px;height:14px;border-radius:50%;display:grid;place-items:center;background:{{ g.avBg }};color:{{ g.avFg }};font:600 7px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ g.who }}</span></sc-if></span></sc-for>
+                  </div>
+                  <span style="font-size:11.5px;color:{{ u.whoColor }}">{{ u.whoNote }}</span>
+                  <sc-if value="{{ u.hasTools }}"><span style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ u.tools }}" as="t"><span title="Mobile asset — reserved for the scheduled period" style="height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 6px 0 4px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-size:11px;font-weight:600;white-space:nowrap"><span style="font:12px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.name }}</span></sc-for></span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding-left:23px;font-size:12px;color:#667085;white-space:nowrap;min-width:0">
+                  <span style="display:flex;align-items:center;gap:3px;font-weight:600;color:#344054"><span style="font:14px/1 'Material Symbols Outlined';color:#98A2B3">timer</span>{{ u.dur }}</span>
+                  <span style="display:flex;align-items:center;gap:3px;min-width:0;overflow:hidden;text-overflow:ellipsis"><span style="font:14px/1 'Material Symbols Outlined';color:#98A2B3">groups</span>{{ u.team }}</span>
+                  <span style="margin-left:auto;color:{{ u.ageColor }}">{{ u.age }}</span>
+                </div>
+                <sc-if value="{{ u.noSugg }}"><button onClick="{{ u.suggest }}" style="margin:2px 0 0 23px;height:28px;display:flex;align-items:center;justify-content:center;gap:5px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:15px/1 'Material Symbols Outlined';color:#2456B8">auto_awesome</span>Suggest a slot</button></sc-if>
+                <sc-if value="{{ u.hasSugg }}">
+                  <div style="margin:2px 0 0 23px;display:flex;flex-direction:column;gap:6px;padding:8px 10px;background:#F5F8FE;border:1px solid #D6E2F8;border-radius:6px">
+                    <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#1E3A8A"><span style="font:14px/1 'Material Symbols Outlined'">auto_awesome</span>{{ u.suggLabel }}</span>
+                    <span style="font-size:11.5px;color:#475467;line-height:1.4">{{ u.suggWho }}</span>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <button onClick="{{ u.applySugg }}" style="height:28px;display:flex;align-items:center;gap:4px;padding:0 10px 0 8px;background:#C00018;border:0;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:15px/1 'Material Symbols Outlined'">event_available</span>Schedule</button>
+                      <button onClick="{{ u.nextSugg }}" style="height:28px;padding:0 10px;white-space:nowrap;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer">{{ u.nextLabel }}</button>
+                      <button onClick="{{ u.clearSugg }}" title="Dismiss suggestion" aria-label="Dismiss suggestion" style="margin-left:auto;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ u.suggNone }}"><span style="margin-left:23px;font-size:11.5px;color:#B42318">{{ u.suggNoneText }}</span></sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ hiddenByFilter }}"><button onClick="{{ clearAll }}" style="flex:none;padding:8px;background:transparent;border:1px dashed #D0D5DD;border-radius:8px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">{{ hiddenLabel }} · Show all</button></sc-if>
+            <sc-if value="{{ backlogEmpty }}"><div style="padding:24px 10px;text-align:center;color:#667085"><span style="display:block;font:26px/1 'Material Symbols Outlined';color:#0B6B4A;margin-bottom:6px">task_alt</span>Everything is scheduled.</div></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ panelClosed }}">
+          <button onClick="{{ togglePanel }}" title="Show not scheduled work orders" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;background:transparent;border:0;cursor:pointer;color:#475467">
+            <span style="font:19px/1 'Material Symbols Outlined'">right_panel_open</span>
+            <span style="height:20px;min-width:22px;display:grid;place-items:center;padding:0 6px;border-radius:10px;background:#FEF3E2;color:#B54708;font:600 11.5px 'IBM Plex Sans',sans-serif">{{ backlogCount }}</span>
+            <span style="writing-mode:vertical-rl;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#344054">Not scheduled</span>
+          </button>
+        </sc-if>
+      </aside>
+    </div>
+  </main>
+
+  <sc-if value="{{ hasToast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:{{ toastIconColor }}">{{ toastIcon }}</span>{{ toastText }}<sc-if value="{{ canUndo }}"><button onClick="{{ undo }}" style="margin-left:6px;height:26px;padding:0 10px;background:rgba(255,255,255,.12);border:0;border-radius:5px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Undo</button></sc-if></div>
+  </sc-if>
+</div>
+<sc-if value="{{ wlOpen }}">
+  <div onClick="{{ closeWl }}" style="position:fixed;inset:0;z-index:80;background:rgba(16,24,40,.32)"></div>
+  <div role="dialog" aria-label="Technician workload" style="position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:81;width:860px;max-width:calc(100vw - 48px);max-height:calc(100vh - 110px);background:#fff;border-radius:10px;box-shadow:0 24px 64px rgba(16,24,40,.3);display:flex;flex-direction:column;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;overflow:hidden">
+    <div style="flex:none;display:flex;align-items:flex-start;gap:10px;padding:16px 12px 10px 20px">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">Technician workload</span><span style="font-size:12.5px;color:#667085">{{ wlSub }}</span></div>
+      <button onClick="{{ closeWl }}" title="Close" aria-label="Close" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:0 20px 8px">
+      <div style="display:grid;grid-template-columns:190px repeat(5,minmax(0,1fr)) 96px;align-items:stretch">
+        <span style="position:sticky;top:0;z-index:1;background:#fff;padding:8px 0;font-size:12px;font-weight:600;color:#667085;border-bottom:1px solid #EEF0F3">Technician</span>
+        <sc-for list="{{ wlHead }}" as="d"><span style="position:sticky;top:0;z-index:1;background:#fff;padding:8px 6px;font-size:12px;font-weight:600;color:{{ d.color }};text-align:center;border-bottom:1px solid #EEF0F3">{{ d.label }}</span></sc-for>
+        <span style="position:sticky;top:0;z-index:1;background:#fff;padding:8px 0;font-size:12px;font-weight:600;color:#667085;text-align:right;border-bottom:1px solid #EEF0F3">Week</span>
+        <sc-for list="{{ wlRows }}" as="r">
+          <span style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F2F4F7;min-width:0"><span style="flex:none;width:10px;height:10px;border-radius:50%;background:{{ r.dot }}"></span><span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ r.team }}</span></span></span>
+          <sc-for list="{{ r.days }}" as="c">
+            <span style="padding:5px 3px;border-bottom:1px solid #F2F4F7;display:flex">
+              <button onClick="{{ c.open }}" title="{{ c.tip }}" style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:6px 8px;background:{{ c.bg }};border:1px solid {{ c.border }};border-radius:6px;cursor:pointer;text-align:left;font-family:inherit" style-hover="border-color:#98A2B3">
+                <span style="font-size:12px;font-weight:600;color:{{ c.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.label }}<span style="font-weight:400;color:#98A2B3">{{ c.cap }}</span></span>
+                <sc-if value="{{ c.on }}"><span style="height:4px;border-radius:2px;background:#EEF0F3;overflow:hidden"><span style="display:block;height:100%;width:{{ c.w }};background:{{ c.color }};border-radius:2px"></span></span></sc-if>
+              </button>
+            </span>
+          </sc-for>
+          <span style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:6px 0;border-bottom:1px solid #F2F4F7"><span style="font-weight:600;color:{{ r.pctColor }}">{{ r.pct }}</span><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap">{{ r.total }}</span></span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:14px;padding:10px 20px;border-top:1px solid #EEF0F3;background:#FBFBFC;font-size:12px;color:#667085">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;border-radius:2px;background:#12A06E"></span>Up to 85 %</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;border-radius:2px;background:#F79009"></span>85–100 %</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;border-radius:2px;background:#D92D20"></span>Over capacity</span>
+      <span style="margin-left:auto">Click a day to open it in Day view</span>
+    </div>
+  </div>
+</sc-if>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;default&quot;:&quot;week&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const TYPE = { Preventive: ['event_repeat', '#2456B8', '#EAF1FD', '#C9D8F5'], Corrective: ['build', '#B54708', '#FEF3E2', '#F5D3A6'], Predictive: ['insights', '#6941C6', '#F3EEFC', '#D9CCF5'], Inspection: ['visibility', '#0E7490', '#E3F4F7', '#B5DDE6'] };
+const PRIO = { Critical: ['#C00018', '#fff', '#C00018'], High: ['#FDECEC', '#B42318', '#B42318'], Medium: [0, 0, '#E3A008'], Low: [0, 0, '#98A2B3'] };
+const PEOPLE = [['GD', 'Gaudéric Durand', 'Mechanical team', '#FBE7EA', '#A30014'], ['MD', 'Marc Dupont', 'Mechanical team', '#E6F4EE', '#0B6B4A'], ['PL', 'Pierre Leroy', 'Mechanical team', '#E8EEF9', '#2456B8'], ['AM', 'Alex Martin', 'Mechanical team', '#FEF3E2', '#B54708'], ['SM', 'Sophie Martin', 'Electrical team', '#F3EEFC', '#6941C6'], ['SB', 'Sofia Benali', 'Electrical team', '#E3F4F7', '#0E7490'], ['JM', 'Julie Martin', 'Float Line team', '#FDECEC', '#B42318']];
+const P = Object.fromEntries(PEOPLE.map(p => [p[0], p]));
+// One colour per technician for planning events: [text/accent, fill, border]
+const PCOL = { GD: ['#9F1239', '#FFF1F3', '#FBD0DA'], MD: ['#0B6B4A', '#EAF6F0', '#BFE3D1'], PL: ['#2456B8', '#EDF2FC', '#C9D8F5'], AM: ['#B54708', '#FEF4E8', '#F5D3A6'], SM: ['#6941C6', '#F4F0FC', '#D9CCF5'], SB: ['#0E7490', '#E8F5F8', '#B5DDE6'], JM: ['#C11574', '#FDF0F7', '#F4C6DF'] };
+const keyByName = n => (PEOPLE.find(p => p[1] === n) || [])[0];
+const TEAMS = ['Mechanical team', 'Electrical team', 'Float Line team'];
+const NAME_TEAM = { 'Pierre Leroy': 'Mechanical team', 'Marc Dupont': 'Mechanical team', 'Sophie Martin': 'Electrical team', 'Sofia Benali': 'Electrical team', 'Julie Martin': 'Float Line team' };
+const LINES = [['Float Line', ['Conveyor Line 3', 'Conveyor Line 2', 'Fan V-08', 'Fan V-12', 'Tin Bath', 'Annealing Lehr']], ['Tempering Line', ['Tempering Furnace 1', 'Tempering Furnace 2', 'Pump P-101']], ['Cutting Line', ['Bottero 548 Cutter']], ['Packaging', ['Palletizing Robot 1', 'Packaging Line 1']], ['Utilities', ['Compressor C-01', 'Dryer S-01', 'Cooling Tower']], ['Workshop', ['Hydraulic Press PH-030']], ['Batch House', ['Mixer 02']]];
+const LINE = {}; LINES.forEach(([l, as]) => as.forEach(a => { LINE[a] = l; }));
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const BASE = new Date(2026, 8, 28);
+const dateOf = d => new Date(BASE.getFullYear(), BASE.getMonth(), BASE.getDate() + d);
+const H0 = 7, H1 = 18, ROW = 52, TODAY = 1, NOW = 10.4, CAP = 8;
+const pad2 = n => String(n).padStart(2, '0');
+const isoOf = d => { const x = dateOf(d); return `${x.getFullYear()}-${pad2(x.getMonth() + 1)}-${pad2(x.getDate())}`; };
+const hm = h => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round(h % 1 * 60)).padStart(2, '0')}`;
+const fmtH = h => h % 1 ? `${Math.floor(h)} h ${String(Math.round(h % 1 * 60)).padStart(2, '0')}` : `${h} h`;
+const dayName = d => DAYS[((d % 7) + 7) % 7];
+let seq = 1;
+const SEED = [
+  [-3, 9, 2, 'Conveyor Line 2', '1000 h service', 'SB', 'Preventive', 'Medium'], [-6, 14, 1, 'Dryer S-01', 'Belt check', 'MD', 'Inspection', 'Low'],
+  [0, 7.5, 1.5, 'Conveyor Line 3', 'Bearing replacement', 'MD', 'Corrective', 'High'], [0, 8, 2, 'Hydraulic Press PH-030', 'Preventive service', 'PL', 'Preventive', 'Medium'],
+  [0, 9, 1.5, 'Annealing Lehr', 'Chain lubrication', 'JM', 'Preventive', 'Low'], [0, 10, 1, 'Compressor C-01', 'Oil analysis', 'SB', 'Predictive', 'Low'],
+  [0, 13, 2, 'Bottero 548 Cutter', 'Blade change', 'AM', 'Corrective', 'Medium'], [0, 13.5, 1.5, 'Tempering Furnace 2', 'Temperature check', 'SM', 'Inspection', 'Medium'], [0, 15, 1, 'Pump P-101', 'Vibration reading', 'SB', 'Predictive', 'Low'],
+  [1, 7, 1.5, 'Hydraulic Press PH-030', 'Pressure test', 'PL', 'Inspection', 'Medium'], [1, 7, 1.5, 'Tempering Furnace 2', 'Thermal imaging', 'SB', 'Predictive', 'Medium'],
+  [1, 8, 1.5, 'Conveyor Line 3', 'Sensor check', 'MD', 'Corrective', 'High'], [1, 8.5, 1, 'Cooling Tower', 'Water treatment check', 'JM', 'Preventive', 'Low'],
+  [1, 9, 2.5, 'Palletizing Robot 1', 'Error E-452 diagnosis', 'PL', 'Corrective', 'Critical'], [1, 9, 3, 'Tin Bath', 'Roller replacement', 'AM', 'Corrective', 'Critical'],
+  [1, 10, 1.5, 'Compressor C-01', 'Filter replacement', 'SM', 'Preventive', 'Medium', 'Waiting for parts'], [1, 10, 2, 'Dryer S-01', 'Motor insulation test', 'SB', 'Inspection', 'Medium'],
+  [1, 10.5, 1, 'Conveyor Line 2', 'Belt tracking', 'PL', 'Corrective', 'Medium'], [1, 11.5, 1.5, 'Hydraulic Press PH-030', 'Oil leak', 'MD', 'Corrective', 'Medium'],
+  [1, 13, 1, 'Mixer 02', 'Vibration analysis', 'SB', 'Predictive', 'Low'], [1, 13, 2, 'Bottero 548 Cutter', 'Motor inspection', 'AM', 'Inspection', 'High'],
+  [1, 13.5, 3, 'Annealing Lehr', 'Roller alignment', 'MD', 'Corrective', 'High'], [1, 14, 1.5, 'Tempering Furnace 1', 'Burner check', 'PL', 'Inspection', 'Medium'],
+  [1, 15.5, 1, 'Fan V-12', 'Bearing lubrication', 'JM', 'Preventive', 'Low'], [1, 16, 1.5, 'Packaging Line 1', 'Encoder calibration', 'AM', 'Preventive', 'Low'], [1, 16, 1.5, 'Pump P-101', 'Seal replacement', 'PL', 'Corrective', 'Critical'],
+  [2, 7.5, 1.5, 'Tempering Furnace 1', 'Sensor verification', 'JM', 'Inspection', 'Medium'], [2, 8, 2, 'Palletizing Robot 1', 'Lubrication', 'AM', 'Preventive', 'Low'],
+  [2, 9, 1.5, 'Conveyor Line 3', 'Belt tension', 'MD', 'Corrective', 'Medium'], [2, 9.5, 1, 'Mixer 02', 'Gearbox oil change', 'PL', 'Preventive', 'Low'],
+  [2, 11, 2, 'Tin Bath', 'Thermal imaging', 'SB', 'Predictive', 'High'], [2, 14, 3, 'Annealing Lehr', 'Half-day maintenance', 'JM', 'Preventive', 'Medium'],
+  [2, 14.5, 1.5, 'Cooling Tower', 'Fan inspection', 'SM', 'Inspection', 'Low'], [2, 15, 1, 'Fan V-12', 'Vibration analysis', 'SB', 'Predictive', 'Medium'],
+  [3, 8, 1.5, 'Bottero 548 Cutter', 'Blade alignment', 'MD', 'Corrective', 'High'], [3, 8.5, 2, 'Dryer S-01', 'Belt replacement', 'PL', 'Corrective', 'Medium', 'Waiting for parts'],
+  [3, 10, 1, 'Packaging Line 1', 'Safety inspection', 'AM', 'Inspection', 'Medium'], [3, 13, 1.5, 'Hydraulic Press PH-030', 'Seal replacement', 'PL', 'Corrective', 'High'],
+  [3, 13, 2, 'Compressor C-01', 'Annual inspection', 'SM', 'Inspection', 'Medium'], [3, 15, 1.5, 'Palletizing Robot 1', 'Gripper change', 'AM', 'Corrective', 'Medium'],
+  [4, 7.5, 1.5, 'Tempering Furnace 2', 'Chain inspection', 'PL', 'Inspection', 'Medium'], [4, 8, 2.5, 'Conveyor Line 2', '1000 h service', 'MD', 'Preventive', 'Medium'],
+  [4, 9, 1, 'Pump P-101', 'Oil analysis', 'SB', 'Predictive', 'Low'], [4, 10.5, 1.5, 'Conveyor Line 3', 'Greasing', 'JM', 'Preventive', 'Low'],
+  [4, 13, 2, 'Tin Bath', 'Roller inspection', 'AM', 'Inspection', 'High'], [4, 14, 1.5, 'Mixer 02', 'Motor current analysis', 'SB', 'Predictive', 'Low'],
+  [7, 9, 2, 'Compressor C-01', 'Annual overhaul', 'SM', 'Preventive', 'Medium'], [8, 13, 1.5, 'Fan V-12', 'Vibration analysis', 'PL', 'Predictive', 'High'],
+].map(([day, start, dur, asset, task, who, type, prio, status]) => ({ id: 'e' + seq++, day, start, dur, asset, task, who, type, prio, status: status === 'Waiting for parts' ? undefined : status, waiting: status === 'Waiting for parts' ? 'parts' : '', skills: who === 'SM' || who === 'SB' ? ['ELE'] : ['MEC'],
+  tools: ({ 'Tin Bath|Roller replacement': ['MC-01'], 'Tempering Furnace 2|Thermal imaging': ['TC-01'], 'Tin Bath|Thermal imaging': ['TC-01'], 'Annealing Lehr|Roller alignment': ['LA-01'], 'Fan V-12|Bearing lubrication': ['SL-01'], 'Compressor C-01|Annual inspection': ['SL-01'], 'Mixer 02|Vibration analysis': ['VA-02'], 'Fan V-12|Vibration analysis': ['VA-02'] })[asset + '|' + task] || [] }));
+const BACKLOG = [
+  ['Tin Bath', 'Roller drive replacement', 'Corrective', 'Critical', [[['ELE'], 0.5], [['MEC'], 3], [['ELE'], 0.5]], 'Mechanical team', 'Reported 20 min ago', 1],
+  ['Fan V-08', 'Noisy bearing', 'Corrective', 'High', [[['MEC'], 1.5, 'AM']], 'Mechanical team', 'Requested 2 d ago'],
+  ['Cooling Tower', 'Legionella sampling', 'Inspection', 'High', [[['INS'], 1]], 'Float Line team', 'Due by Oct 2', 1],
+  ['Annealing Lehr', 'Safety guard repair', 'Corrective', 'Medium', [[['ELE'], 0.5], [['MEC'], 1.5]], 'Float Line team', 'Requested today'],
+  ['Tempering Furnace 1', 'Gas detector calibration', 'Inspection', 'Medium', [[['INS'], 1]], 'Electrical team', 'Due by Oct 6'],
+  ['Hydraulic Press PH-030', 'Hose replacement', 'Corrective', 'Medium', [[['HYD'], 2.5]], 'Mechanical team', 'Requested 1 d ago'],
+  ['Conveyor Line 2', 'Motor thermography', 'Predictive', 'Medium', [[['THM'], 1]], 'Electrical team', 'Requested 3 d ago'],
+  ['Packaging Line 1', 'Quarterly lubrication', 'Preventive', 'Low', [[['LUB'], 1.5]], 'Mechanical team', 'Due by Oct 9'],
+  ['Mixer 02', 'Vibration trend review', 'Predictive', 'Low', [[['VIB'], 0.5, 'SB']], 'Electrical team', 'Requested 5 d ago'],
+].map(([asset, task, type, prio, segs, team, age, soon]) => ({ id: 'u' + seq++, tools: ({ 'Tin Bath': ['MC-01'], 'Fan V-08': ['LA-01', 'SL-01'], 'Conveyor Line 2': ['TC-01'], 'Mixer 02': ['VA-02'] })[asset] || [], asset, task, type, prio, segs: segs.map(([skills, h, who]) => ({ skills, h, who: who || '' })), dur: segs.reduce((a, x) => a + x[1], 0), team, age, soon: !!soon }));
+const PORD = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+// All-day work orders (no specific time)
+const SEED_ALL = [[2, 'Fire Pumps', 'Monthly test', 'JM', 'Inspection', 'High'], [4, 'Annealing Lehr', 'Line walk-down audit', 'MD', 'Inspection', 'Low'], [3, 'Float Line', 'Safety guard audit', 'GD', 'Inspection', 'Medium'], [10, 'Conveyor Line 2', 'Line 2 shutdown preparation', 'PL', 'Preventive', 'High']]
+  .map(([day, asset, task, who, type, prio]) => ({ id: 'a' + seq++, day, asset, task, who, type, prio, allDay: true, skills: [], tools: [] }));
+const statusOf = e => e.status || (e.day < TODAY || (e.day === TODAY && e.start + e.dur <= NOW) ? 'Completed' : e.day === TODAY && e.start <= NOW ? 'In progress' : 'Scheduled');
+const layout = list => {
+  const out = {}, sorted = [...list].sort((a, b) => a.start - b.start || b.dur - a.dur);
+  let cluster = [], lanes = [], end = -1;
+  const flush = () => { cluster.forEach(e => { out[e.id].n = lanes.length; }); cluster = []; lanes = []; end = -1; };
+  sorted.forEach(e => { if (cluster.length && e.start >= end) flush(); let l = lanes.findIndex(x => x <= e.start); if (l < 0) { l = lanes.length; lanes.push(0); } lanes[l] = e.start + e.dur; out[e.id] = { lane: l }; cluster.push(e); end = Math.max(end, e.start + e.dur); });
+  flush(); return out;
+};
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+const EMPTY = { team: [], who: [], type: [], asset: [], prio: [], status: [] };
+const WAITS = { parts: 'Waiting for spare parts', paused: 'Intervention paused', dependency: 'Waiting for another job', access: 'Waiting for equipment access', approval: 'Waiting for approval', supplier: 'Waiting for external provider' };
+// Autonomous maintenance standards (run by operators): [line, task, days (0=Mon), run by, minutes, missed days, anomaly days]
+const AUTO = [
+  ['Float Line', 'Cold-end conveyor cleaning & visual check', [0, 1, 2, 3, 4, 5, 6], 'Operators · each shift', 15, [], [1]], ['Float Line', 'Fan V-12 noise & temperature check', [0, 2, 4], 'Operators · Shift A', 5, [], []],
+  ['Float Line', 'Lehr roller lubrication points', [1, 3], 'Operators · Shift B', 20, [], []],
+  ['Tempering Line', 'Furnace roller cleaning', [0, 1, 2, 3, 4], 'Operators · Shift A', 20, [0], []], ['Tempering Line', 'Quench blower filter check', [0, 3], 'Operators · Shift B', 10, [], [0]],
+  ['Tempering Line', 'Pump P-101 leak check', [0, 1, 2, 3, 4], 'Operators · each shift', 5, [], [0]],
+  ['Cutting Line', 'Cutter table cleaning & glass chips removal', [0, 1, 2, 3, 4], 'Operators · Shift A', 15, [], []], ['Cutting Line', 'Cutting wheel & oil level check', [0, 2, 4], 'Operators · Shift A', 10, [], []],
+  ['Packaging', 'Robot gripper pads visual check', [0, 1, 2, 3, 4], 'Operators · Shift B', 5, [], []], ['Packaging', 'Stretch wrapper cleaning', [4], 'Operators · Shift B', 20, [], []],
+  ['Utilities', 'Compressor condensate drain & oil level', [0, 1, 2, 3, 4], 'Utilities operator', 10, [], []], ['Utilities', 'Cooling tower basin visual check', [0, 3], 'Utilities operator', 10, [], []],
+  ['Batch House', 'Mixer 02 cleaning & bolt tightness', [0, 2, 4], 'Batch operators', 25, [], []], ['Batch House', 'Batch scale zero check', [0, 1, 2, 3, 4], 'Batch operators', 5, [0], []],
+];
+const autoCount = () => AUTO.reduce((a, t) => a + t[2].length, 0);
+
+class Component extends DCLogic {
+  state = { track: (() => { try { return localStorage.getItem('cmms.planning.track') || 'maint'; } catch (e) { return 'maint'; } })(), load: true, mode: this.props.mode ?? 'week', week: 0, dayIdx: TODAY, events: SEED, backlog: BACKLOG, allday: SEED_ALL, F: EMPTY, dd: null, aq: '', drag: null, over: null, panel: true, panelHot: false, toast: null, wl: false, sugg: null };
+  componentDidMount() {
+    this._wo = e => { const r = e.detail || {};
+      if (r.date && r.date.length >= 16) {
+        const day = Math.round((new Date(r.date.slice(0, 10) + 'T12:00') - new Date(2026, 8, 28, 12)) / 864e5), start = +r.date.slice(11, 13) + +r.date.slice(14, 16) / 60, ctx = this._slotCtx || {}; this._slotCtx = null;
+        const asg = (r.assignments || []).filter(x => x.minutes && P[x.key]);
+        const segs = asg.length ? asg.map(x => ({ who: x.key, h: Math.max(0.5, Math.round(x.minutes / 30) / 2), skills: x.skills || [] })) : [{ who: ctx.who || keyByName(r.who) || 'GD', h: Math.max(0.5, +r.dur || 1), skills: [] }];
+        if (ctx.allDay) { this.setState(s => ({ allday: [...s.allday, { id: 'a' + seq++, day, asset: r.assetName || r.asset || 'New asset', task: r.title, who: segs[0].who, type: TYPE[r.type] ? r.type : 'Corrective', prio: r.prio || 'Medium', allDay: true, skills: [], tools: [] }], week: Math.floor(day / 7) })); return; }
+        let cur = start; const n = segs.length;
+        const evs = segs.map((g, i) => { const ev = { id: 'e' + seq++, day, start: cur, dur: g.h, asset: r.assetName || r.asset || 'New asset', task: r.title, who: g.who, type: TYPE[r.type] ? r.type : 'Corrective', prio: r.prio || 'Medium', skills: g.skills, tools: r.tools || [], wo: r.key, part: i + 1, parts: n, fresh: true }; cur += g.h; return ev; });
+        this.setState(s => ({ events: [...s.events, ...evs], week: Math.floor(day / 7), mode: s.mode === 'month' ? 'week' : s.mode }));
+        return;
+      }
+      const asg = (r.assignments || []).filter(x => x.minutes), segs = asg.length ? asg.map(x => ({ skills: x.skills || [], h: Math.max(0.5, Math.round(x.minutes / 30) / 2), who: x.key || '' })) : [{ skills: [], h: 1, who: '' }];
+      const item = { id: 'u' + seq++, tools: r.tools || [], asset: r.assetName || r.asset || 'New asset', task: r.title, type: TYPE[r.type] ? r.type : 'Corrective', prio: r.prio || 'Medium', segs, dur: segs.reduce((a, x) => a + x.h, 0), team: NAME_TEAM[r.who] || (TEAMS.includes(r.who) ? r.who : 'Mechanical team'), age: 'Created just now', fresh: true };
+      this.setState(s => ({ backlog: [item, ...s.backlog], panel: true, F: EMPTY })); this.flash('Added to Not scheduled — drag it onto the planning', false); };
+    window.addEventListener('cmms-wo-created', this._wo);
+    import('./people-model.js').then(PM => { this.PM = PM; this.forceUpdate(); });
+    import('./plant-model.js').then(PL => { this.PL = PL; this._feas = null; this.forceUpdate(); });
+    this._prof = () => { this._feas = null; this.forceUpdate(); }; window.addEventListener('cmms-profile', this._prof); window.addEventListener('cmms-asset', this._prof);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-wo-created', this._wo); window.removeEventListener('cmms-profile', this._prof); clearTimeout(this._t); }
+  toolBusy(tools, day, a, b, ignore, label) {
+    if (this.PL) for (const t of tools || []) { const r = this.PL.RESERVATIONS.find(x => x.woKey && x.tool === t && x.day === day && x.from < b && x.to > a && x.wo !== label); if (r) { const nm = this.PL.asset(t) ? this.PL.asset(t).name : t; return `${nm} reserved ${hm(r.from)}–${hm(r.to)} (${r.wo})`; } }
+    for (const t of tools || []) { const e = this.state.events.find(x => x.day === day && (x.tools || []).includes(t) && !(ignore && (x.id === ignore || (x.wo && x.wo === ignore))) && x.start < b && x.start + x.dur > a); if (e) { const nm = this.PL && this.PL.asset(t) ? this.PL.asset(t).name : t; return `${nm} reserved ${hm(e.start)}–${hm(e.start + e.dur)} (${e.asset})`; } } return null; }
+  busyAt(key, day, a, b, ignore) { return this.state.events.some(e => e.who === key && e.day === day && e.id !== ignore && e.start < b && e.start + e.dur > a); }
+  // Feasibility of dropping the dragged item at (day, t) — optionally on a person column
+  plan(d, day, t, col) {
+    const PM = this.PM, s = this.state; if (!PM || !d) return { ok: true, parts: [] };
+    const date = PM.dayIso(day), nm = k => P[k] ? P[k][1].split(' ')[0] : k;
+    if (day < TODAY || (day === TODAY && t < NOW)) return { ok: false, reason: 'In the past' };
+    if (d.kind === 'e') {
+      const e = s.events.find(x => x.id === d.id); if (!e) return { ok: false, reason: '' };
+      const who = col || e.who;
+      if (t + e.dur > H1) return { ok: false, reason: 'Ends after 18:00' };
+      const tb = this.toolBusy(e.tools, day, t, t + e.dur, e.wo || e.id, `${e.asset} — ${e.task}`); if (tb) return { ok: false, reason: tb, tool: true };
+      if (!PM.hasSkills(who, e.skills)) return { ok: false, reason: `${nm(who)} lacks ${PM.skillNames(e.skills)}` };
+      const av = PM.availability(who, date, t, t + e.dur); if (!av.ok) return { ok: false, reason: `${nm(who)}: ${av.reason}` };
+      return { ok: true, parts: [{ key: who, start: t, dur: e.dur, skills: e.skills }], overlap: this.busyAt(who, day, t, t + e.dur, e.id) };
+    }
+    const u = s.backlog.find(x => x.id === d.id); if (!u) return { ok: false, reason: '' };
+    const segs = u.segs || [{ skills: [], h: u.dur, who: '' }];
+    if (t + u.dur > H1) return { ok: false, reason: 'Ends after 18:00' };
+    const tb = this.toolBusy(u.tools, day, t, t + u.dur, null, `${u.asset} — ${u.task}`); if (tb) return { ok: false, reason: tb, tool: true };
+    let cur = t, prev = null, overlap = false; const parts = [];
+    for (const g of segs) {
+      const a = cur, b = cur + g.h;
+      let pool = g.who ? [g.who] : PEOPLE.map(p => p[0]).filter(k => PM.hasSkills(k, g.skills));
+      if (!pool.length) return { ok: false, reason: `Nobody has ${PM.skillNames(g.skills)}` };
+      if (col && !g.who && pool.includes(col)) pool = [col];
+      const okP = pool.filter(k => PM.availability(k, date, a, b).ok);
+      if (!okP.length) { const k0 = pool[0], av = PM.availability(k0, date, a, b); return { ok: false, reason: g.who || pool.length === 1 ? `${nm(k0)}: ${av.reason}` : `No ${PM.skillNames(g.skills)} available ${hm(a)}–${hm(b)}` }; }
+      const free = okP.filter(k => !this.busyAt(k, day, a, b));
+      const cand = free.length ? free : okP; if (!free.length) overlap = true;
+      const pick = cand.includes(prev) ? prev : cand.slice().sort((x, y) => this.loadOf(x, day) - this.loadOf(y, day))[0];
+      parts.push({ key: pick, start: a, dur: g.h, skills: g.skills }); prev = pick; cur = b;
+    }
+    if (col && !parts.some(p => p.key === col)) return { ok: false, reason: `${nm(col)} lacks ${segs.map(g => PM.skillNames(g.skills)).join(' / ')}` };
+    return { ok: true, parts, overlap };
+  }
+  feas(d, day, t, col) { const k = [d.kind, d.id, day, t, col || ''].join('|'); if (!this._feas || this._feas.d !== d) this._feas = { d, m: {} }; return this._feas.m[k] || (this._feas.m[k] = this.plan(d, day, t, col)); }
+  flash(text, undo = true) { this.setState({ toast: { text, undo } }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 5000); }
+  snapshot() { this._undo = { events: this.state.events, backlog: this.state.backlog }; }
+  loadOf(who, day, events = this.state.events) { return events.filter(e => e.who === who && e.day === day).reduce((a, e) => a + e.dur, 0); }
+  startDrag(ev, kind, item) { try { ev.dataTransfer.setData('text/plain', item.id); ev.dataTransfer.effectAllowed = 'move'; } catch (e) {} this._drag = { kind, id: item.id, dur: item.dur }; setTimeout(() => this.setState({ drag: this._drag }), 0); }
+  endDrag() { this._drag = null; this.setState({ drag: null, over: null, panelHot: false }); }
+  drop(day, t, who) {
+    const d = this._drag || this.state.drag; if (!d) return; this.snapshot();
+    const s = this.state;
+    const pl = this.plan(d, day, t, who);
+    if (!pl.ok) { this._drag = null; this.setState({ drag: null, over: null }); this._undo = null; return this.flash(`Can't schedule here — ${pl.reason}`, false); }
+    const nm = k => P[k][1].split(' ')[0], PM = this.PM;
+    if (d.kind === 'u') {
+      const u = s.backlog.find(x => x.id === d.id); if (!u) return;
+      const n = pl.parts.length;
+      const evs = pl.parts.map((p, i) => ({ id: 'e' + seq++, day, start: p.start, dur: p.dur, asset: u.asset, task: u.task, who: p.key, type: u.type, prio: u.prio, skills: p.skills, tools: u.tools || [], wo: u.id, part: i + 1, parts: n, src: u, fresh: true }));
+      this.setState({ events: [...s.events, ...evs], backlog: s.backlog.filter(x => x.id !== u.id), drag: null, over: null });
+      this.flash(`Scheduled ${dayName(day)} ${hm(t)} · ${pl.parts.map(p => `${nm(p.key)} (${PM ? PM.skillNames(p.skills) : ''} ${fmtH(p.dur)})`).join(' → ')}${pl.overlap ? ' · overlaps existing work' : ''}`);
+    } else {
+      const e0 = s.events.find(x => x.id === d.id); if (!e0) return;
+      this.setState({ events: s.events.map(x => x.id === d.id ? { ...x, day, start: t, ...(who ? { who } : {}), status: undefined, fresh: true } : x), drag: null, over: null });
+      this.flash(`Moved to ${dayName(day)} ${hm(t)}${who && who !== e0.who ? ' · ' + P[who][1] : ''}${pl.overlap ? ' · overlaps existing work' : ''}`);
+    }
+    this._drag = null;
+  }
+  unschedule() {
+    const d = this._drag || this.state.drag; if (!d || d.kind !== 'e') return; this.snapshot();
+    const s = this.state, e = s.events.find(x => x.id === d.id); if (!e) return;
+    const item = e.src ? { ...e.src, age: 'Unscheduled just now', fresh: true } : { id: 'u' + seq++, asset: e.asset, task: e.task, type: e.type, prio: e.prio, dur: e.dur, segs: [{ skills: e.skills || [], h: e.dur, who: e.who }], tools: e.tools || [], team: P[e.who][2], age: 'Unscheduled just now', fresh: true };
+    this._drag = null;
+    this.setState({ events: s.events.filter(x => e.wo ? x.wo !== e.wo : x.id !== e.id), backlog: [item, ...s.backlog], drag: null, over: null, panelHot: false });
+    this.flash(`${e.asset} — ${e.task} moved back to Not scheduled`);
+  }
+  slotClick(day, t, who) {
+    if (this._drag || this.state.drag) return;
+    if (day < TODAY || (day === TODAY && t < NOW)) return this.flash('That time has already passed — pick a later slot', false);
+    const PM = this.PM;
+    if (who && PM) { const av = PM.availability(who, PM.dayIso(day), t, Math.min(H1, t + 1)); if (!av.ok) return this.flash(`${P[who][1].split(' ')[0]} is not available — ${av.reason}`, false); }
+    this._slotCtx = { day, t, who };
+    if (window.CMMSCreateWO) window.CMMSCreateWO({ due: `${isoOf(day)}T${hm(t)}`, assigned: who ? [who] : [], followers: ['GD'] });
+  }
+  suggestFor(u) {
+    if (!this.PM) return [];
+    const out = [], d = { kind: 'u', id: u.id, dur: u.dur };
+    for (let day = TODAY; day < TODAY + 12 && out.length < 6; day++) {
+      if (((day % 7) + 7) % 7 >= 5) continue;
+      let perDay = 0;
+      for (let t = day === TODAY ? Math.ceil(NOW * 2) / 2 : H0; t + u.dur <= H1 && perDay < 2; t += 0.5) {
+        const pl = this.plan(d, day, t);
+        if (pl.ok && !pl.overlap && pl.parts.length) { out.push({ day, t, parts: pl.parts }); perDay++; t += Math.max(1, u.dur) - 0.5; }
+      }
+    }
+    return out;
+  }
+  wlVals(EV, ws, F, pctTeam) {
+    if (!this.state.wl) return { wlRows: [], wlHead: [], wlSub: '' };
+    const PM = this.PM, days = [0, 1, 2, 3, 4].map(i => ws + i); let overDays = 0;
+    const wlRows = PEOPLE.filter(p => !F.team.length || F.team.includes(p[2])).map(p => {
+      let th = 0, tc = 0;
+      const cells = days.map(day => { const iso = PM ? PM.dayIso(day) : isoOf(day), lh = EV.filter(e => e.who === p[0] && e.day === day).reduce((a, e) => a + e.dur, 0), cap = PM ? PM.hoursOn(p[0], iso) : CAP, ab = PM && PM.absenceOn(p[0], iso), sh = PM && PM.shiftOn(p[0], iso), pct = cap ? lh / cap : 0;
+        th += lh; tc += cap; if (cap && pct > 1) overDays++;
+        const off = !cap, why = off ? (ab ? ab.label : sh && sh.site !== 'THO' ? 'At ' + PM.SITES[sh.site] : 'Off') : '';
+        return { on: !off, label: off ? why : fmtH(lh), cap: off ? '' : ` / ${fmtH(cap)}`, w: Math.min(100, pct * 100) + '%', color: pct > 1 ? '#D92D20' : pct >= 0.85 ? '#F79009' : '#12A06E', fg: off ? '#98A2B3' : pct > 1 ? '#B42318' : '#1E2430',
+          bg: off ? 'repeating-linear-gradient(135deg,#F9FAFB 0 5px,#F2F4F7 5px 10px)' : pct > 1 ? '#FEF6F6' : '#fff', border: pct > 1 ? '#FBD5D5' : '#EEF0F3',
+          tip: `${p[1]} · ${dayName(day)} ${dateOf(day).getDate()} — ${off ? why : `${fmtH(lh)} planned of ${fmtH(cap)} (${Math.round(pct * 100)} %)`}${ab && PM.partDay(ab) ? ` · ${ab.label} ${hm(ab.from)}–${hm(ab.to)}` : ''}\nOpen in Day view`,
+          open: () => this.setState({ mode: 'day', dayIdx: day, wl: false }) }; });
+      const pt = tc ? th / tc : 0;
+      return { name: p[1], team: p[2], dot: PCOL[p[0]][0], days: cells, total: `${fmtH(Math.round(th * 2) / 2)} / ${fmtH(tc)}`, pct: tc ? Math.round(pt * 100) + ' %' : '—', pctColor: pt > 1 ? '#B42318' : pt >= 0.85 ? '#B54708' : '#0B6B4A' }; });
+    return { wlRows, wlHead: days.map(day => ({ label: `${dayName(day)} ${dateOf(day).getDate()}`, color: day === TODAY ? '#C00018' : '#667085' })),
+      wlSub: `Week of ${M[dateOf(ws).getMonth()]} ${dateOf(ws).getDate()} · team planned at ${pctTeam} % of capacity${overDays ? ` · ${overDays} overloaded day${overDays > 1 ? 's' : ''}` : ''}` };
+  }
+  setType(t) { this.setState(s => ({ F: { ...s.F, type: s.F.type.length === 1 && s.F.type[0] === t ? [] : [t] } })); }
+  renderVals() {
+    const s = this.state, F = s.F, drag = s.drag;
+    const teamOf = who => (P[who] || [])[2];
+    const PMx = this.PM, whoOk = x => !F.who.length || (x.backlog ? ((x.segs || []).some(g => F.who.includes(g.who)) || (!(x.segs || []).some(g => g.who) && (!PMx || F.who.some(k => (x.segs || []).every(g => PMx.hasSkills(k, g.skills)))))) : F.who.includes(x.who));
+    const match = (x, skip) => (skip === 'who' || whoOk(x)) && (skip === 'team' || !F.team.length || F.team.includes(x.team)) && (skip === 'type' || !F.type.length || F.type.includes(x.type))
+      && (skip === 'asset' || !F.asset.length || F.asset.includes(x.asset) || F.asset.includes(LINE[x.asset])) && (skip === 'prio' || !F.prio.length || F.prio.includes(x.prio))
+      && (x.backlog || skip === 'status' || !F.status.length || F.status.includes(x.status) || (F.status.includes('Waiting') && !!x.waiting));
+    const EV = s.events.map(e => ({ ...e, team: teamOf(e.who), status: statusOf(e) }));
+    const ws = s.week * 7;
+    let range;
+    if (s.mode === 'week') range = e => e.day >= ws && e.day < ws + 7;
+    else if (s.mode === 'day') range = e => e.day === s.dayIdx;
+    else { const m0 = new Date(2026, 8 + s.week, 1), m1 = new Date(2026, 9 + s.week, 1); const a = Math.round((m0 - BASE) / 864e5), b = Math.round((m1 - BASE) / 864e5); range = e => e.day >= a && e.day < b; }
+    const inRange = EV.filter(range);
+    const BL = s.backlog.map(u => ({ ...u, backlog: true }));
+    const cnt = (k, v) => k === 'who' ? inRange.filter(e => match(e, k) && e.who === v).length : inRange.filter(e => match(e, k) && (k === 'asset' ? e.asset === v || LINE[e.asset] === v : k === 'status' && v === 'Waiting' ? !!e.waiting : e[k] === v)).length + (k !== 'status' ? BL.filter(u => match(u, k) && (k === 'asset' ? u.asset === v || LINE[u.asset] === v : u[k] === v)).length : 0);
+
+    const typeChips = Object.keys(TYPE).map(t => { const on = F.type.includes(t), [icon, fg, bg] = TYPE[t], c = cnt('type', t);
+      return { label: t, icon, count: c, tip: on ? `Showing ${t} only — click to show all` : `Show only ${t}`, bg: on ? bg : 'transparent', border: on ? fg : 'transparent', color: on ? fg : '#344054', tileBg: on ? '#fff' : bg, tileFg: fg, op: F.type.length && !on ? 0.55 : 1,
+        toggle: () => this.setState(st => ({ F: { ...st.F, type: on ? st.F.type.filter(x => x !== t) : [...st.F.type, t] } })) }; });
+
+    const opt = (k, key, label, extra = {}) => { const on = F[k].includes(key);
+      return { label, pad: extra.pad || '8px', hasAv: !!extra.av, ini: extra.av ? extra.av[0] : '', avBg: extra.av ? extra.av[3] : '', avFg: extra.av ? extra.av[4] : '', font: extra.line ? bold : "400 13px 'IBM Plex Sans',sans-serif", count: cnt(k, key), hasDot: !!extra.dot, dot: extra.dot, hasIcon: !!extra.icon, icon: extra.icon,
+        boxBorder: on ? '#C00018' : '#C4CAD4', boxBg: on ? '#C00018' : '#fff', boxIcon: on ? 'check' : '',
+        toggle: () => this.setState(st => ({ F: { ...st.F, [k]: on ? st.F[k].filter(x => x !== key) : [...st.F[k], key] } })) }; };
+    const aq = s.aq.trim().toLowerCase();
+    const assetOpts = [];
+    LINES.forEach(([l, as]) => { const kids = as.filter(a => !aq || a.toLowerCase().includes(aq) || l.toLowerCase().includes(aq)); if (!kids.length) return;
+      assetOpts.push(opt('asset', l, l, { line: true, icon: 'account_tree' })); kids.forEach(a => assetOpts.push(opt('asset', a, a, { pad: '30px' }))); });
+    const FDEF = [
+      ['team', 'Team', 'groups', TEAMS.map(t => opt('team', t, t))],
+      ['who', 'Technicians', 'engineering', PEOPLE.filter(p => !F.team.length || F.team.includes(p[2])).map(p => opt('who', p[0], p[1], { av: p }))],
+      ['asset', 'Asset', 'precision_manufacturing', assetOpts, true],
+      ['prio', 'Priority', 'flag', ['Critical', 'High', 'Medium', 'Low'].map(p => opt('prio', p, p, { dot: PRIO[p][2] }))],
+      ['status', 'Status', 'donut_large', ['Scheduled', 'In progress', 'Completed', 'Waiting'].map(p => opt('status', p, p === 'Waiting' ? 'Flagged waiting' : p, p === 'Waiting' ? { icon: 'hourglass_top' } : {}))],
+    ];
+    const filters = FDEF.filter(([k]) => s.track === 'maint' ? ['who', 'asset'].includes(k) : k === 'asset').map(([k, label, icon, options, hasSearch]) => { const v = F[k], open = s.dd === k;
+      return { label, icon, options, hasSearch: !!hasSearch, open, hasValue: v.length > 0, valueLabel: v.length === 1 ? (k === 'who' ? P[v[0]][1] : v[0]) : `${v.length} selected`,
+        bg: v.length ? '#FBF7F7' : '#fff', border: open || v.length ? '#98A2B3' : '#D0D5DD',
+        toggle: () => this.setState({ dd: open ? null : k, aq: '' }), clear: () => this.setState(st => ({ F: { ...st.F, [k]: [] } })) }; });
+    const anyFilter = Object.values(F).some(v => v.length);
+    const pill = (k, v, label, dot) => { const on = F[k].includes(v); return { label, hasDot: !!dot, dot, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : '#D0D5DD', color: on ? '#fff' : '#344054', toggle: () => this.setState(st => ({ F: { ...st.F, [k]: on ? st.F[k].filter(x => x !== v) : [...st.F[k], v] } })) }; };
+    const moreGroups = [['type', 'Maintenance type', Object.keys(TYPE).map(x => pill('type', x, x))], ['prio', 'Priority', ['Critical', 'High', 'Medium', 'Low'].map(x => pill('prio', x, x, PRIO[x][2]))],
+      ['status', 'Status', ['Scheduled', 'In progress', 'Completed', 'Waiting'].map(x => pill('status', x, x === 'Waiting' ? 'Flagged waiting' : x))], ['team', 'Team', TEAMS.map(x => pill('team', x, x))]].map(([k, label, options]) => ({ label, options }));
+    const moreCount = ['type', 'prio', 'status', 'team'].reduce((a, k) => a + F[k].length, 0);
+
+    const hours = []; for (let h = H0; h < H1; h++) hours.push({ label: hm(h) });
+    const evView = (e, lay, inDay) => {
+      const pc = PCOL[e.who] || PCOL.GD, p = P[e.who], L = lay[e.id] || { lane: 0, n: 1 }, done = e.status === 'Completed';
+      const qs = new URLSearchParams({ wo: e.wo && !/^u/.test(e.wo) ? e.wo : 'plan-' + e.id, task: e.task, asset: e.asset, loc: LINE[e.asset] || '', type: e.type, prio: e.prio, status: e.status === 'Completed' ? 'Completed' : e.status === 'In progress' ? 'In progress' : 'Scheduled' }).toString();
+      return { asset: e.asset, task: e.task, time: `${hm(e.start)}–${hm(e.start + e.dur)}`, timeColor: done ? '#98A2B3' : pc[0], bg: done ? '#F9FAFB' : pc[1], border: done ? '#E4E7EC' : pc[2],
+        tip: `${e.asset} — ${e.task}${e.parts > 1 ? ` (part ${e.part}/${e.parts})` : ''}\n${p[1]} · ${hm(e.start)}–${hm(e.start + e.dur)}\n${e.type} · ${e.prio} priority · ${e.status}${e.waiting ? '\n' + (WAITS[e.waiting] || 'Waiting') : ''}${e.tools && e.tools.length && this.PL ? '\nReserves ' + e.tools.map(t => (this.PL.asset(t) || { name: t }).name).join(', ') : ''}`,
+        crit: !done && e.prio === 'Critical', done: done && L.n < 3, waiting: !!e.waiting && !done && L.n < 3, waitTip: WAITS[e.waiting] || 'Waiting', showTask: e.dur >= 0.75 && (L.n < 3 || inDay), showTime: e.dur >= 1.25 && (L.n < 3 || inDay),
+        top: (e.start - H0) * ROW + 1 + 'px', h: e.dur * ROW - 2 + 'px', left: `calc(${L.lane / L.n * 100}% + 2px)`, width: `calc(${100 / L.n}% - 4px)`,
+        op: drag && drag.id === e.id ? 0.35 : done ? 0.75 : 1, pe: drag ? 'none' : 'auto', shadow: e.fresh ? `0 0 0 2px ${pc[0]}66` : 'none',
+        dragStart: ev => this.startDrag(ev, 'e', e), dragEnd: () => this.endDrag(),
+        open: () => { window.location.href = 'WorkOrder.dc.html?' + qs; } };
+    };
+    const SG = s.sugg && s.sugg.list[s.sugg.i], SGU = SG && s.backlog.find(x => x.id === s.sugg.id);
+    const allDayOf = (day, keys, withAbs) => {
+      const PM = this.PM, out = [];
+      s.allday.filter(a => a.day === day && keys.includes(a.who) && match({ ...a, team: teamOf(a.who), status: day < TODAY ? 'Completed' : 'Scheduled' })).forEach(a => { const pc = PCOL[a.who] || PCOL.GD;
+        const qs = new URLSearchParams({ wo: 'plan-' + a.id, task: a.task, asset: a.asset, loc: LINE[a.asset] || '', type: a.type, prio: a.prio, status: 'Scheduled' }).toString();
+        out.push({ isEvent: true, isAbs: false, crit: a.prio === 'Critical', label: `${a.asset} — ${a.task}`, tip: `${a.asset} — ${a.task}\nAll day · ${P[a.who][1]} · ${a.type} · ${a.prio} priority`, bg: pc[1], border: pc[2], open: ev => { ev.stopPropagation(); window.location.href = 'WorkOrder.dc.html?' + qs; } }); });
+      if (PM && withAbs) keys.forEach(k => { const iso = PM.dayIso(day), ab = PM.absenceOn(k, iso), sh = PM.shiftOn(k, iso), nm = P[k][1].split(' ')[0];
+        if (ab) out.push({ isEvent: false, isAbs: true, dot: PCOL[k][0], label: `${nm} · ${ab.label}${PM.partDay(ab) ? ' ' + hm(ab.from) + '–' + hm(ab.to) : ''}`, tip: `${P[k][1]} — ${ab.label}${PM.partDay(ab) ? ` (${hm(ab.from)}–${hm(ab.to)})` : ' (all day)'}` });
+        else if (sh && sh.site !== 'THO') out.push({ isEvent: false, isAbs: true, dot: PCOL[k][0], label: `${nm} · ${PM.SITES[sh.site] || sh.site}`, tip: `${P[k][1]} works at ${PM.SITES[sh.site] || sh.site} that day` }); });
+      return out;
+    };
+    const STRIPE = 'repeating-linear-gradient(135deg,#E9ECF0 0 5px,#DDE1E7 5px 10px)', TOOLSTRIPE = 'repeating-linear-gradient(135deg,#E7EEFB 0 5px,#D3DFF5 5px 10px)';
+    const mkCol = (ci, day, who) => {
+      const pv = drag && s.over && s.over.ci === ci ? this.feas(drag, day, s.over.t, who) : null;
+      return {
+      slots: Array.from({ length: (H1 - H0) * 2 }, (_, i) => { const t = H0 + i / 2, f = drag ? this.feas(drag, day, t, who) : null, ok = !f || f.ok;
+        const past = day < TODAY || (day === TODAY && t < NOW);
+        return { line: i % 2 ? '#F8F9FA' : '#EEF0F3', bg: ok ? 'transparent' : f.tool ? TOOLSTRIPE : STRIPE, cursor: drag ? 'default' : past ? 'not-allowed' : 'cell', hoverBg: drag || past ? 'transparent' : '#F0F4FC',
+          tip: drag || past ? '' : `Create a work order ${dayName(day)} ${hm(t)}${who ? ' for ' + P[who][1] : ''}`, click: () => this.slotClick(day, t, who),
+          over: ev => { if (ok) ev.preventDefault(); if (!s.over || s.over.ci !== ci || s.over.t !== t) this.setState({ over: { ci, t } }); },
+          drop: ev => { ev.preventDefault(); if (ok) this.drop(day, t, who); } }; }),
+      hasPreview: !!pv, pvTop: s.over ? (s.over.t - H0) * ROW + 1 + 'px' : '0px', pvH: drag ? Math.max(1, drag.dur) * ROW - 2 + 'px' : '0px',
+      pvBorder: pv && !pv.ok ? '#98A2B3' : '#C00018', pvBg: pv && !pv.ok ? 'rgba(242,244,247,.92)' : 'rgba(192,0,24,.06)', pvColor: pv && !pv.ok ? '#475467' : '#A30014', pvIcon: pv && !pv.ok ? 'block' : 'event_available',
+      pvLabel: pv ? (pv.ok ? `${hm(s.over.t)}–${hm(s.over.t + drag.dur)}${pv.overlap ? ' · overlaps' : ''}` : pv.reason) : '',
+      pvParts: pv && pv.ok && this.PM ? pv.parts.map(q => ({ key: q.key, avBg: P[q.key][3], avFg: P[q.key][4], text: `${P[q.key][1].split(' ')[0]} · ${this.PM.skillNames(q.skills)} ${hm(q.start)}` })) : [],
+      hasSugg: !!(SG && SGU && SG.day === day && (!who || SG.parts.some(q => q.key === who))), sgTop: SG ? (SG.t - H0) * ROW + 1 + 'px' : '0px', sgH: SGU ? Math.max(1, SGU.dur) * ROW - 2 + 'px' : '0px', sgLabel: SG && SGU ? `Suggested · ${SGU.asset} ${hm(SG.t)}` : '',
+      blocks: [], leave: () => {} }; };
+    let columns = [], gridCols = '', gridMin = '0px';
+    if (s.mode === 'week') {
+      const tracks = [];
+      columns = DAYS.map((dn, i) => { const day = ws + i, d = dateOf(day), today = day === TODAY, wk = i >= 5;
+        const evs = inRange.filter(e => e.day === day && match(e)), lay = layout(evs), lanes = Math.max(1, ...evs.map(e => lay[e.id].n));
+        const h = evs.reduce((a, e) => a + e.dur, 0);
+        tracks.push(wk ? `minmax(${Math.max(56, lanes * 42)}px,${0.45 + (lanes - 1) * 0.3}fr)` : `minmax(${Math.max(116, lanes * 44)}px,${1 + Math.max(0, lanes - 2) * 0.35}fr)`);
+        const PMl = this.PM, dIso = PMl ? PMl.dayIso(day) : '', ppl = PEOPLE.filter(p => (!F.team.length || F.team.includes(p[2])) && (!F.who.length || F.who.includes(p[0])));
+        const loads = ppl.map(p => { const lh = EV.filter(e => e.who === p[0] && e.day === day).reduce((a, e) => a + e.dur, 0), cap = PMl ? PMl.hoursOn(p[0], dIso) : (wk ? 0 : CAP), pct = cap ? lh / cap : 0;
+          return { h: cap ? Math.min(100, Math.max(lh ? 8 : 0, pct * 100)) + '%' : '0%', color: pct > 1 ? '#D92D20' : pct >= 0.85 ? '#F79009' : '#12A06E', track: cap ? '#EEF0F3' : 'repeating-linear-gradient(0deg,#E4E7EC 0 2px,#F2F4F7 2px 4px)',
+            tip: `${p[1]} — ${cap ? `${fmtH(lh)} / ${fmtH(cap)} (${Math.round(pct * 100)} %)` : lh ? fmtH(lh) + ' · not on shift' : 'Not working'}\nClick to open the day`, open: ev => { ev.stopPropagation(); this.setState({ mode: 'day', dayIdx: day }); } }; });
+        return { allDay: allDayOf(day, ppl.map(p => p[0]), true), allDayTip: `Create an all-day work order on ${dn} ${d.getDate()}`, allDayClick: () => { if (day < TODAY) return this.flash('That day has already passed', false); this._slotCtx = { day, allDay: true }; if (window.CMMSCreateWO) window.CMMSCreateWO({ due: isoOf(day) + 'T07:00', followers: ['GD'] }); },
+          showLoad: false, loads, stop: ev => ev.stopPropagation(), isDay: true, openDay: () => this.setState({ mode: 'day', dayIdx: day }), dayTip: `Open ${dn} ${d.getDate()} in Day view`, headCursor: 'pointer', headHover: '#F2F4F7', top: dn, main: d.getDate(), meta: evs.length ? (wk ? `${evs.length}` : `${evs.length} · ${fmtH(h)}`) : '', isToday: today, subColor: today ? '#C00018' : '#667085', mainColor: today ? '#C00018' : '#1E2430',
+          headBg: today ? '#FFF8F8' : '#fff', bodyBg: wk ? '#FAFAFB' : today ? '#FFFCFC' : '#fff', ...mkCol(i, day), events: evs.map(e => evView(e, lay, false)) }; });
+      gridCols = '52px ' + tracks.join(' ');
+    } else if (s.mode === 'day') {
+      const day = s.dayIdx, people = PEOPLE.filter(p => (!F.team.length || F.team.includes(p[2])) && (!F.who.length || F.who.includes(p[0])));
+      const PM = this.PM, date = PM ? PM.dayIso(day) : '';
+      columns = people.map(([ini, name, team, avBg, avFg], i) => {
+        const all = inRange.filter(e => e.who === ini), evs = all.filter(e => match(e)), lay = layout(evs), h = all.reduce((a, e) => a + e.dur, 0);
+        const cap = PM ? PM.hoursOn(ini, date) : CAP, pct = cap ? h / cap : (h ? 2 : 0);
+        const sh = PM && PM.shiftOn(ini, date), ab = PM && PM.absenceOn(ini, date), other = sh && sh.site !== 'THO';
+        const loadColor = !cap ? '#98A2B3' : pct > 1 ? '#B42318' : pct >= 0.85 ? '#B54708' : '#0B6B4A';
+        const blocks = [];
+        const blk = (a, b, text) => { a = Math.max(H0, a); b = Math.min(H1, b); if (b > a) blocks.push({ top: (a - H0) * ROW + 'px', h: (b - a) * ROW + 'px', text: b - a >= 1 ? text : '', label: text }); };
+        if (PM) { if (!sh || other || (ab && !PM.partDay(ab))) blk(H0, H1, ab && !PM.partDay(ab) ? ab.label : other ? 'At ' + PM.SITES[sh.site] : 'Not working');
+          else { blk(H0, sh.from, 'Off shift'); blk(sh.to, H1, 'Off shift'); if (ab && PM.partDay(ab)) blk(ab.from, ab.to, ab.label); } }
+        const sub = !PM ? team.replace(' team', '') : ab && !PM.partDay(ab) ? ab.label : other ? 'At ' + PM.SITES[sh.site] : !sh ? 'Not working' : `${hm(sh.from)}–${hm(sh.to)}${ab ? ' · ' + ab.label + ' ' + hm(ab.from) : ''}`;
+        const c0 = mkCol(i, day, ini);
+        return { allDay: allDayOf(day, [ini], false), allDayTip: `All-day work for ${name}`, allDayClick: () => {}, isPerson: true, headCursor: 'default', headHover: pct > 1 ? '#FEF6F6' : '#fff', ini, main: name, team: sub, teamColor: (ab || other || !sh) && PM ? '#B54708' : '#98A2B3', teamWeight: (ab || other) && PM ? 600 : 400, avBg, avFg, load: cap ? `${fmtH(h)} / ${fmtH(cap)}` : 'Unavailable', loadW: Math.min(100, pct * 100) + '%', loadColor,
+          isToday: day === TODAY, headBg: cap && pct > 1 ? '#FEF6F6' : '#fff', bodyBg: '#fff', ...c0, blocks, events: evs.map(e => evView(e, lay, true)) }; });
+      gridCols = `52px repeat(${columns.length},minmax(150px,1fr))`; gridMin = 52 + columns.length * 150 + 'px';
+    }
+    const monthDays = [];
+    if (s.mode === 'month') {
+      const first = new Date(2026, 8 + s.week, 1), off = (first.getDay() + 6) % 7, start = new Date(first.getFullYear(), first.getMonth(), 1 - off);
+      for (let i = 0; i < 35; i++) {
+        const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), idx = Math.round((d - BASE) / 864e5);
+        const evs = EV.filter(e => e.day === idx && match(e)).sort((a, b) => a.start - b.start), inMonth = d.getMonth() === first.getMonth(), today = idx === TODAY;
+        monthDays.push({ n: d.getDate(), bg: inMonth ? '#fff' : '#FAFAFB', numBg: today ? '#C00018' : 'transparent', numColor: today ? '#fff' : inMonth ? '#1E2430' : '#98A2B3', load: evs.length ? fmtH(evs.reduce((a, e) => a + e.dur, 0)) : '',
+          events: [...s.allday.filter(a => a.day === idx && match({ ...a, team: teamOf(a.who), status: 'Scheduled' })).map(a => ({ ...a, start: -1 })), ...evs].slice(0, 3).map(e => ({ label: `${e.start < 0 ? 'All day' : hm(e.start)} ${e.asset}`, fg: (PCOL[e.who] || PCOL.GD)[0], bg: (PCOL[e.who] || PCOL.GD)[1] })), more: evs.length > 3 ? `+${evs.length - 3} more` : '',
+          click: () => this.setState({ mode: 'day', dayIdx: idx }), over: ev => ev.preventDefault(), drop: ev => { ev.preventDefault(); this.drop(idx, 9); } });
+      }
+    }
+
+    const blShown = BL.filter(u => match(u)).sort((a, b) => (b.fresh ? 1 : 0) - (a.fresh ? 1 : 0) || PORD[a.prio] - PORD[b.prio]);
+    const backlog = blShown.map(u => { const [icon, fg, bg] = TYPE[u.type], urgent = u.prio === 'Critical' || u.prio === 'High', [pbg, pfg] = PRIO[u.prio];
+      const PM = this.PM, sg = u.segs || [{ skills: [], h: u.dur, who: '' }], pre = sg.filter(g => g.who);
+      const qual = PM ? sg.map(g => PEOPLE.filter(p => PM.hasSkills(p[0], g.skills)).length) : [];
+      const segsV = sg.map(g => { const k = PM && g.skills[0] ? PM.skill(g.skills[0]) : { icon: 'person', fg: '#475467', bg: '#EEF1F4' }; return { icon: k.icon, fg: k.fg, bg: k.bg, flex: g.h, text: `${PM ? PM.skillNames(g.skills) : ''} ${fmtH(g.h)}`, tip: `${PM ? PM.skillNames(g.skills) : ''} · ${fmtH(g.h)}${g.who ? ' · assigned to ' + P[g.who][1] : ''}`, hasWho: !!g.who, who: g.who, avBg: g.who ? P[g.who][3] : '', avFg: g.who ? P[g.who][4] : '' }; });
+      const whoNote = pre.length ? `Assigned · ${[...new Set(pre.map(g => P[g.who][1]))].join(', ')}` : PM ? (Math.min(...qual) === 0 ? 'No qualified person on site' : sg.length > 1 ? `${sg.length} parts · split between people on drop` : `${qual[0]} qualified people`) : '';
+      const PL = this.PL, toolsV = PL ? (u.tools || []).map(id => { const x = PL.asset(id) || { name: id, type: '' }; return { name: x.name, icon: PL.typeIcon(x.type) }; }) : [];
+      return { hasTools: toolsV.length > 0, tools: toolsV, segs: segsV, whoNote, whoColor: PM && !pre.length && Math.min(...qual) === 0 ? '#B42318' : '#667085', asset: u.asset, task: u.task, type: u.type, icon, typeFg: fg, typeBg: bg, typeTip: `Show only ${u.type}`, prio: u.prio, urgent, normal: !urgent, pbg, pfg,
+        dur: fmtH(u.dur), team: u.team.replace(' team', ''), age: u.age, ageColor: u.soon ? '#B42318' : '#98A2B3',
+        border: u.fresh ? '#F3A3AC' : '#E4E7EC', shadow: u.fresh ? '0 0 0 3px rgba(192,0,24,.08)' : 'none', op: drag && drag.id === u.id ? 0.4 : 1,
+        dragStart: ev => this.startDrag(ev, 'u', u), dragEnd: () => this.endDrag(), filterType: ev => { ev.stopPropagation(); this.setType(u.type); },
+        ...(() => { const sg = s.sugg && s.sugg.id === u.id ? s.sugg : null, c = sg && sg.list[sg.i];
+          return { noSugg: !sg, hasSugg: !!c, suggNone: !!sg && !c, suggNoneText: 'No free slot in the next two weeks for the required skills.',
+            suggLabel: c ? `${dayName(c.day)} ${dateOf(c.day).getDate()} ${M[dateOf(c.day).getMonth()]} · ${hm(c.t)}–${hm(c.t + u.dur)}` : '',
+            suggWho: c ? c.parts.map(q => `${P[q.key][1]}${c.parts.length > 1 && this.PM ? ' (' + this.PM.skillNames(q.skills) + ')' : ''}`).filter((x, i, a) => a.indexOf(x) === i).join(' → ') + ' · free, no overlap' : '',
+            nextLabel: sg && sg.list.length > 1 ? `Other slot ${sg.i + 1}/${sg.list.length}` : 'Other slot',
+            suggest: ev => { ev.stopPropagation(); const list = this.suggestFor(u); this.setState({ sugg: { id: u.id, list, i: 0 }, ...(list[0] ? { week: Math.floor(list[0].day / 7), mode: s.mode === 'month' ? 'week' : s.mode, dayIdx: list[0].day } : {}) }); },
+            nextSugg: ev => { ev.stopPropagation(); if (!sg || !sg.list.length) return; const i = (sg.i + 1) % sg.list.length, nx = sg.list[i]; this.setState({ sugg: { ...sg, i }, week: Math.floor(nx.day / 7), dayIdx: nx.day }); },
+            clearSugg: ev => { ev.stopPropagation(); this.setState({ sugg: null }); },
+            applySugg: ev => { ev.stopPropagation(); if (!c) return; this._drag = { kind: 'u', id: u.id, dur: u.dur }; this.setState({ sugg: null }); this.drop(c.day, c.t); } }; })() }; });
+    const hidden = BL.length - blShown.length;
+
+    const weekEv = EV.filter(e => e.day >= ws && e.day < ws + 5);
+    const pctTeam = Math.round(weekEv.reduce((a, e) => a + e.dur, 0) / (PEOPLE.length * CAP * 5) * 100);
+    const blH = s.backlog.reduce((a, u) => a + u.dur, 0);
+    const wsD = dateOf(ws), weD = dateOf(ws + 6), dd = dateOf(s.dayIdx);
+    const rangeLabel = s.mode === 'week' ? `${M[wsD.getMonth()]} ${wsD.getDate()} – ${wsD.getMonth() !== weD.getMonth() ? M[weD.getMonth()] + ' ' : ''}${weD.getDate()}, ${weD.getFullYear()}`
+      : s.mode === 'day' ? `${dayName(s.dayIdx)}, ${M[dd.getMonth()]} ${dd.getDate()}, ${dd.getFullYear()}` : `${M[(8 + s.week) % 12]} ${2026 + Math.floor((8 + s.week) / 12)}`;
+    const step = d => s.mode === 'day' ? this.setState({ dayIdx: s.dayIdx + d }) : this.setState({ week: s.week + d });
+    const hot = drag && drag.kind === 'e';
+    return {
+      summary: s.track === 'auto' ? 'Routine rounds run by production operators — separate from the maintenance schedule' : 'Plan and balance the maintenance team\'s work · click a free slot to create a work order',
+      moreGroups, moreCount, moreOpen: s.dd === 'more', toggleMore: () => this.setState({ dd: s.dd === 'more' ? null : 'more' }), clearMore: () => this.setState(st => ({ F: { ...st.F, type: [], prio: [], status: [], team: [] } })),
+      moreBg: moreCount ? '#FBF7F7' : '#fff', moreBorder: moreCount || s.dd === 'more' ? '#98A2B3' : '#D0D5DD',
+      showWl: s.track === 'maint' && s.mode !== 'month', openWl: () => this.setState({ wl: true }), closeWl: () => this.setState({ wl: false }), wlOpen: s.wl,
+      ...this.wlVals(EV, ws, F, pctTeam),
+      legend: s.track === 'maint' && s.mode !== 'month' ? PEOPLE.filter(p => !F.team.length || F.team.includes(p[2])).map(p => { const on = F.who.includes(p[0]), any = F.who.length > 0, pc = PCOL[p[0]], PM = this.PM;
+        const iso = PM ? PM.dayIso(TODAY) : '', ab = PM && PM.absenceOn(p[0], iso), sh = PM && PM.shiftOn(p[0], iso), cap = PM ? PM.hoursOn(p[0], iso) : CAP, lh = EV.filter(e => e.who === p[0] && e.day === TODAY).reduce((a, e) => a + e.dur, 0);
+        const away = !!(PM && (!sh || (ab && !PM.partDay(ab)) || (sh && sh.site !== 'THO'))), over = cap && lh > cap;
+        return { ini: p[0], dot: pc[0], hasFlag: away || over, flag: over ? 'warning' : 'event_busy', tip: `${p[1]} · ${p[2]} — today ${cap ? `${fmtH(lh)} planned of ${fmtH(cap)}` : ab ? ab.label : sh && sh.site !== 'THO' ? 'at ' + PM.SITES[sh.site] : 'not working'}. Click to show only ${p[1].split(' ')[0]}.`,
+          bg: on ? pc[0] : pc[1], border: on ? pc[0] : pc[2], color: on ? '#fff' : pc[0], op: any && !on ? 0.45 : 1, flagColor: over ? '#D92D20' : '#F79009', toggle: () => this.setState(st => ({ F: { ...st.F, who: on ? st.F.who.filter(x => x !== p[0]) : [...st.F.who, p[0]] } })) }; }) : [],
+      ...(() => { const autoN = autoCount(), mk = (k, label, icon, count, tip) => ({ label, icon, count, tip, bg: s.track === k ? '#fff' : 'transparent', shadow: s.track === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: s.track === k ? bold : reg, color: s.track === k ? '#1E2430' : '#667085', iconColor: s.track === k ? '#C00018' : '#98A2B3', select: () => { try { localStorage.setItem('cmms.planning.track', k); } catch (e) {} this.setState({ track: k, dd: null, mode: k === 'auto' ? 'week' : s.mode }); } });
+        return { tracks: [mk('maint', 'Maintenance team', 'engineering', weekEv.length, 'Work orders scheduled for maintenance technicians'), mk('auto', 'Autonomous maintenance', 'cleaning_services', autoN, 'Routine standards run by production operators')] }; })(),
+      isMaint: s.track === 'maint', isAuto: s.track === 'auto', isWeekMaint: s.track === 'maint' && s.mode === 'week', showLoadLegend: s.track === 'maint' && s.mode === 'week' && s.load,
+      toggleLoad: () => this.setState({ load: !s.load }), loadBtnBg: s.load ? '#FBF7F7' : '#fff', loadBtnBorder: s.load ? '#C00018' : '#D0D5DD',
+      ...(() => { if (s.track !== 'auto') return { autoRows: [], autoHead: [], autoKpis: [] };
+        const rows = [], lines = [...new Set(AUTO.map(t => t[0]))].filter(l => !F.asset.length || F.asset.includes(l) || LINES.some(([ln, as]) => ln === l && as.some(a => F.asset.includes(a))));
+        let done = 0, missed = 0, anom = 0, total = 0;
+        lines.forEach(l => { const ts = AUTO.filter(t => t[0] === l); rows.push({ isLine: true, isTask: false, line: l, lineMeta: `· ${ts.length} standards`, cells: [] });
+          ts.forEach(([, task, days, by, mins, miss, an]) => rows.push({ isLine: false, isTask: true, task, meta: `${by} · ${mins} min · ${days.length === 7 ? 'every day' : days.length === 5 ? 'Mon–Fri' : days.map(d => DAYS[d]).join(', ')}`,
+            cells: DAYS.map((dn, i) => { const day = ws + i; if (!days.includes(i)) return { has: false, bg: i >= 5 ? '#FAFAFB' : '#fff', tip: '' }; total++;
+              const past = day < TODAY, today = day === TODAY, isMiss = s.week === 0 && miss.includes(i) && day <= TODAY, isAn = s.week === 0 && an.includes(i) && day <= TODAY;
+              if (isMiss) { missed++; return { has: true, icon: 'cancel', fill: 1, fg: '#B42318', bg: '#FEF6F6', text: '', tip: `${dn}: not done` }; }
+              if (isAn) { anom++; done++; return { has: true, icon: 'report', fill: 1, fg: '#B54708', bg: '#FFFAEB', text: '', tip: `${dn}: done · anomaly reported → work request created` }; }
+              if (past && s.week <= 0 || s.week < 0) { done++; return { has: true, icon: 'check_circle', fill: 1, fg: '#0B6B4A', bg: '#fff', text: '', tip: `${dn}: done` }; }
+              if (today && s.week === 0) return { has: true, icon: 'timelapse', fill: 0, fg: '#2456B8', bg: '#F5F8FE', text: '', tip: 'Today: in progress' };
+              return { has: true, icon: 'radio_button_unchecked', fill: 0, fg: '#C4CAD4', bg: i >= 5 ? '#FAFAFB' : '#fff', text: '', tip: `${dn}: planned` }; }) })); });
+        return { autoRows: rows, autoHead: DAYS.map((dn, i) => { const d = dateOf(ws + i), t = ws + i === TODAY; return { label: `${dn} ${d.getDate()}`, bg: t ? '#FFF8F8' : '#F9FAFB', color: t ? '#C00018' : '#667085' }; }),
+          autoKpis: [['checklist', '#475467', total, 'rounds this week'], ['check_circle', '#0B6B4A', done, 'done'], ['cancel', '#B42318', missed, 'missed'], ['report', '#B54708', anom, 'anomalies → work requests']].map(([icon, color, value, label]) => ({ icon, color, value, label })) }; })(),
+      typeChips, filters, anyFilter, closeDd: () => this.setState({ dd: null }), aq: s.aq, setAq: e => this.setState({ aq: e.target.value }),
+      clearAll: () => this.setState({ F: EMPTY, dd: null }),
+      modes: [['day', 'Day'], ['week', 'Week'], ['month', 'Month']].filter(([k]) => s.track === 'maint' || k === 'week').map(([k, label]) => ({ label, bg: s.mode === k ? '#fff' : 'transparent', shadow: s.mode === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: s.mode === k ? bold : reg, color: s.mode === k ? '#1E2430' : '#667085', select: () => this.setState({ mode: k, week: 0 }) })),
+      rangeLabel, prev: () => step(-1), next: () => step(1), today: () => this.setState({ week: 0, dayIdx: TODAY }),
+      ...(() => { const PM = this.PM; if (!drag || !PM) return { dragInfo: false, dragSegs: [], dragTools: [] }; const it = drag.kind === 'u' ? s.backlog.find(x => x.id === drag.id) : s.events.find(x => x.id === drag.id); if (!it) return { dragInfo: false, dragSegs: [], dragTools: [] };
+        const sg = drag.kind === 'u' ? (it.segs || []) : [{ skills: it.skills || [], h: it.dur, who: it.who }];
+        const PL = this.PL, dragTools = PL ? (it.tools || []).map(id => (PL.asset(id) || { name: id }).name) : [];
+        return { dragTools, dragInfo: true, dragTitle: drag.kind === 'u' ? `${it.asset} — ${it.task} needs` : `Moving ${it.asset} · ${P[it.who][1]}`,
+          dragSegs: sg.map((g, i) => { const k = g.skills[0] ? PM.skill(g.skills[0]) : { icon: 'person', fg: '#475467', bg: '#EEF1F4' }; return { icon: k.icon, fg: k.fg, bg: k.bg, text: `${i ? '→ ' : ''}${PM.skillNames(g.skills)} ${fmtH(g.h)}${g.who ? ' · ' + P[g.who][1].split(' ')[0] : ''}` }; }) }; })(),
+      isGrid: s.track === 'maint' && s.mode !== 'month', isMonth: s.track === 'maint' && s.mode === 'month', hours, columns, gridCols, gridMin, nowTop: (NOW - H0) * ROW + 'px', monthDays, monthHead: DAYS,
+      panelW: s.track === 'auto' ? '0px' : s.panel ? '304px' : '44px', panelOpen: s.panel, panelClosed: !s.panel, togglePanel: () => this.setState({ panel: !s.panel }),
+      panelBg: hot && s.panelHot ? '#FFF8F8' : '#fff', panelBorder: hot ? '#C00018' : '#E4E7EC', panelBorderStyle: hot ? 'dashed' : 'solid', dropHint: !!hot,
+      panelOver: e => { if (this._drag && this._drag.kind === 'e') { e.preventDefault(); if (!s.panelHot) this.setState({ panelHot: true }); } },
+      panelLeave: () => { if (s.panelHot) this.setState({ panelHot: false }); },
+      panelDrop: e => { e.preventDefault(); this.unschedule(); },
+      backlog, backlogCount: s.backlog.length, backlogHours: fmtH(blH) + ' total', hiddenByFilter: hidden > 0, hiddenLabel: `${hidden} hidden by filters`, backlogEmpty: s.backlog.length === 0,
+      createWo: () => window.CMMSCreateWO ? window.CMMSCreateWO({}) : window.dispatchEvent(new CustomEvent('cmms-create-wo', { detail: {} })),
+      hasToast: !!s.toast, toastText: s.toast ? s.toast.text : '', canUndo: !!(s.toast && s.toast.undo && this._undo), toastIcon: 'check_circle', toastIconColor: '#6CE9A6',
+      undo: () => { if (this._undo) this.setState({ ...this._undo, toast: null }); this._undo = null; },
+    };
+  }
+}
+</script>
+</body>
+</html>

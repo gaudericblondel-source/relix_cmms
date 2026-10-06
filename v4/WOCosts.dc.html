@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<section style="position:relative;background:#fff;border:1px solid #E4E7EC;border-radius:8px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 6px">
+    <h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">{{ title }}</h2>
+    <span style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:{{ modeBg }};color:{{ modeFg }};font-size:11.5px;font-weight:600;white-space:nowrap">{{ modeLabel }}</span>
+    <span style="margin-left:auto;font:600 18px 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ total }}</span>
+  </div>
+  <div style="padding:2px 16px 10px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;background:#F2F4F7"><sc-for list="{{ bar }}" as="b" hint-placeholder-count="5"><span title="{{ b.tip }}" style="flex:{{ b.flex }};background:{{ b.color }}"></span></sc-for></div>
+    <span style="font-size:12px;color:#667085">{{ basis }}</span>
+  </div>
+  <div style="display:flex;flex-direction:column;border-top:1px solid #F2F4F7">
+    <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5">
+      <div style="display:flex;flex-direction:column;border-bottom:1px solid #F2F4F7">
+        <button onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;background:transparent;border:0;cursor:pointer;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;text-align:left" style-hover="background:#F9FAFB">
+          <span style="width:8px;height:8px;border-radius:2px;background:{{ c.color }}"></span>
+          <span style="font:17px/1 'Material Symbols Outlined';color:#667085">{{ c.icon }}</span>
+          <span style="font-weight:600">{{ c.label }}</span>
+          <span style="font-size:12px;color:#98A2B3">{{ c.count }}</span>
+          <span style="margin-left:auto;font:600 13px 'IBM Plex Mono',monospace;color:{{ c.totalColor }}">{{ c.total }}</span>
+          <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">{{ c.chev }}</span>
+        </button>
+        <sc-if value="{{ c.open }}">
+          <div style="display:flex;flex-direction:column;gap:2px;padding:0 16px 10px 42px">
+            <sc-for list="{{ c.lines }}" as="l">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto 28px;align-items:center;gap:10px;min-height:34px">
+                <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.label }}</span><sc-if value="{{ l.hasSub }}"><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.sub }}</span></sc-if></span>
+                <span style="display:flex;align-items:center;gap:4px;font:12px 'IBM Plex Mono',monospace;color:#475467;white-space:nowrap">
+                  <sc-if value="{{ l.editQty }}"><input type="number" min="0" step="{{ l.step }}" value="{{ l.qty }}" onInput="{{ l.setQty }}" style="width:58px;height:28px;padding:0 6px;border:1px solid #D0D5DD;border-radius:5px;font:12px 'IBM Plex Mono',monospace;text-align:right;outline:none" /></sc-if>
+                  <sc-if value="{{ l.showQty }}"><span>{{ l.qty }}</span></sc-if>{{ l.unitPrice }}
+                </span>
+                <span style="min-width:76px;text-align:right;font:600 12.5px 'IBM Plex Mono',monospace">{{ l.total }}</span>
+                <sc-if value="{{ l.removable }}"><button onClick="{{ l.remove }}" title="Remove" style="width:26px;height:26px;display:grid;place-items:center;background:transparent;border:0;border-radius:5px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:16px/1 'Material Symbols Outlined'">close</span></button></sc-if>
+                <sc-if value="{{ l.fixed }}"><span title="{{ l.autoTip }}" style="display:grid;place-items:center;font:15px/1 'Material Symbols Outlined';color:#C4CAD4">lock</span></sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ c.empty }}"><span style="padding:4px 0 6px;font-size:12.5px;color:#98A2B3">{{ c.emptyText }}</span></sc-if>
+            <sc-if value="{{ c.canAdd }}">
+              <span style="position:relative;display:flex;align-self:flex-start;margin-top:4px"><select value="" onChange="{{ c.add }}" style="appearance:none;-webkit-appearance:none;max-width:340px;height:32px;padding:0 28px 0 10px;border:1px dashed #C4CAD4;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#344054;background:#fff;outline:none;cursor:pointer"><option value="">{{ c.addLabel }}</option><sc-for list="{{ c.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:6px;top:7px;pointer-events:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">add</span></span>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 16px 12px;font-size:12px;color:#98A2B3"><span style="font:15px/1 'Material Symbols Outlined'">info</span>{{ footer }}<a href="Suppliers.dc.html" style="margin-left:auto;font-weight:600">Providers &amp; rates</a></div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:640},&quot;woKey&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;WO-1339859&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;wo&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;parts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{ref,qty}[]&quot;},&quot;actualMs&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;readonly&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Intervention cost&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const UNIT = { h: 'h', visit: 'visit', day: 'day', fixed: '' };
+class Component extends DCLogic {
+  state = { K: null, C: null, PL: null, open: {}, v: 0 };
+  componentDidMount() {
+    Promise.all([import('./cost-model.js'), import('./collab-model.js'), import('./plant-model.js')]).then(([K, C, PL]) => this.setState({ K, C, PL }));
+    this._h = () => this.setState(s => ({ v: s.v + 1 })); ['cmms-wo', 'cmms-suppliers', 'cmms-parts'].forEach(n => window.addEventListener(n, this._h));
+  }
+  componentWillUnmount() { ['cmms-wo', 'cmms-suppliers', 'cmms-parts'].forEach(n => window.removeEventListener(n, this._h)); }
+  renderVals() {
+    const s = this.state, K = s.K, C = s.C, p = this.props, ro = !!p.readonly;
+    const base = { title: p.title || 'Intervention cost', modeLabel: p.actualMs != null ? 'Actual' : 'Estimate', modeBg: p.actualMs != null ? '#E6F4EE' : '#F2F4F7', modeFg: p.actualMs != null ? '#0B6B4A' : '#475467' };
+    if (!K || !C) return { ...base, total: '—', bar: [], cats: [], basis: '', footer: '' };
+    const key = p.woKey, stored = (key && C.getWo(key)) || {}, w = { ...(p.wo || {}), ...stored, costs: stored.costs || (p.wo || {}).costs || {}, tools: (p.wo && p.wo.tools) || stored.tools || [] };
+    if (p.wo && p.wo.assignments) w.assignments = p.wo.assignments; if (p.wo && p.wo.dur) w.dur = p.wo.dur;
+    const res = K.costOf(w, k => C.person(k), { parts: p.parts, actualMs: p.actualMs, plant: s.PL });
+    const save = (cat, fn) => { const cur = { consumables: [], services: [], rentals: [], ...(w.costs || {}) }; cur[cat] = fn([...(cur[cat] || [])]); C.saveWo(key, { costs: cur }); };
+    const opts = { consumables: K.CONSUMABLES.map(([ref, name, unit]) => ({ v: ref, l: `${name} · ${K.eur(K.CONS_COST[ref])} / ${unit}` })),
+      services: K.offers('services').map(o => ({ v: o.sup + '|' + o.rate, l: `${o.supName} — ${o.name} · ${K.eur0(o.price)}${UNIT[o.unit] ? ' / ' + UNIT[o.unit] : ''}` })),
+      rentals: K.offers('rentals').map(o => ({ v: o.sup + '|' + o.rate, l: `${o.supName} — ${o.name} · ${K.eur0(o.price)}${UNIT[o.unit] ? ' / ' + UNIT[o.unit] : ''}` })) };
+    const EMPTY = { labor: 'Assign people to estimate labor.', parts: 'No spare parts on this work order.', consumables: 'Add grease, oil, cleaning products used…', services: 'Add a contractor or OEM service from your providers.', rentals: 'No equipment needed.' };
+    const ADD = { consumables: '+ Add consumable', services: '+ Add external service', rentals: '+ Add rental' };
+    const AUTO = { labor: 'From assigned people × hourly rate' + (p.actualMs != null ? ' × time spent' : ''), parts: 'From the work order spare parts', rentals: 'Internal equipment from the checklists' };
+    const cats = Object.entries(K.CATS).map(([k, [label, icon, color]]) => { const L = res.lines[k], open = s.open[k] ?? (k === 'labor' || L.length > 0);
+      return { label, icon, color, count: L.length || '', total: K.eur(res.totals[k]), totalColor: res.totals[k] ? '#1E2430' : '#98A2B3', open, chev: open ? 'expand_less' : 'expand_more',
+        toggle: () => this.setState(z => ({ open: { ...z.open, [k]: !open } })), empty: !L.length, emptyText: EMPTY[k],
+        canAdd: !ro && !!ADD[k], addLabel: ADD[k] || '', options: opts[k] || [],
+        add: e => { const v = e.target.value; e.target.value = ''; if (!v) return; if (k === 'consumables') save(k, a => [...a, { ref: v, qty: 1 }]); else { const [sup, rate] = v.split('|'), o = K.offerOf(sup, rate); save(k, a => [...a, { sup, rate, qty: o && o.unit === 'h' ? Math.max(1, Math.round(res.hours)) : 1 }]); } this.setState(z => ({ open: { ...z.open, [k]: true } })); },
+        lines: L.map(l => ({ label: l.label, sub: l.sub, hasSub: !!l.sub, qty: l.qty, step: l.unit === 'h' ? 0.25 : 1, editQty: !ro && !!l.manual, showQty: ro || !l.manual,
+          unitPrice: `${l.unit ? ' ' + l.unit : ''} × ${K.eur(l.price)}`, total: K.eur(l.total), removable: !ro && !!l.manual, fixed: !l.manual, autoTip: AUTO[k] || 'Calculated automatically',
+          setQty: e => { const q = Math.max(0, +e.target.value || 0); save(k, a => a.map((x, j) => j === l.i ? { ...x, qty: q } : x)); },
+          remove: () => save(k, a => a.filter((_, j) => j !== l.i)) })) }; });
+    return { ...base, total: K.eur(res.total), cats,
+      bar: Object.entries(K.CATS).filter(([k]) => res.totals[k] > 0).map(([k, [label, , color]]) => ({ flex: res.totals[k], color, tip: `${label} · ${K.eur(res.totals[k])}` })),
+      basis: res.actual ? `Based on ${res.hours} h actually spent in the intervention` : `Based on ${res.hours} h estimated · updated with actual time when the intervention is closed`,
+      footer: 'Rates come from people profiles, spare parts prices and provider rates.' };
+  }
+}
+</script>
+</body>
+</html>

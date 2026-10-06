@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="admin" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:16px" data-screen-label="Site configuration">
+    <header style="flex:none;display:flex;align-items:center;gap:12px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Site configuration</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ subtitle }}</p>
+      </div>
+    </header>
+
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:248px minmax(0,1fr);gap:16px">
+      <nav style="min-height:0;overflow:auto;background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:6px 8px 10px;display:flex;flex-direction:column;gap:1px">
+        <sc-for list="{{ nav }}" as="g" hint-placeholder-count="5">
+          <div style="padding:12px 10px 4px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#98A2B3">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="i">
+            <button onClick="{{ i.select }}" style="flex:none;height:34px;display:flex;align-items:center;gap:10px;padding:0 10px;background:{{ i.bg }};border:0;border-radius:6px;font:{{ i.font }};color:{{ i.color }};cursor:pointer;text-align:left" style-hover="background:#F2F4F7">
+              <span style="font:18px/1 'Material Symbols Outlined';color:{{ i.iconColor }}">{{ i.icon }}</span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.label }}</span><span style="font-size:11.5px;color:#98A2B3;font-variant-numeric:tabular-nums">{{ i.count }}</span>
+            </button>
+          </sc-for>
+        </sc-for>
+      </nav>
+
+      <section style="min-height:0;min-width:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="flex:none;display:flex;align-items:flex-start;flex-wrap:wrap;gap:12px;padding:16px 18px 14px;border-bottom:1px solid #EEF0F3">
+          <div style="flex:1 1 320px;min-width:0">
+            <h2 style="margin:0;font-size:16px;font-weight:600">{{ cur.label }}</h2>
+            <p style="margin:3px 0 0;color:#667085;font-size:12.5px;line-height:1.5;text-wrap:pretty">{{ cur.desc }}</p>
+            <sc-if value="{{ cur.hasWhere }}"><p style="margin:6px 0 0;display:flex;align-items:center;gap:5px;font-size:12px;color:#475467"><span style="font:15px/1 'Material Symbols Outlined';color:#98A2B3">link</span>Used in: {{ cur.where }}</p></sc-if>
+          </div>
+          <sc-if value="{{ hasSearch }}"><label style="flex:none;width:200px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px">
+            <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+            <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Filter…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+          </label></sc-if>
+          <sc-if value="{{ cur.canAdd }}"><button onClick="{{ startAdd }}" style="flex:none;height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>{{ cur.addLabel }}</button></sc-if>
+        </div>
+
+        <sc-if value="{{ isTable }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;min-height:0;overflow:auto">
+            <div style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:{{ gridCols }};align-items:center;min-width:760px;height:36px;padding-left:18px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+              <sc-for list="{{ heads }}" as="h"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px">{{ h }}</span></sc-for>
+            </div>
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+              <div onClick="{{ r.edit }}" style="display:grid;grid-template-columns:{{ gridCols }};align-items:center;min-width:760px;min-height:48px;padding-left:18px;border-bottom:1px solid #F2F4F7;cursor:pointer;opacity:{{ r.op }};background:{{ r.bg }}" style-hover="background:#F9FAFB">
+                <span style="display:flex;align-items:center;gap:9px;min-width:0;padding:6px 10px 6px {{ r.indent }}">
+                  <sc-if value="{{ r.hasTile }}"><span style="flex:none;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:{{ r.tileBg }};color:{{ r.tileFg }};font:16px/1 'Material Symbols Outlined'">{{ r.icon }}</span></sc-if>
+                  <sc-if value="{{ r.hasBadge }}"><span style="flex:none;display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:{{ r.badgeRadius }};font-size:12px;font-weight:600;background:{{ r.badgeBg }};color:{{ r.badgeFg }}"><sc-if value="{{ r.badgeDot }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if>{{ r.name }}</span></sc-if>
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <sc-if value="{{ r.plain }}"><span style="font-weight:{{ r.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span></sc-if>
+                    <sc-if value="{{ r.hasSub }}"><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span></sc-if>
+                  </span>
+                  <sc-if value="{{ r.hasTag }}"><span style="flex:none;height:18px;display:inline-flex;align-items:center;padding:0 6px;border-radius:9px;background:{{ r.tagBg }};color:{{ r.tagFg }};font-size:10.5px;font-weight:600">{{ r.tag }}</span></sc-if>
+                </span>
+                <span style="font:12.5px 'IBM Plex Mono',monospace;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px">{{ r.code }}</span>
+                <sc-for list="{{ r.cells }}" as="c"><span style="display:flex;align-items:center;gap:6px;min-width:0;padding-right:10px;color:#475467;font-family:{{ c.ff }}"><sc-if value="{{ c.hasDot }}"><span style="flex:none;width:8px;height:8px;border-radius:2px;background:{{ c.dot }}"></span></sc-if><sc-if value="{{ c.hasIcon }}"><span style="flex:none;font:16px/1 'Material Symbols Outlined';color:#98A2B3">{{ c.icon }}</span></sc-if><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.text }}</span></span></sc-for>
+                <span style="min-width:0;padding-right:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><sc-if value="{{ r.usedLink }}"><a href="{{ r.usedHref }}" onClick="{{ r.stop }}" style="font-weight:500">{{ r.used }}</a></sc-if><sc-if value="{{ r.usedText }}"><span style="color:{{ r.usedColor }}">{{ r.used }}</span></sc-if></span>
+                <span><button onClick="{{ r.toggle }}" title="{{ r.toggleTitle }}" style="position:relative;width:32px;height:18px;padding:0;border:0;border-radius:9px;background:{{ r.track }};cursor:{{ r.toggleCursor }}"><span style="position:absolute;top:2px;left:{{ r.knob }};width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s"></span></button></span>
+                <span style="display:flex;align-items:center;justify-content:flex-end;gap:2px;padding-right:8px">
+                  <sc-if value="{{ r.canAddChild }}"><button onClick="{{ r.addChild }}" title="{{ r.addChildTitle }}" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3;color:#1E2430"><span style="font:18px/1 'Material Symbols Outlined'">add</span></button></sc-if>
+                  <button onClick="{{ r.edit }}" title="Edit" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3;color:#1E2430"><span style="font:17px/1 'Material Symbols Outlined'">edit</span></button>
+                  <button onClick="{{ r.del }}" title="{{ r.delTitle }}" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:{{ r.delColor }};cursor:pointer" style-hover="background:#FEF3F2"><span style="font:17px/1 'Material Symbols Outlined'">delete</span></button>
+                </span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ empty }}"><div style="padding:40px;text-align:center;color:#98A2B3">{{ emptyText }}</div></sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isUnits }}">
+          <div style="flex:1;min-height:0;overflow:auto">
+            <div style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:{{ unitCols }};align-items:center;height:44px;padding-left:18px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+              <span>Quantity</span>
+              <sc-for list="{{ unitSites }}" as="u"><span style="display:flex;flex-direction:column;line-height:1.25;padding-right:10px"><span style="color:{{ u.color }}">{{ u.name }}</span><span style="font-weight:500;color:#98A2B3">{{ u.tag }}</span></span></sc-for>
+              <span></span>
+            </div>
+            <sc-for list="{{ unitRows }}" as="r" hint-placeholder-count="10">
+              <div style="display:grid;grid-template-columns:{{ unitCols }};align-items:center;min-height:48px;padding-left:18px;border-bottom:1px solid #F2F4F7" style-hover="background:#FAFAFB">
+                <span style="display:flex;flex-direction:column;gap:1px;min-width:0;padding-right:10px"><span style="font-weight:500">{{ r.name }}</span><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span></span>
+                <sc-for list="{{ r.cells }}" as="c">
+                  <span style="padding-right:10px"><span style="position:relative;display:flex;max-width:140px"><select value="{{ c.value }}" onChange="{{ c.set }}" style="appearance:none;-webkit-appearance:none;width:100%;height:32px;padding:0 26px 0 10px;border:1px solid {{ c.border }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:{{ c.bg }};outline:none;cursor:pointer"><sc-for list="{{ r.options }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:6px;top:7px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></span>
+                </sc-for>
+                <span style="display:flex;justify-content:flex-end;gap:2px;padding-right:8px"><sc-if value="{{ r.custom }}"><button onClick="{{ r.edit }}" title="Edit" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:17px/1 'Material Symbols Outlined'">edit</span></button><button onClick="{{ r.del }}" title="Delete" style="width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">delete</span></button></sc-if></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="flex:none;display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid #EEF0F3;background:#FCFCFD;color:#667085;font-size:12.5px">
+          <span style="font:16px/1 'Material Symbols Outlined'">info</span><span style="flex:1;min-width:0">{{ cur.note }}</span>
+          <sc-if value="{{ cur.canReset }}"><button onClick="{{ askReset }}" style="flex:none;height:28px;padding:0 10px;background:transparent;border:1px solid #D0D5DD;border-radius:6px;font:500 12px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer" style-hover="border-color:#98A2B3">Restore defaults</button></sc-if>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<sc-if value="{{ formOpen }}">
+  <div onClick="{{ closeForm }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:500px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;background:#F2F4F7;color:#344054;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">{{ form.icon }}</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ form.title }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">{{ form.sub }}</p></div>
+      <button onClick="{{ closeForm }}" title="Close" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 14px;align-content:start">
+      <sc-for list="{{ fields }}" as="f">
+        <div style="grid-column:{{ f.span }};display:flex;flex-direction:column;gap:6px;min-width:0">
+          <span style="display:flex;align-items:baseline;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">{{ f.label }}</span><sc-if value="{{ f.req }}"><span style="color:#C00018">*</span></sc-if><sc-if value="{{ f.hasHint }}"><span style="min-width:0;font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.hint }}</span></sc-if></span>
+          <sc-if value="{{ f.isInput }}"><input type="{{ f.type }}" value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" disabled="{{ f.disabled }}" style="height:40px;padding:0 12px;border:1px solid {{ f.border }};border-radius:8px;font:{{ f.font }};color:#1E2430;background:{{ f.bg }};outline:none;text-transform:{{ f.tt }}" style-focus="border-color:#98A2B3" /></sc-if>
+          <sc-if value="{{ f.isTextarea }}"><textarea value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" rows="4" style="padding:10px 12px;border:1px solid {{ f.border }};border-radius:8px;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea></sc-if>
+          <sc-if value="{{ f.isSelect }}"><span style="position:relative;display:flex"><select value="{{ f.value }}" onChange="{{ f.onInput }}" disabled="{{ f.disabled }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 32px 0 12px;border:1px solid {{ f.border }};border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:{{ f.bg }};outline:none"><sc-for list="{{ f.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:10px;pointer-events:none;font:20px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></sc-if>
+          <sc-if value="{{ f.isSeg }}"><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:8px;font:{{ o.font }};color:{{ o.color }};cursor:pointer;white-space:nowrap"><sc-if value="{{ o.hasIcon }}"><span style="font:17px/1 'Material Symbols Outlined'">{{ o.icon }}</span></sc-if>{{ o.l }}</button></sc-for></div></sc-if>
+          <sc-if value="{{ f.isIcon }}"><div style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;padding:6px;border:1px solid #D0D5DD;border-radius:8px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" title="{{ o.v }}" style="aspect-ratio:1;display:grid;place-items:center;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:6px;color:{{ o.color }};cursor:pointer;font:19px/1 'Material Symbols Outlined'">{{ o.v }}</button></sc-for></div></sc-if>
+          <sc-if value="{{ f.isColor }}"><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" title="{{ o.v }}" style="height:32px;display:flex;align-items:center;gap:6px;padding:0 10px 0 6px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:16px;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ o.fg }};cursor:pointer"><span style="width:18px;height:18px;border-radius:50%;background:{{ o.fg }};box-shadow:{{ o.ring }}"></span>{{ o.v }}</button></sc-for></div></sc-if>
+          <sc-if value="{{ f.isChips }}"><div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid #D0D5DD;border-radius:8px;max-height:150px;overflow:auto"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" style="height:28px;display:flex;align-items:center;gap:4px;padding:0 10px 0 7px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:14px;font:{{ o.font }};color:{{ o.color }};cursor:pointer;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">{{ o.icon }}</span>{{ o.l }}</button></sc-for></div></sc-if>
+          <sc-if value="{{ f.isToggle }}"><button onClick="{{ f.toggle }}" style="align-self:flex-start;height:32px;display:flex;align-items:center;gap:10px;padding:0;background:transparent;border:0;cursor:pointer;font:500 13px 'IBM Plex Sans',sans-serif;color:#344054"><span style="position:relative;width:38px;height:22px;border-radius:11px;background:{{ f.track }}"><span style="position:absolute;top:2px;left:{{ f.knob }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s"></span></span>{{ f.toggleLabel }}</button></sc-if>
+          <sc-if value="{{ f.hasError }}"><span style="font-size:12px;color:#B42318;display:flex;align-items:center;gap:4px"><span style="font:14px/1 'Material Symbols Outlined'">error</span>{{ f.error }}</span></sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{ hasPreview }}">
+        <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:10px;padding:14px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+          <span style="font-size:12px;font-weight:600;color:#667085;letter-spacing:.04em;text-transform:uppercase">Preview · {{ preview.where }}</span>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;font-weight:600;color:#344054">{{ preview.label }}<sc-if value="{{ preview.req }}"><span style="color:#C00018"> *</span></sc-if></span>
+            <span style="height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:8px;color:#98A2B3"><span style="flex:1">{{ preview.ph }}</span><sc-if value="{{ preview.hasUnit }}"><span style="font-weight:600;color:#475467">{{ preview.unit }}</span></sc-if><sc-if value="{{ preview.isChoice }}"><span style="font:20px/1 'Material Symbols Outlined'">expand_more</span></sc-if></span>
+          </div>
+          <sc-if value="{{ preview.hasSites }}"><div style="display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:#475467"><span>Unit per site:</span><sc-for list="{{ preview.sites }}" as="x"><span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#fff;border:1px solid #E4E7EC"><b style="font-weight:600">{{ x.code }}</b>{{ x.unit }}</span></sc-for></div></sc-if>
+        </div>
+      </sc-if>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <sc-if value="{{ form.canDelete }}"><button onClick="{{ form.del }}" style="height:40px;display:flex;align-items:center;gap:5px;padding:0 12px 0 10px;background:#fff;border:1px solid #FDA29B;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer" style-hover="background:#FEF3F2"><span style="font:17px/1 'Material Symbols Outlined'">delete</span>Delete</button></sc-if>
+      <span style="flex:1;min-width:0;font-size:12.5px;color:#B42318;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ form.error }}</span>
+      <button onClick="{{ closeForm }}" style="height:40px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3">Cancel</button>
+      <button onClick="{{ save }}" style="height:40px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">check</span>{{ form.saveLabel }}</button>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ confirmOpen }}">
+  <div onClick="{{ closeConfirm }}" style="position:fixed;inset:0;z-index:80;background:rgba(16,24,40,.4)"></div>
+  <div style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:81;width:420px;display:flex;flex-direction:column;gap:14px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <span style="flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:{{ confirm.iconBg }};color:{{ confirm.iconFg }};font:22px/1 'Material Symbols Outlined'">{{ confirm.icon }}</span>
+      <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:16px;font-weight:600">{{ confirm.title }}</h3><p style="margin:6px 0 0;color:#475467;line-height:1.5;text-wrap:pretty">{{ confirm.text }}</p></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button onClick="{{ closeConfirm }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">{{ confirm.cancel }}</button>
+      <sc-if value="{{ confirm.hasAlt }}"><button onClick="{{ confirm.alt }}" style="height:38px;padding:0 14px;background:#1E2430;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ confirm.altLabel }}</button></sc-if>
+      <sc-if value="{{ confirm.hasOk }}"><button onClick="{{ confirm.ok }}" style="height:38px;padding:0 14px;background:#B42318;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ confirm.okLabel }}</button></sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;section&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;assetTypes&quot;,&quot;locations&quot;,&quot;crit&quot;,&quot;woTypes&quot;,&quot;failures&quot;,&quot;prio&quot;,&quot;status&quot;,&quot;partCats&quot;,&quot;costCenters&quot;,&quot;customFields&quot;,&quot;units&quot;,&quot;skills&quot;,&quot;sites&quot;,&quot;labels&quot;],&quot;default&quot;:&quot;assetTypes&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NAV = [
+  ['Assets', [['assetTypes', 'Asset types', 'category'], ['locations', 'Plant hierarchy', 'account_tree'], ['crit', 'Criticality levels', 'crisis_alert']]],
+  ['Work orders', [['woTypes', 'Work order types', 'build'], ['failures', 'Failure categories', 'report'], ['prio', 'Priorities', 'flag'], ['status', 'Statuses', 'swap_horiz']]],
+  ['Spare parts & costs', [['partCats', 'Part categories', 'inventory_2'], ['costCenters', 'Cost centers', 'account_balance']]],
+  ['Data & units', [['customFields', 'Custom fields', 'dataset'], ['units', 'Units of measure', 'straighten']]],
+  ['People', [['skills', 'Skills', 'engineering']]],
+  ['Organization', [['sites', 'Sites & plants', 'factory'], ['labels', 'QR label formats', 'qr_code_2']]],
+];
+const ICONS = ['build', 'event_repeat', 'insights', 'visibility', 'trending_up', 'construction', 'precision_manufacturing', 'conveyor_belt', 'water_pump', 'mode_fan', 'compress', 'heat', 'content_cut', 'blender', 'scale', 'water', 'package_2', 'electrical_services', 'local_fire_department', 'forklift', 'elevator', 'speed', 'home_repair_service', 'settings', 'filter_alt', 'sensors', 'radio_button_unchecked', 'water_drop', 'bolt', 'memory', 'air', 'oil_barrel', 'vibration', 'device_thermostat', 'verified_user', 'height', 'handyman', 'science', 'shield', 'recycling'];
+const BASE_WO = { Corrective: 1840, Preventive: 2210, Predictive: 96, Inspection: 540, Improvement: 0 }, BASE_FAIL = { Mechanical: 612, Electrical: 388, Hydraulic: 144, Pneumatic: 92, Instrumentation: 118, 'Software / PLC': 41, 'Operator error': 27 };
+const BASE_PRIO = { Critical: 3, High: 21, Medium: 24, Low: 9 }, BASE_STATUS = { Requested: 12, Scheduled: 18, Overdue: 8, 'In progress': 18, 'Waiting (flag on open work orders)': 7, Completed: 1204 };
+const BADGE = { prio: { Critical: ['#C00018', '#fff'], High: ['#FDECEC', '#B42318'], Medium: ['#FEF3E2', '#B54708'], Low: ['#EEF1F4', '#475467'] },
+  status: { Requested: ['#F3EEFC', '#6941C6'], Scheduled: ['#EAF1FD', '#2456B8'], Overdue: ['#FDECEC', '#B42318'], 'In progress': ['#E6F4EE', '#0B6B4A'], 'Waiting (flag on open work orders)': ['#FEF3E2', '#B54708'], Completed: ['#EEF1F4', '#475467'] } };
+const CRITC = { Critical: '#C00018', High: '#E0591B', Medium: '#E3A008', Low: '#98A2B3' };
+const TZ = ['Europe/Paris', 'Europe/Madrid', 'Europe/Berlin', 'Europe/London', 'Europe/Lisbon', 'Europe/Warsaw', 'America/New_York', 'Asia/Shanghai'];
+const LVL = { plant: ['factory', 'Plant'], zone: ['grid_view', 'Zone'], line: ['conveyor_belt', 'Line'], step: ['subdirectory_arrow_right', 'Step'] };
+const CHILD = { plant: 'zone', zone: 'line', line: 'step' };
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+const plural = (n, w) => `${n.toLocaleString('en-US')} ${w}${n === 1 ? '' : 's'}`;
+const slug = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+class Component extends DCLogic {
+  state = { sec: new URLSearchParams(location.search).get('section') || (this.props.section ?? 'assetTypes'), q: '', form: null, confirm: null, toast: null, v: 0, M: null };
+  componentDidMount() {
+    Promise.all(['./config-model.js', './plant-model.js', './people-model.js', './parts-model.js', './collab-model.js', './sites-model.js', './checklist-model.js'].map(p => import(p)))
+      .then(([CFG, PL, PM, PA, C, SI, CL]) => this.setState({ M: { CFG, PL, PM, PA, C, SI, CL } }));
+    this._r = () => this.setState(s => ({ v: s.v + 1 }));
+    ['cmms-config', 'cmms-plant', 'cmms-skills', 'cmms-parts', 'cmms-asset', 'cmms-profile'].forEach(e => window.addEventListener(e, this._r));
+    this._k = e => { if (e.key === 'Escape') this.setState({ form: null, confirm: null }); }; window.addEventListener('keydown', this._k);
+  }
+  componentWillUnmount() { ['cmms-config', 'cmms-plant', 'cmms-skills', 'cmms-parts', 'cmms-asset', 'cmms-profile'].forEach(e => window.removeEventListener(e, this._r)); window.removeEventListener('keydown', this._k); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+
+  // ---------- Section metadata ----------
+  meta(sec) {
+    const { CFG, PM, C, PL } = this.state.M;
+    const F = (key, label, kind, x = {}) => ({ key, label, kind, ...x });
+    const people = Object.keys(C.PEOPLE).map(k => ({ v: k, l: `${C.person(k).name} · ${C.person(k).role}` }));
+    const qs = CFG.quantities();
+    return {
+      assetTypes: { add: 'Add type', icon: 'category', desc: 'Types classify equipment and mobile assets. They drive the type tiles of the asset wizard, filters, specification suggestions and custom fields.', where: 'Asset wizard · Asset list filters · Custom fields',
+        note: 'Types in use cannot be deleted — deactivate them to hide them from new assets. Renaming updates existing assets.', heads: ['Class', 'Default criticality'],
+        cells: r => [{ text: r.cls, icon: r.cls === 'Mobile asset' ? 'swap_horiz' : 'precision_manufacturing' }, { text: r.crit, dot: CRITC[r.crit] }],
+        form: [F('name', 'Name', 'text', { req: 1, span: 1 }), F('code', 'Code', 'code', { req: 1 }), F('cls', 'Class', 'seg', { options: [['Equipment', 'precision_manufacturing'], ['Mobile asset', 'swap_horiz']] }), F('crit', 'Default criticality', 'select', { options: CFG.names('crit') }), F('icon', 'Icon', 'icon')] },
+      locations: { add: 'Add zone', icon: 'account_tree', desc: 'Saint-Gobain convention: Plant › Zone › Line › Step. Equipment, mobile assets and storage areas are located on a step. Storage steps are the stock locations of Spare parts.', where: 'Assets (list + plant map) · Asset wizard · Spare parts storage · Work orders',
+        note: 'A location can only be deleted when it has no sub-locations and no assets. Codes are permanent once created.', heads: ['Level', 'Path'], noSearch: false },
+      crit: { icon: 'crisis_alert', desc: 'Criticality reflects the impact of a failure on production and safety. It sets the default priority of new work orders.', where: 'Asset wizard · Asset list · Work order defaults', note: 'The four levels are fixed — only the response target can be edited.', heads: ['Response target'], system: true,
+        cells: r => [{ text: r.response }], form: [F('name', 'Name', 'text', { disabled: 1 }), F('code', 'Code', 'code', { disabled: 1 }), F('response', 'Response target', 'text', { req: 1, ph: 'e.g. < 8 h' })] },
+      woTypes: { add: 'Add type', icon: 'build', desc: 'Types describe the purpose of a work order. Active types appear in the creation wizard, quick intervention and work order editing.', where: 'New work order · Quick intervention · Work order edit · Filters',
+        note: 'Improvement is inactive by default — activate it to offer it when creating work orders.', heads: ['Strategy', 'Color'],
+        cells: r => [{ text: r.strategy || '—' }, { text: r.color, dot: (CFG.PALETTE[r.color] || [])[0] }],
+        form: [F('name', 'Name', 'text', { req: 1 }), F('code', 'Code', 'code', { req: 1 }), F('strategy', 'Maintenance strategy', 'text', { span: 2, ph: 'e.g. Systematic / condition-based' }), F('color', 'Color', 'color'), F('icon', 'Icon', 'icon')] },
+      failures: { add: 'Add category', icon: 'report', desc: 'Used to analyze recurring failures and the equipment with the most breakdowns.', where: 'New work order (Details) · Work order edit · Reports', note: 'Keep categories short so technicians can pick one quickly.', heads: ['Description'],
+        cells: r => [{ text: r.desc || '—' }], form: [F('name', 'Name', 'text', { req: 1 }), F('code', 'Code', 'code', { req: 1 }), F('desc', 'Description', 'textarea', { span: 2 })] },
+      prio: { icon: 'flag', desc: 'Priorities order the work order list and the planning.', where: 'Work orders · Planning · Home to-do', note: 'Priorities are system values; colors are fixed for consistency. Only the target can be changed.', heads: ['Due within'], system: true, badge: 'prio',
+        cells: r => [{ text: r.due }], form: [F('name', 'Name', 'text', { disabled: 1 }), F('code', 'Code', 'code', { disabled: 1 }), F('due', 'Due within', 'text', { req: 1, ph: 'e.g. 24 h' })] },
+      status: { icon: 'swap_horiz', desc: 'Statuses drive the work order lifecycle and board columns.', where: 'Work orders · Home · Planning', note: 'Statuses are locked system values. Overdue is computed from the scheduled date.', heads: ['Stage'], system: true, readonly: true, badge: 'status',
+        cells: r => [{ text: r.stage }], form: [F('name', 'Name', 'text', { disabled: 1 }), F('code', 'Code', 'code', { disabled: 1 }), F('stage', 'Stage', 'text', { disabled: 1 })] },
+      partCats: { add: 'Add category', icon: 'inventory_2', desc: 'Categories group spare parts in the catalog, filters and reports. The default unit is proposed when a part is created.', where: 'Spare parts (catalog, filters, part form)', note: 'Renaming a category updates the parts that use it.', heads: ['Default unit'],
+        cells: r => [{ text: r.unit }], form: [F('name', 'Name', 'text', { req: 1 }), F('code', 'Code', 'code', { req: 1 }), F('unit', 'Default unit', 'select', { options: CFG.PART_UNITS }), F('icon', 'Icon', 'icon')] },
+      costCenters: { add: 'Add cost center', icon: 'account_balance', desc: 'Cost centers allocate maintenance spending. They can be linked to spare parts, assets and work orders — consumption is charged to the cost center of the part, or of the work order when set.', where: 'Spare parts · Asset wizard (Identity) · New work order (Details) · Work order edit',
+        note: 'Cost centers in use cannot be deleted — deactivate them to stop new allocations.', heads: ['Owner', 'Plant zone', 'Annual budget'],
+        cells: r => { const z = r.zone && PL.node(r.zone); return [{ text: r.owner ? C.person(r.owner).name : '—' }, { text: z ? z.name : 'Whole site', dot: z ? (PL.ZONE_LOOK[z.id] || [])[1] : '' }, { text: CFG.fmtBudget(r.budget), ff: "'IBM Plex Mono',monospace" }]; },
+        form: [F('name', 'Name', 'text', { req: 1, span: 2 }), F('code', 'Code', 'code', { req: 1, ph: 'CC-XXX-000' }), F('budget', 'Annual budget (€)', 'number', { ph: '0' }), F('owner', 'Owner', 'select', { options: [{ v: '', l: 'No owner' }, ...people] }),
+          F('zone', 'Plant zone', 'select', { options: [{ v: '', l: 'Whole site' }, ...PL.zones().map(z => ({ v: z.id, l: z.name }))] }), F('desc', 'Description', 'textarea', { span: 2 })] },
+      customFields: { add: 'Add field', icon: 'dataset', desc: 'Add your own fields to assets, work orders and spare parts. Numeric fields take their unit from the site — each site chooses its units in Units of measure.', where: 'Asset wizard & detail · New work order & detail · Spare part form & detail',
+        note: 'The key is used in exports and integrations; it cannot change once data has been entered.', heads: ['Applies to', 'Type', 'Unit (this site)'],
+        cells: r => { const t = CFG.FIELD_TYPES[r.type] || ['', 'help']; return [{ text: r.entity + ((r.types || []).length ? ` · ${r.types.length} type${r.types.length > 1 ? 's' : ''}` : ''), icon: { Asset: 'precision_manufacturing', 'Work order': 'build', 'Spare part': 'inventory_2' }[r.entity] }, { text: t[0], icon: t[1] }, { text: CFG.fieldUnit(r) || '—', ff: "'IBM Plex Mono',monospace" }]; },
+        form: (f) => { const num = f.type === 'decimal' || f.type === 'integer';
+          return [F('name', 'Label', 'text', { req: 1, ph: 'e.g. Operating temperature' }), F('code', 'Key', 'code', { req: 1, lower: 1, ph: 'op_temp' }),
+            F('entity', 'Applies to', 'seg', { options: [['Asset', 'precision_manufacturing'], ['Work order', 'build'], ['Spare part', 'inventory_2']] }),
+            F('type', 'Input type', 'seg', { options: Object.entries(CFG.FIELD_TYPES).map(([k, [l, i]]) => [k, i, l]) }),
+            ...(num ? [F('quantity', 'Quantity', 'select', { hint: 'unit comes from each site', options: [{ v: '', l: 'No quantity (fixed unit)' }, ...Object.entries(qs).map(([k, [n, us]]) => ({ v: k, l: `${n} · ${us.join(', ')}` }))] }),
+              ...(!f.quantity ? [F('unit', 'Fixed unit', 'text', { ph: 'e.g. months, cycles' })] : [F('_unit', 'Unit on this site', 'text', { disabled: 1, value: CFG.unitFor(f.quantity) })]),
+              ...(f.type === 'decimal' ? [F('decimals', 'Decimals', 'select', { options: ['0', '1', '2', '3'] })] : []), F('min', 'Minimum', 'number', { ph: 'none' }), F('max', 'Maximum', 'number', { ph: 'none' })] : []),
+            ...(f.type === 'choice' ? [F('options', 'Choices', 'lines', { req: 1, span: 2, ph: 'One choice per line' })] : []),
+            ...(f.entity === 'Asset' ? [F('types', 'Only for asset types', 'chips', { span: 2, hint: 'none selected = all types', options: CFG.list('assetTypes', { active: true }).map(t => [t.name, t.icon]) })] : []),
+            F('required', 'Required', 'toggle', { span: 2, toggleLabel: 'Users must fill in this field' })]; } },
+      units: { add: 'Add quantity', icon: 'straighten', desc: 'Each site chooses the unit it works with for every physical quantity. Custom fields and readings display and convert to the unit of the current site.', where: 'Custom fields (assets, work orders, spare parts)',
+        note: 'Changing a site unit only changes how values are labelled on that site — enter values in the unit shown.', heads: [] },
+      skills: { add: 'Add skill', icon: 'engineering', desc: 'Skills are held by users and required by checklist steps. They drive assignment suggestions and greyed-out slots in Planning.', where: 'User profiles · Checklist steps · Assignment suggestions · Planning',
+        note: 'Skills held by someone cannot be deleted — deactivate them instead.', heads: ['Category', 'Required by'],
+        cells: r => [{ text: r.cat }, { text: r.steps ? plural(r.steps, 'checklist step') : '—' }],
+        form: [F('name', 'Name', 'text', { req: 1 }), F('code', 'Code', 'code', { req: 1, max: 4 }), F('cat', 'Category', 'seg', { options: Object.keys(PM.SKILL_CATS).map(k => [k, '']) }), F('color', 'Color', 'color'), F('icon', 'Icon', 'icon')] },
+      sites: { add: 'Add site', icon: 'factory', desc: 'Each site has its own assets, stock, planning and units. Users can access one or more sites and switch from the top bar.', where: 'Top bar site switcher · Site dashboard · Units of measure', note: 'Sites holding assets cannot be deleted. The current site cannot be deactivated.', heads: ['City', 'Time zone', 'Business'],
+        cells: r => [{ text: [r.city, r.country].filter(Boolean).join(', ') || '—' }, { text: r.tz }, { text: r.businessName }],
+        form: (f, isNew) => [F('name', 'Name', 'text', { req: 1, span: 2 }), F('code', 'Code', 'code', { req: 1, disabled: !isNew, max: 4 }), F('tz', 'Time zone', 'select', { options: TZ }), F('city', 'City', 'text'), F('country', 'Country', 'text'),
+          F('business', 'Business unit', 'select', { span: 2, options: this.state.M.SI.BUSINESSES.filter(b => b.parent).map(b => ({ v: b.id, l: b.name })) })] },
+      labels: { add: 'Add format', icon: 'qr_code_2', desc: 'Label formats offered when printing asset QR codes.', where: 'Asset detail · QR label printing', note: 'The default format is pre-selected when printing.', heads: ['Size', 'Default'],
+        cells: r => [{ text: r.size }, { text: r.def ? 'Default' : '—', icon: r.def ? 'star' : '' }], form: [F('name', 'Name', 'text', { req: 1 }), F('code', 'Code', 'code', { req: 1 }), F('size', 'Size', 'text', { req: 1, ph: 'e.g. 50 × 50 mm' }), F('def', 'Default format', 'toggle', { toggleLabel: 'Pre-select when printing' })] },
+    }[sec];
+  }
+
+  // ---------- Data ----------
+  items(sec) {
+    const { CFG, PM, PL, SI, CL } = this.state.M;
+    if (sec === 'skills') { const steps = {}; Object.keys(CL.SEEDS).map(id => CL.load(id)).filter(Boolean).forEach(cl => cl.steps.forEach(st => (st.skills || []).forEach(k => { steps[k] = (steps[k] || 0) + 1; })));
+      return PM.skills().map(k => ({ id: k.id, name: k.name, code: k.id, cat: k.cat, icon: k.icon, fg: k.fg, bg: k.bg, color: Object.keys(CFG.PALETTE).find(c => CFG.PALETTE[c][0] === k.fg) || 'Grey', active: k.active !== false, steps: steps[k.id] || 0 })); }
+    if (sec === 'sites') { const ov = CFG.list('sites'); return SI.SITES.map(s => { const o = ov.find(x => x.code === s.id) || {}; return { id: s.id, code: s.id, name: o.name || s.name, city: o.city ?? s.city, country: o.country ?? s.country, tz: o.tz || s.tz, business: o.business || s.business, active: o.active !== false, assets: s.assets, created: !!o.created, businessName: (SI.BUSINESSES.find(b => b.id === (o.business || s.business)) || {}).name || '' }; })
+      .concat(ov.filter(x => x.created && !SI.SITES.some(s => s.id === x.code)).map(x => ({ ...x, id: x.code, assets: 0, businessName: (SI.BUSINESSES.find(b => b.id === x.business) || {}).name || '' }))); }
+    if (sec === 'locations') { const out = [{ id: 'THO', name: PL.PLANT.name, code: PL.PLANT.code, kind: 'plant', depth: 0, active: true }]; const walk = (id, d) => PL.children(id).forEach(n => { out.push({ ...n, code: n.id, depth: d, active: true }); walk(n.id, d + 1); }); walk('THO', 1); return out; }
+    return CFG.list(sec);
+  }
+  usage(sec, r) {
+    const { PL, PA, C, PM } = this.state.M, created = C.createdWos();
+    const assets = PL.assets(), parts = PA.parts();
+    switch (sec) {
+      case 'assetTypes': { const n = assets.filter(a => a.type === r.name).length; return { n, label: n ? plural(n, 'asset') : 'Not used', href: n ? 'Assets.dc.html?q=' + encodeURIComponent(r.name) : '' }; }
+      case 'crit': { const n = assets.filter(a => a.crit === r.name).length; return { n, label: n ? plural(n, 'asset') : 'Not used', href: '', locked: true }; }
+      case 'woTypes': { const n = (BASE_WO[r.name] || 0) + created.filter(w => w.type === r.name).length; return { n, label: n ? plural(n, 'work order') : 'Not used', href: n ? 'WorkOrders.dc.html' : '' }; }
+      case 'failures': { const n = (BASE_FAIL[r.name] || 0) + created.filter(w => w.cat === r.name).length; return { n, label: n ? plural(n, 'work order') : 'Not used' }; }
+      case 'prio': return { n: 1, label: plural((BASE_PRIO[r.name] || 0) + created.filter(w => w.prio === r.name).length, 'open work order'), locked: true };
+      case 'status': return { n: 1, label: plural(BASE_STATUS[r.name] || 0, 'work order'), locked: true };
+      case 'partCats': { const n = parts.filter(p => p.cat === r.name).length; return { n, label: n ? plural(n, 'part') : 'Not used', href: n ? 'SpareParts.dc.html?cat=' + encodeURIComponent(r.name) : '' }; }
+      case 'costCenters': { const p = parts.filter(x => x.costCenter === r.code).length, a = assets.filter(x => x.costCenter === r.code).length, w = created.filter(x => x.costCenter === r.code).length, n = p + a + w;
+        return { n, label: n ? [p && plural(p, 'part'), a && plural(a, 'asset'), w && plural(w, 'WO')].filter(Boolean).join(' · ') : 'Not used', href: p ? 'SpareParts.dc.html?cc=' + encodeURIComponent(r.code) : '' }; }
+      case 'customFields': { const has = o => o && o.custom && o.custom[r.code] !== undefined && o.custom[r.code] !== ''; const n = r.entity === 'Asset' ? assets.filter(has).length : r.entity === 'Spare part' ? parts.filter(has).length : created.filter(has).length;
+        return { n, label: n ? `${plural(n, r.entity === 'Work order' ? 'work order' : r.entity === 'Asset' ? 'asset' : 'part')} filled` : 'No data yet' }; }
+      case 'skills': { const n = PM.TECHS.filter(t => PM.skillLevel(t, r.code) > 0).length; return { n, label: n ? plural(n, 'person') .replace('persons', 'people') : 'Nobody yet', href: '' }; }
+      case 'locations': { const n = r.kind === 'plant' ? assets.length : assets.filter(a => a.loc === r.id || PL.chain(a.loc).some(x => x.id === r.id)).length; const kids = r.kind === 'plant' ? PL.zones().length : PL.children(r.id).length;
+        return { n: n + kids, assets: n, kids, label: n ? plural(n, 'asset') : r.storage ? 'Storage area' : 'Empty', href: n ? 'Assets.dc.html?loc=' + r.id : '' }; }
+      case 'sites': return { n: r.assets || 0, label: r.assets ? plural(r.assets, 'asset') : 'No assets yet' };
+      default: return { n: 0, label: '—' };
+    }
+  }
+
+  // ---------- Form ----------
+  openForm(sec, row, x = {}) {
+    const { CFG, PL } = this.state.M;
+    const isNew = !row;
+    let f = row ? { ...row } : { active: true };
+    if (isNew) {
+      if (sec === 'assetTypes') f = { ...f, cls: 'Equipment', crit: 'Medium', icon: 'precision_manufacturing' };
+      if (sec === 'woTypes') f = { ...f, color: 'Grey', icon: 'build' };
+      if (sec === 'partCats') f = { ...f, unit: 'pcs', icon: 'settings' };
+      if (sec === 'customFields') f = { ...f, entity: 'Asset', type: 'decimal', quantity: 'temperature', decimals: '1', options: [], types: [], required: false };
+      if (sec === 'skills') f = { ...f, cat: 'Trade', color: 'Grey', icon: 'handyman' };
+      if (sec === 'sites') f = { ...f, tz: 'Europe/Paris', business: 'fge' };
+      if (sec === 'locations') { const parent = x.parent || 'THO', pk = parent === 'THO' ? 'plant' : PL.node(parent).kind; f = { ...f, parent, kind: CHILD[pk], storage: false, bay: false, code: parent === 'THO' ? '' : parent + '-' }; }
+    }
+    if (sec === 'customFields') f = { ...f, decimals: String(f.decimals ?? '0'), options: f.options || [], types: f.types || [] };
+    this.setState({ form: { sec, isNew, f, orig: row, errors: {} } });
+  }
+  setF(k, v) { this.setState(s => ({ form: { ...s.form, f: { ...s.form.f, [k]: v }, errors: { ...s.form.errors, [k]: '' }, error: '' } })); }
+  save() {
+    const { CFG, PL, PM, PA, C, SI } = this.state.M, fm = this.state.form, sec = fm.sec, f = { ...fm.f }, m = this.meta(sec);
+    const defs = sec === 'locations' ? [{ key: 'name', req: 1 }, { key: 'code', req: 1 }] : (typeof m.form === 'function' ? m.form(f, fm.isNew) : m.form) || [];
+    const errors = {};
+    defs.forEach(d => { const v = f[d.key]; if (d.req && !d.disabled && (v === undefined || v === '' || (Array.isArray(v) && !v.length))) errors[d.key] = 'Required'; });
+    const code = (f.code || '').trim();
+    if (code && !errors.code) {
+      const others = this.items(sec).filter(r => !fm.orig || r.id !== fm.orig.id);
+      if (others.some(r => (r.code || '').toLowerCase() === code.toLowerCase())) errors.code = 'This code already exists';
+      if (sec === 'customFields' && !/^[a-z][a-z0-9_]*$/.test(code)) errors.code = 'Lowercase letters, digits and _ only';
+      if (sec === 'locations' && fm.isNew && PL.node(code)) errors.code = 'This code already exists';
+    }
+    if (sec === 'customFields' && f.min !== '' && f.max !== '' && f.min != null && f.max != null && +f.min > +f.max) errors.max = 'Must be ≥ minimum';
+    if (Object.keys(errors).length) return this.setState({ form: { ...fm, errors, error: 'Check the highlighted fields' } });
+    f.name = (f.name || '').trim(); f.code = sec === 'customFields' ? code : code.toUpperCase();
+    const label = f.name;
+    if (sec === 'skills') { const list = PM.skills(), [fg, bg] = CFG.PALETTE[f.color] || CFG.PALETTE.Grey, row = { id: f.code, name: f.name, cat: f.cat, icon: f.icon || 'handyman', fg, bg, active: f.active !== false };
+      PM.saveSkills(fm.isNew ? [...list, row] : list.map(k => k.id === fm.orig.id ? { ...k, ...row, id: k.id } : k)); }
+    else if (sec === 'locations') PL.saveNode({ id: fm.isNew ? f.code : fm.orig.id, name: f.name, kind: f.kind, parent: f.parent, storage: !!f.storage, bay: !!f.bay });
+    else if (sec === 'sites') { const ov = CFG.list('sites').find(x => x.code === f.code); CFG.upsert('sites', { id: ov ? ov.id : undefined, code: f.code, name: f.name, city: f.city || '', country: f.country || '', tz: f.tz, business: f.business, active: f.active !== false, created: fm.isNew || (ov && ov.created) });
+      const live = SI.SITES.find(s => s.id === f.code); if (live) Object.assign(live, { name: f.name, city: f.city, country: f.country, tz: f.tz, business: f.business }); else SI.SITES.push({ id: f.code, name: f.name, city: f.city, country: f.country, tz: f.tz, business: f.business, lat: 48.8, lon: 2.3, assets: 0, k: { overdue: 0, overdueCrit: 0, stopped: 0, stoppedCrit: 0, pm: 100, out: 0, low: 0, today: 0, todayDone: 0 } }); }
+    else {
+      const row = { ...f }; delete row._unit;
+      if (sec === 'customFields') { row.decimals = +row.decimals || 0; if (row.type !== 'choice') row.options = []; if (row.entity !== 'Asset') row.types = []; if (!(row.type === 'decimal' || row.type === 'integer')) { row.quantity = ''; row.unit = ''; row.min = ''; row.max = ''; } }
+      if (sec === 'costCenters') row.budget = +row.budget || 0;
+      if (sec === 'labels' && row.def) CFG.list('labels').filter(x => x.def && x.id !== row.id).forEach(x => CFG.upsert('labels', { ...x, def: false }));
+      CFG.upsert(sec, row);
+      const old = fm.orig && fm.orig.name;
+      if (old && old !== row.name) {
+        if (sec === 'assetTypes') { PL.assets().filter(a => a.type === old).forEach(a => PL.saveAsset(a.id, { type: row.name })); CFG.list('customFields').filter(c => (c.types || []).includes(old)).forEach(c => CFG.upsert('customFields', { ...c, types: c.types.map(t => t === old ? row.name : t) })); }
+        if (sec === 'partCats') PA.parts().filter(p => p.cat === old).forEach(p => PA.savePart(p.ref, { cat: row.name }));
+        if (sec === 'woTypes') C.createdWos().filter(w => w.type === old).forEach(w => C.saveWo(w.key, { type: row.name }));
+        if (sec === 'failures') C.createdWos().filter(w => w.cat === old).forEach(w => C.saveWo(w.key, { cat: row.name }));
+      }
+      if (fm.orig && fm.orig.code !== row.code && sec === 'costCenters') { PA.parts().filter(p => p.costCenter === fm.orig.code).forEach(p => PA.savePart(p.ref, { costCenter: row.code })); PL.assets().filter(a => a.costCenter === fm.orig.code).forEach(a => PL.saveAsset(a.id, { costCenter: row.code })); }
+    }
+    this.setState(s => ({ form: null, v: s.v + 1 }));
+    this.flash(`${label} ${fm.isNew ? 'added' : 'saved'}`);
+  }
+  askDelete(sec, r) {
+    const m = this.meta(sec), u = this.usage(sec, r), { CFG, PL, PM, SI } = this.state.M;
+    const blocked = m.system ? 'This is a system value — it cannot be deleted.' : sec === 'locations' ? (r.kind === 'plant' ? 'The plant itself cannot be deleted.' : u.kids ? `${r.name} still has ${plural(u.kids, 'sub-location')}. Delete or move them first.` : u.assets ? `${plural(u.assets, 'asset')} ${u.assets > 1 ? 'are' : 'is'} located here. Move them before deleting.` : '')
+      : sec === 'sites' ? (r.assets ? `${r.name} holds ${plural(r.assets, 'asset')}.` : SI.current().id === r.code ? 'You are currently working on this site.' : '') : u.n > 0 && sec !== 'customFields' ? `${r.name} is used by ${u.label}.` : '';
+    const deactivatable = !m.system && sec !== 'locations' && r.active !== false && !(sec === 'sites' && SI.current().id === r.code);
+    const doDel = () => {
+      if (sec === 'skills') PM.saveSkills(PM.skills().filter(k => k.id !== r.id));
+      else if (sec === 'locations') PL.removeNode(r.id);
+      else if (sec === 'sites') { const ov = CFG.list('sites').find(x => x.code === r.code); if (ov) CFG.remove('sites', ov.id); const i = SI.SITES.findIndex(s => s.id === r.code && !s.assets); if (i >= 0 && r.created) SI.SITES.splice(i, 1); }
+      else CFG.remove(sec, r.id);
+      this.setState(s => ({ confirm: null, form: null, v: s.v + 1 })); this.flash(`${r.name} deleted`);
+    };
+    this.setState({ confirm: blocked ? { icon: 'block', iconBg: '#FEF3E2', iconFg: '#B54708', title: `${r.name} can't be deleted`, text: blocked + (deactivatable ? ' Deactivate it instead to hide it from new records while keeping history.' : ''), cancel: 'Close', hasOk: false,
+        hasAlt: deactivatable, altLabel: 'Deactivate', alt: () => { this.toggle(sec, r); this.setState({ confirm: null, form: null }); } }
+      : { icon: 'delete', iconBg: '#FEF3F2', iconFg: '#B42318', title: `Delete ${r.name}?`, text: sec === 'customFields' && u.n ? `${u.label}. The values will be removed from those records. This cannot be undone.` : 'This cannot be undone.', cancel: 'Cancel', hasOk: true, okLabel: 'Delete', ok: doDel, hasAlt: false } });
+  }
+  toggle(sec, r) {
+    const { CFG, PM, SI } = this.state.M, m = this.meta(sec);
+    if (m.system || sec === 'locations') return this.flash(sec === 'locations' ? 'Locations are always active — delete unused ones instead' : 'System values are always active');
+    if (sec === 'sites' && SI.current().id === r.code && r.active !== false) return this.flash('You cannot deactivate the site you are working on');
+    const on = r.active === false;
+    if (sec === 'skills') PM.saveSkills(PM.skills().map(k => k.id === r.id ? { ...k, active: on } : k));
+    else if (sec === 'sites') { const ov = CFG.list('sites').find(x => x.code === r.code); CFG.upsert('sites', { ...(ov || { code: r.code }), active: on }); }
+    else CFG.setActive(sec, r.id, on);
+    this.flash(`${r.name} ${on ? 'activated' : 'deactivated'}`);
+  }
+
+  renderVals() {
+    const s = this.state, M = s.M;
+    const navBase = NAV.map(([label, items]) => ({ label, items: items.map(([k, l, icon]) => { const on = k === s.sec; return { label: l, icon, count: '', bg: on ? '#FBF1F2' : 'transparent', font: on ? bold : reg, color: on ? '#A30014' : '#344054', iconColor: on ? '#C00018' : '#98A2B3', select: () => this.setState({ sec: k, q: '' }) }; }) }));
+    if (!M) return { nav: navBase, subtitle: 'Reference data used in forms, filters and reports across the application', cur: { label: '', desc: '' }, rows: [], heads: [], isTable: true, gridCols: '1fr', unitRows: [], unitSites: [], fields: [] };
+    const { CFG, SI } = M, sec = s.sec, m = this.meta(sec), q = s.q.trim().toLowerCase(), site = SI.current();
+    const nav = NAV.map(([label, items]) => ({ label, items: items.map(([k, l, icon]) => { const on = k === sec; return { label: l, icon, count: k === 'units' ? Object.keys(CFG.quantities()).length : this.items(k).length, bg: on ? '#FBF1F2' : 'transparent', font: on ? bold : reg, color: on ? '#A30014' : '#344054', iconColor: on ? '#C00018' : '#98A2B3', select: () => this.setState({ sec: k, q: '' }) }; }) }));
+    const curLabel = NAV.flatMap(g => g[1]).find(x => x[0] === sec)[1];
+    const addLabel = sec === 'locations' ? 'Add zone' : m.add;
+    const out = { nav, subtitle: `${site.name} · reference data used in forms, filters and reports across the application`, q: s.q, setQ: e => this.setState({ q: e.target.value }), hasSearch: sec !== 'units',
+      cur: { label: curLabel, desc: m.desc, where: m.where, hasWhere: !!m.where, note: m.note, canAdd: !!m.add || sec === 'locations', addLabel, canReset: ['assetTypes', 'woTypes', 'failures', 'partCats', 'costCenters', 'customFields', 'labels', 'crit', 'prio'].includes(sec) },
+      startAdd: () => sec === 'units' ? this.setState({ form: { sec: 'quantities', isNew: true, f: { name: '', code: '', units: [] }, errors: {} } }) : this.openForm(sec, null),
+      askReset: () => this.setState({ confirm: { icon: 'restart_alt', iconBg: '#EAF1FD', iconFg: '#2456B8', title: `Restore default ${curLabel.toLowerCase()}?`, text: 'Your additions and changes in this list will be replaced by the default values.', cancel: 'Cancel', hasOk: true, okLabel: 'Restore', ok: () => { CFG.resetSection(sec); this.setState({ confirm: null }); this.flash('Defaults restored'); }, hasAlt: false } }),
+      isTable: sec !== 'units', isUnits: sec === 'units', toast: s.toast };
+
+    if (sec === 'units') {
+      const sites = SI.SITES.filter(x => !x.inactive), qs = CFG.quantities(), customs = CFG.list('quantities');
+      out.unitCols = `minmax(200px,1.4fr) repeat(${sites.length}, minmax(110px,1fr)) 72px`;
+      out.unitSites = sites.map(x => ({ name: x.name.replace(' Plant', ''), tag: x.id === site.id ? 'Current site' : x.id, color: x.id === site.id ? '#A30014' : '#667085' }));
+      out.unitRows = Object.entries(qs).map(([k, [name, us]]) => { const cq = customs.find(c => c.code === k);
+        return { name, sub: us.join(' · ') + (cq ? ' · custom' : ''), options: us, custom: !!cq,
+          edit: () => this.setState({ form: { sec: 'quantities', isNew: false, orig: cq, f: { ...cq, unitsText: (cq.units || []).join(', ') }, errors: {} } }),
+          del: () => this.setState({ confirm: { icon: 'delete', iconBg: '#FEF3F2', iconFg: '#B42318', title: `Delete ${name}?`, text: CFG.list('customFields').some(f => f.quantity === k) ? 'Custom fields using it will switch to a fixed unit.' : 'This cannot be undone.', cancel: 'Cancel', hasOk: true, okLabel: 'Delete', hasAlt: false,
+            ok: () => { CFG.list('customFields').filter(f => f.quantity === k).forEach(f => CFG.upsert('customFields', { ...f, quantity: '', unit: CFG.unitFor(k) })); CFG.remove('quantities', cq.id); this.setState({ confirm: null }); this.flash(`${name} deleted`); } } }),
+          cells: sites.map(x => { const v = CFG.siteUnits(x.id)[k] || us[0]; const def = v === (CFG.siteUnits('THO')[k] || us[0]);
+            return { value: v, border: def ? '#D0D5DD' : '#2456B8', bg: def ? '#fff' : '#F5F8FE', set: e => { CFG.setUnit(x.id, k, e.target.value); this.flash(`${x.name}: ${name} in ${e.target.value}`); } }; }) }; });
+    } else {
+      const rows = this.items(sec).filter(r => !q || [r.name, r.code, r.cat, r.entity, r.city].filter(Boolean).join(' ').toLowerCase().includes(q));
+      const extra = m.heads.length;
+      out.gridCols = `minmax(220px,2fr) 120px ${m.heads.map(() => 'minmax(110px,1fr)').join(' ')} minmax(110px,1fr) 60px ${sec === 'locations' ? 96 : 72}px`;
+      out.heads = ['Name', sec === 'customFields' ? 'Key' : 'Code', ...m.heads, 'Used by', 'Active', ''];
+      out.rows = rows.map(r => {
+        const u = this.usage(sec, r), bmap = m.badge && BADGE[m.badge], [bbg, bfg] = (bmap && bmap[r.name]) || [];
+        let tile = null;
+        if (sec === 'assetTypes' || sec === 'partCats') tile = [r.icon, '#475467', '#EEF1F4'];
+        if (sec === 'woTypes') { const [fg, bg] = CFG.PALETTE[r.color] || CFG.PALETTE.Grey; tile = [r.icon, fg, bg]; }
+        if (sec === 'skills') tile = [r.icon, r.fg, r.bg];
+        if (sec === 'crit') tile = ['crisis_alert', CRITC[r.name], '#fff'];
+        if (sec === 'locations') { const z = r.kind === 'zone' && M.PL.ZONE_LOOK[r.id]; tile = r.kind === 'zone' && z ? [z[0], z[1], z[2]] : [r.storage ? 'inventory_2' : r.bay ? 'garage' : LVL[r.kind][0], r.storage ? '#B54708' : r.kind === 'plant' ? '#fff' : '#667085', r.kind === 'plant' ? '#1E2430' : r.storage ? '#FEF3E2' : '#F2F4F7']; }
+        if (sec === 'customFields') tile = [(CFG.FIELD_TYPES[r.type] || [])[1] || 'help', '#475467', '#F2F4F7'];
+        if (sec === 'costCenters') tile = ['account_balance', '#0B6B4A', '#E6F4EE'];
+        if (sec === 'sites') tile = ['factory', r.code === site.id ? '#fff' : '#475467', r.code === site.id ? '#C00018' : '#EEF1F4'];
+        const locked = m.system, act = r.active !== false;
+        const cells = sec === 'locations' ? [{ text: LVL[r.kind][1] + (r.storage ? ' · storage' : r.bay ? ' · bay' : '') }, { text: r.kind === 'plant' ? '—' : M.PL.pathOf(r.id).split(' › ').slice(0, -1).join(' › ') || 'Plant' }] : m.cells(r);
+        return { name: r.name, code: r.code, hasBadge: !!bmap, plain: !bmap, badgeBg: bbg, badgeFg: bfg, badgeDot: m.badge === 'status', badgeRadius: m.badge === 'prio' ? '4px' : '11px',
+          hasTile: !!tile && !bmap, icon: tile && tile[0], tileFg: tile && tile[1], tileBg: tile && tile[2], weight: sec === 'locations' && r.depth < 2 ? 600 : 500,
+          hasSub: sec === 'costCenters' && !!r.desc || sec === 'customFields' && r.required, sub: sec === 'customFields' ? 'Required' : r.desc,
+          hasTag: (sec === 'sites' && r.code === site.id) || (sec === 'labels' && r.def), tag: sec === 'sites' ? 'Current' : 'Default', tagBg: '#FBE7EA', tagFg: '#A30014',
+          indent: sec === 'locations' ? (r.depth * 22) + 'px' : '0px', bg: '#fff',
+          cells: cells.map(c => ({ text: c.text, hasDot: !!c.dot, dot: c.dot, hasIcon: !!c.icon, icon: c.icon, ff: c.ff || 'inherit' })),
+          used: u.label, usedLink: !!u.href, usedText: !u.href, usedHref: u.href || '#', usedColor: u.n ? '#475467' : '#98A2B3', stop: e => e.stopPropagation(),
+          op: act ? 1 : 0.55, track: act ? '#0B6B4A' : '#D0D5DD', knob: act ? '16px' : '2px', toggleCursor: locked || sec === 'locations' ? 'not-allowed' : 'pointer', toggleTitle: locked ? 'System value' : act ? 'Deactivate' : 'Activate',
+          toggle: e => { e.stopPropagation(); this.toggle(sec, r); },
+          canAddChild: sec === 'locations' && r.kind !== 'step', addChildTitle: `Add ${CHILD[r.kind]} in ${r.name}`, addChild: e => { e.stopPropagation(); this.openForm('locations', null, { parent: r.id }); },
+          edit: () => m.readonly ? this.flash('Statuses are locked system values') : this.openForm(sec, r),
+          delColor: locked || (u.n > 0 && sec !== 'customFields') ? '#D0D5DD' : '#98A2B3', delTitle: locked ? 'System value' : 'Delete',
+          del: e => { e.stopPropagation(); this.askDelete(sec, r); } };
+      });
+      out.empty = !rows.length; out.emptyText = q ? `Nothing matches “${s.q}”` : 'Nothing here yet.';
+    }
+
+    // ---------- Drawer ----------
+    const fm = s.form;
+    out.formOpen = !!fm;
+    if (fm) {
+      const f = fm.f, fs = fm.sec;
+      let defs;
+      if (fs === 'quantities') defs = [{ key: 'name', label: 'Quantity name', kind: 'text', req: 1, span: 2, ph: 'e.g. Hardness' }, { key: 'code', label: 'Key', kind: 'code', req: 1, lower: 1, ph: 'hardness', disabled: !fm.isNew }, { key: 'unitsText', label: 'Available units', kind: 'text', req: 1, span: 2, ph: 'Comma separated, e.g. HV, HRC, HB', hint: 'first one is the default' }];
+      else if (fs === 'locations') { const pn = f.parent === 'THO' ? { name: M.PL.PLANT.name } : M.PL.node(f.parent); defs = [{ key: '_parent', label: 'Located in', kind: 'text', disabled: 1, span: 2, value: f.parent === 'THO' ? M.PL.PLANT.name : M.PL.pathOf(f.parent) }, { key: 'name', label: `${LVL[f.kind][1]} name`, kind: 'text', req: 1, span: 2 }, { key: 'code', label: 'Code', kind: 'code', req: 1, disabled: !fm.isNew, hint: fm.isNew ? 'permanent' : '' },
+        ...(f.kind === 'step' ? [{ key: 'storage', label: 'Storage area', kind: 'toggle', toggleLabel: 'Spare parts are stocked here' }, { key: 'bay', label: 'Parking bay', kind: 'toggle', toggleLabel: 'Home location of mobile assets' }] : [])]; }
+      else { const md = this.meta(fs); defs = typeof md.form === 'function' ? md.form(f, fm.isNew) : md.form; }
+      const opt = o => typeof o === 'string' ? { v: o, l: o } : Array.isArray(o) ? { v: o[0], l: o[2] || o[0], icon: o[1] } : o;
+      out.fields = defs.map(d => {
+        const val = d.value !== undefined ? d.value : f[d.key], err = fm.errors[d.key] || '';
+        const set = v => { if (fs === 'customFields' && d.key === 'name' && fm.isNew && (!f.code || f.code === slug(f.name))) this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, name: v, code: slug(v) }, errors: { ...z.form.errors, name: '', code: '' } } }));
+          else if (fs === 'customFields' && d.key === 'type') this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, type: v, quantity: (v === 'decimal' || v === 'integer') ? (z.form.f.quantity || '') : '' } } }));
+          else this.setF(d.key, v); };
+        const options = (d.options || []).map(opt);
+        return { label: d.label, req: !!d.req && !d.disabled, span: d.span === 2 || ['textarea', 'icon', 'color', 'chips', 'lines', 'seg'].includes(d.kind) && d.span !== 1 ? '1 / -1' : 'auto', hasHint: !!d.hint, hint: d.hint || '',
+          isInput: ['text', 'code', 'number'].includes(d.kind), isTextarea: d.kind === 'textarea' || d.kind === 'lines', isSelect: d.kind === 'select', isSeg: d.kind === 'seg', isIcon: d.kind === 'icon', isColor: d.kind === 'color', isChips: d.kind === 'chips', isToggle: d.kind === 'toggle',
+          type: d.kind === 'number' ? 'number' : 'text', value: d.kind === 'lines' ? (Array.isArray(val) ? val.join('\n') : val || '') : val ?? '', ph: d.ph || '', disabled: !!d.disabled, bg: d.disabled ? '#F9FAFB' : '#fff',
+          font: d.kind === 'code' ? "13px 'IBM Plex Mono',monospace" : "14px 'IBM Plex Sans',sans-serif", tt: d.kind === 'code' && !d.lower ? 'uppercase' : 'none', border: err ? '#F04438' : '#D0D5DD', hasError: !!err, error: err,
+          onInput: e => { let v = e.target.value; if (d.kind === 'lines') v = v.split('\n'); if (d.kind === 'code' && d.max) v = v.slice(0, d.max); set(v); },
+          options: d.kind === 'icon' ? ICONS.map(ic => ({ v: ic, bg: val === ic ? '#FBF1F2' : '#fff', border: val === ic ? '#C00018' : 'transparent', color: val === ic ? '#A30014' : '#475467', select: () => set(ic) }))
+            : d.kind === 'color' ? Object.entries(CFG.PALETTE).map(([k, [fg, bg]]) => ({ v: k, fg, bg: val === k ? bg : '#fff', border: val === k ? fg : '#D0D5DD', ring: val === k ? `0 0 0 2px #fff, 0 0 0 3.5px ${fg}` : 'none', select: () => set(k) }))
+            : d.kind === 'chips' ? options.map(o => { const on = (val || []).includes(o.v); return { ...o, icon: on ? 'check' : o.icon || 'add', bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? '#A30014' : '#344054', font: on ? "600 12px 'IBM Plex Sans',sans-serif" : "500 12px 'IBM Plex Sans',sans-serif", select: () => set(on ? val.filter(x => x !== o.v) : [...(val || []), o.v]) }; })
+            : d.kind === 'seg' ? options.map(o => { const on = val === o.v; return { ...o, hasIcon: !!o.icon, bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', color: on ? '#A30014' : '#344054', font: on ? bold : reg, select: () => set(o.v) }; })
+            : options,
+          toggleLabel: d.toggleLabel || '', track: val ? '#C00018' : '#D0D5DD', knob: val ? '18px' : '2px', toggle: () => set(!val) };
+      });
+      const md = fs === 'quantities' ? { icon: 'straighten' } : fs === 'locations' ? { icon: 'account_tree' } : this.meta(fs);
+      const nounOf = fs === 'quantities' ? 'quantity' : fs === 'locations' ? LVL[f.kind][1].toLowerCase() : (md.add || 'item').replace(/^Add /, '');
+      const canDel = !fm.isNew && fs !== 'quantities' && !(md.system);
+      out.form = { icon: md.icon, title: fm.isNew ? `New ${nounOf}` : `Edit ${fm.orig ? fm.orig.name : ''}`, sub: fm.isNew ? 'Fields marked * are required' : `${curLabel} · ${f.code || ''}`, saveLabel: fm.isNew ? 'Create' : 'Save changes', error: fm.error || '',
+        canDelete: canDel, del: () => this.askDelete(fs, fm.orig) };
+      out.hasPreview = fs === 'customFields';
+      if (fs === 'customFields') { const num = f.type === 'decimal' || f.type === 'integer', fake = { ...f, decimals: +f.decimals || 0 };
+        out.preview = { where: f.entity === 'Asset' ? 'asset wizard, Specifications' : f.entity === 'Work order' ? 'new work order, Details' : 'spare part form', label: f.name || 'Field label', req: !!f.required,
+          ph: f.type === 'choice' ? ((f.options || []).filter(Boolean)[0] ? 'Select…' : 'Add choices') : f.type === 'date' ? 'mm/dd/yyyy' : f.type === 'boolean' ? 'Yes / No' : num ? (f.type === 'decimal' ? (0).toFixed(+f.decimals || 0) : '0') : 'Text',
+          hasUnit: num && !!CFG.fieldUnit(fake, site.id), unit: CFG.fieldUnit(fake, site.id), isChoice: f.type === 'choice',
+          hasSites: num && !!f.quantity, sites: SI.SITES.filter(x => !x.inactive).map(x => ({ code: x.id, unit: CFG.unitFor(f.quantity, x.id) })) }; }
+      else out.preview = {};
+    }
+    out.closeForm = () => this.setState({ form: null });
+    out.save = () => s.form && s.form.sec === 'quantities' ? this.saveQuantity() : this.save();
+    out.confirmOpen = !!s.confirm; out.confirm = s.confirm || {}; out.closeConfirm = () => this.setState({ confirm: null });
+    return out;
+  }
+  saveQuantity() {
+    const { CFG } = this.state.M, fm = this.state.form, f = fm.f, errors = {};
+    const units = (f.unitsText || '').split(',').map(x => x.trim()).filter(Boolean), code = slug(f.code || f.name);
+    if (!f.name || !f.name.trim()) errors.name = 'Required'; if (!units.length) errors.unitsText = 'Add at least one unit';
+    if (fm.isNew && CFG.quantities()[code]) errors.code = 'This key already exists';
+    if (Object.keys(errors).length) return this.setState({ form: { ...fm, errors, error: 'Check the highlighted fields' } });
+    CFG.upsert('quantities', { id: fm.orig ? fm.orig.id : undefined, name: f.name.trim(), code, units });
+    this.setState({ form: null }); this.flash(`${f.name.trim()} ${fm.isNew ? 'added' : 'saved'}`);
+  }
+}
+</script>
+</body>
+</html>

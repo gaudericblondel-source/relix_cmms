@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="assets" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:14px" data-screen-label="Assets">
+    <header style="flex:none;display:flex;align-items:center;gap:14px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Assets</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ subtitle }}</p>
+      </div>
+      <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+        <sc-for list="{{ views }}" as="v" hint-placeholder-count="2"><button onClick="{{ v.select }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 12px 0 10px;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};font:{{ v.font }};color:{{ v.color }};cursor:pointer;white-space:nowrap"><span style="font:17px/1 'Material Symbols Outlined'">{{ v.icon }}</span>{{ v.label }}</button></sc-for>
+      </div>
+      <button onClick="{{ create }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New asset</button>
+    </header>
+
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px">
+        <sc-for list="{{ zoneCards }}" as="z" hint-placeholder-count="5">
+          <button onClick="{{ z.select }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:{{ z.bg }};border:1px solid {{ z.border }};border-radius:8px;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430;overflow:hidden" style-hover="border-color:#98A2B3">
+            <span style="flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:{{ z.tileBg }};color:{{ z.tileFg }};font:19px/1 'Material Symbols Outlined'">{{ z.icon }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ z.name }}</span><span style="display:flex;align-items:center;gap:6px;min-width:0"><span style="min-width:0;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ z.meta }}</span>
+            <sc-if value="{{ z.hasAlert }}"><span title="{{ z.alertTip }}" style="flex:none;height:18px;display:inline-flex;align-items:center;gap:3px;padding:0 6px;border-radius:10px;background:#FDECEC;color:#B42318;font-size:11px;font-weight:600;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ z.alert }}</span></sc-if></span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="width:260px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px">
+          <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+          <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search name, code, model…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+        </label>
+        <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ classSeg }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.select }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px;background:{{ c.bg }};border:0;border-radius:5px;box-shadow:{{ c.shadow }};font:{{ c.font }};color:{{ c.color }};cursor:pointer;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined'">{{ c.icon }}</span>{{ c.label }}</button></sc-for>
+        </div>
+        <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="4">
+          <div style="position:relative">
+            <button onClick="{{ fl.toggle }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 8px 0 10px;background:{{ fl.bg }};border:1px solid {{ fl.border }};border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="border-color:#98A2B3">
+              <span style="font:17px/1 'Material Symbols Outlined';color:#667085">{{ fl.icon }}</span>{{ fl.label }}
+              <sc-if value="{{ fl.hasValue }}"><span style="max-width:160px;height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#1E2430;color:#fff;font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fl.valueLabel }}</span></sc-if>
+              <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+            </button>
+            <sc-if value="{{ fl.open }}">
+              <div onClick="{{ closeDd }}" style="position:fixed;inset:0;z-index:40"></div>
+              <div style="position:absolute;left:0;top:40px;z-index:41;width:290px;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16);overflow:hidden">
+                <sc-if value="{{ fl.hasSearch }}"><div style="padding:8px;border-bottom:1px solid #EEF0F3"><label style="height:32px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:17px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ dq }}" onInput="{{ setDq }}" placeholder="Find zone, line or step…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif" /></label></div></sc-if>
+                <div style="max-height:340px;overflow:auto;padding:4px">
+                  <sc-for list="{{ fl.options }}" as="o">
+                    <button onClick="{{ o.toggle }}" style="width:100%;min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px 0 {{ o.pad }};background:transparent;border:0;border-radius:6px;font:{{ o.font }};color:#1E2430;cursor:pointer;text-align:left" style-hover="background:#F2F4F7">
+                      <span style="flex:none;width:16px;height:16px;border-radius:4px;border:1.5px solid {{ o.boxBorder }};background:{{ o.boxBg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ o.boxIcon }}</span>
+                      <sc-if value="{{ o.hasIcon }}"><span style="flex:none;font:16px/1 'Material Symbols Outlined';color:{{ o.iconColor }}">{{ o.icon }}</span></sc-if>
+                      <sc-if value="{{ o.hasDot }}"><span style="flex:none;width:8px;height:8px;border-radius:2px;background:{{ o.dot }}"></span></sc-if>
+                      <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.label }}</span>
+                      <span style="flex:none;font-size:12px;color:#98A2B3;font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;padding:8px 10px;border-top:1px solid #EEF0F3;background:#F9FAFB">
+                  <button onClick="{{ fl.clear }}" style="padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Clear</button>
+                  <button onClick="{{ closeDd }}" style="margin-left:auto;height:28px;padding:0 12px;background:#1E2430;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Done</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ anyFilter }}"><button onClick="{{ clearAll }}" style="height:34px;display:flex;align-items:center;gap:4px;padding:0 8px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">close</span>Clear filters</button></sc-if>
+        <span style="margin-left:auto;font-size:12.5px;color:#667085;white-space:nowrap">{{ countLabel }}</span>
+      </div>
+
+      <section style="flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="flex:1;min-height:0;overflow:auto">
+          <div style="position:sticky;top:0;z-index:3;min-width:1000px;display:grid;grid-template-columns:minmax(300px,2.4fr) 140px 150px 110px 170px 84px 44px;align-items:center;height:38px;padding:0 0 0 16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+            <span>Asset · location</span><span>Type</span><span>Status</span><span>Criticality</span><span>Owner</span><span style="text-align:right;padding-right:12px">Open WOs</span><span></span>
+          </div>
+          <div style="min-width:1000px">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+              <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(300px,2.4fr) 140px 150px 110px 170px 84px 44px;align-items:center;min-height:58px;padding:0 0 0 16px;border-bottom:1px solid #F2F4F7;cursor:pointer;background:#fff" style-hover="background:#F9FAFB">
+                <span style="display:flex;align-items:center;gap:10px;min-width:0;padding-right:10px">
+                  <span style="flex:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:{{ r.tileBg }};color:{{ r.tileFg }};font:17px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="display:flex;align-items:center;gap:6px;min-width:0"><span style="flex:0 1 auto;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="flex:none;font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ r.id }}</span><sc-if value="{{ r.mobile }}"><span style="flex:none;height:18px;display:inline-flex;align-items:center;gap:3px;padding:0 6px;border-radius:9px;background:#EAF1FD;color:#2456B8;font-size:11px;font-weight:600"><span style="font:12px/1 'Material Symbols Outlined'">swap_horiz</span>Mobile</span></sc-if></span>
+                    <span style="display:flex;align-items:center;gap:4px;min-width:0;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden"><span style="flex:none;width:7px;height:7px;border-radius:2px;background:{{ r.tileFg }}"></span><sc-for list="{{ r.path }}" as="p"><span style="display:flex;align-items:center;gap:4px"><sc-if value="{{ p.sep }}"><span style="color:#C4CAD4">›</span></sc-if><span style="font-weight:{{ p.weight }};color:{{ p.color }}">{{ p.name }}</span></span></sc-for></span>
+                  </span>
+                </span>
+                <span style="color:#475467">{{ r.type }}</span>
+                <span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span></span>
+                <span style="display:flex;align-items:center;gap:6px;color:#344054"><span style="width:8px;height:8px;border-radius:2px;background:{{ r.critColor }}"></span>{{ r.crit }}</span>
+                <span style="display:flex;align-items:center;gap:6px;min-width:0"><span data-person="{{ r.owner }}" title="View profile" style="flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:{{ r.avBg }};color:{{ r.avFg }};font:600 9px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ r.owner }}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#475467">{{ r.ownerName }}</span></span>
+                <span style="text-align:right;padding-right:12px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.woColor }}">{{ r.wos }}</span>
+                <span style="display:grid;place-items:center"><button onClick="{{ r.edit }}" title="Edit asset" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3;color:#1E2430"><span style="font:18px/1 'Material Symbols Outlined'">edit</span></button></span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ empty }}"><div style="padding:48px;text-align:center;color:#667085"><span style="display:block;font:28px/1 'Material Symbols Outlined';color:#98A2B3;margin-bottom:8px">search_off</span>No asset matches these filters.<div style="margin-top:10px"><button onClick="{{ clearAll }}" style="height:32px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Clear filters</button></div></div></sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isTree }}">
+      <section style="flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr);background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <aside style="display:flex;flex-direction:column;border-right:1px solid #EEF0F3;min-height:0">
+          <div style="flex:none;padding:12px">
+            <label style="height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px">
+              <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+              <input value="{{ tq }}" onInput="{{ setTq }}" placeholder="Search the hierarchy…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+            </label>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:0 8px 8px">
+            <sc-for list="{{ treeRows }}" as="n" hint-placeholder-count="10">
+              <div onClick="{{ n.select }}" style="height:32px;display:flex;align-items:center;gap:6px;padding-left:{{ n.indent }};padding-right:8px;border-radius:6px;background:{{ n.bg }};cursor:pointer" style-hover="background:#F2F4F7">
+                <button onClick="{{ n.toggle }}" style="width:20px;height:20px;flex:none;display:grid;place-items:center;padding:0;background:transparent;border:0;color:#667085;cursor:pointer;visibility:{{ n.chevVis }}"><span style="font:18px/1 'Material Symbols Outlined'">{{ n.chev }}</span></button>
+                <span style="font:17px/1 'Material Symbols Outlined';color:{{ n.iconColor }}">{{ n.icon }}</span>
+                <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:{{ n.weight }};color:#1E2430">{{ n.name }}</span>
+                <span style="width:7px;height:7px;border-radius:50%;flex:none;background:{{ n.dot }}"></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:none;display:flex;gap:8px;padding:10px 12px;border-top:1px solid #EEF0F3">
+            <button onClick="{{ expandAll }}" style="flex:1;height:30px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer;border-radius:6px" style-hover="background:#F2F4F7">Expand all</button>
+            <button onClick="{{ collapseAll }}" style="flex:1;height:30px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer;border-radius:6px" style-hover="background:#F2F4F7">Collapse all</button>
+          </div>
+        </aside>
+        <div style="position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;background:#FBFBFC">
+          <div style="flex:none;display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <div style="display:flex;align-items:center;border:1px solid #D0D5DD;border-radius:6px;height:30px">
+              <button onClick="{{ tZoomOut }}" title="Zoom out" style="width:30px;height:28px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">remove</span></button>
+              <span style="width:48px;text-align:center;font:500 12px 'IBM Plex Mono',monospace;border-left:1px solid #EEF0F3;border-right:1px solid #EEF0F3;line-height:28px">{{ tZoomLabel }}</span>
+              <button onClick="{{ tZoomIn }}" title="Zoom in" style="width:30px;height:28px;display:grid;place-items:center;background:transparent;border:0;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">add</span></button>
+            </div>
+            <button onClick="{{ tZoomReset }}" title="Reset zoom" style="width:30px;height:30px;display:grid;place-items:center;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#475467;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">fit_screen</span></button>
+            <span style="min-width:0;color:#667085;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pathLabel }}</span>
+            <div style="margin-left:auto;flex:none;display:flex;gap:14px;font-size:12px;color:#475467">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#12A06E"></span>In service</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#D92D20"></span>Stopped</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#98A2B3"></span>Out of service</span>
+            </div>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:28px;background-image:radial-gradient(#E4E7EC 1px,transparent 1px);background-size:16px 16px">
+            <div style="position:relative;width:{{ chartW }};height:{{ chartH }}">
+              <div style="position:absolute;left:0;top:0;width:{{ chartRawW }};height:{{ chartRawH }};transform:scale({{ tzoom }});transform-origin:0 0">
+                <svg width="{{ chartRawWn }}" height="{{ chartRawHn }}" style="position:absolute;inset:0;overflow:visible">
+                  <sc-for list="{{ edges }}" as="e"><path d="{{ e.d }}" fill="none" stroke="#C4CAD4" stroke-width="1.25"></path></sc-for>
+                </svg>
+                <sc-for list="{{ nodes }}" as="n">
+                  <button onClick="{{ n.select }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:172px;height:54px;display:flex;align-items:center;gap:10px;padding:0 10px;background:{{ n.bg }};border:1px solid {{ n.border }};border-radius:8px;box-shadow:{{ n.shadow }};cursor:pointer;text-align:left;font-family:inherit">
+                    <span style="width:30px;height:30px;flex:none;border-radius:6px;background:{{ n.iconBg }};color:{{ n.iconColor }};display:grid;place-items:center;font:18px/1 'Material Symbols Outlined'">{{ n.icon }}</span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1E2430">{{ n.name }}</span>
+                      <span style="font:11px 'IBM Plex Mono',monospace;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.code }}</span>
+                    </span>
+                    <span style="width:7px;height:7px;border-radius:50%;flex:none;background:{{ n.dot }}"></span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <sc-if value="{{ hasTSel }}">
+            <div style="position:absolute;right:16px;bottom:16px;width:300px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.12);padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <span style="width:36px;height:36px;flex:none;border-radius:6px;background:{{ tsn.iconBg }};display:grid;place-items:center;color:{{ tsn.iconColor }};font:20px/1 'Material Symbols Outlined'">{{ tsn.icon }}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:600;font-size:14px">{{ tsn.name }}</div>
+                  <div style="font:12px 'IBM Plex Mono',monospace;color:#667085;margin-top:2px">{{ tsn.code }} · {{ tsn.level }}</div>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ tsn.sbg }};color:{{ tsn.sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ tsn.dot }}"></span>{{ tsn.status }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px">
+                <span style="color:#667085">{{ tsn.kidsLabel }}</span><span style="font-weight:500">{{ tsn.kids }}</span>
+                <span style="color:#667085">Open work orders</span><span style="font-weight:500">{{ tsn.wo }}</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{ tsn.open }}" style="flex:1;height:32px;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ tsn.openLabel }}</button>
+                <button onClick="{{ tsn.newWo }}" style="flex:1;height:32px;display:flex;align-items:center;justify-content:center;gap:6px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer">New work order</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isMap }}">
+      <div style="flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px">
+        <aside style="min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+          <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+            <h2 style="margin:0;font-size:14px;font-weight:600">Plant hierarchy</h2>
+            <button onClick="{{ toggleAll }}" style="margin-left:auto;height:26px;display:flex;align-items:center;gap:3px;padding:0 8px 0 5px;background:#fff;border:1px solid #E4E7EC;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#475467;cursor:pointer;white-space:nowrap"><span style="font:15px/1 'Material Symbols Outlined'">{{ allIcon }}</span>{{ allLabel }}</button>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;padding:6px">
+            <sc-for list="{{ tree }}" as="t" hint-placeholder-count="10">
+              <div onClick="{{ t.select }}" style="display:flex;align-items:center;gap:6px;min-height:{{ t.h }};padding:0 8px 0 {{ t.pad }};border-radius:6px;background:{{ t.bg }};cursor:pointer" style-hover="background:#F6F7F9">
+                <sc-if value="{{ t.hasKids }}"><button onClick="{{ t.toggle }}" title="{{ t.chevTip }}" style="flex:none;width:22px;height:22px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:4px;color:#98A2B3;cursor:pointer;font:18px/1 'Material Symbols Outlined'" style-hover="background:#EEF0F3;color:#475467">{{ t.chev }}</button></sc-if>
+                <sc-if value="{{ t.leaf }}"><span style="flex:none;width:22px"></span></sc-if>
+                <span style="flex:none;width:{{ t.tile }};height:{{ t.tile }};border-radius:6px;display:grid;place-items:center;background:{{ t.tileBg }};color:{{ t.tileFg }};font:{{ t.iconFont }}">{{ t.icon }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+                  <span style="font-size:{{ t.fs }};font-weight:{{ t.weight }};color:{{ t.color }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span>
+                  <sc-if value="{{ t.hasMeta }}"><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap">{{ t.meta }}</span></sc-if>
+                </span>
+                <sc-if value="{{ t.hasAlert }}"><span title="{{ t.alertTip }}" style="flex:none;width:8px;height:8px;border-radius:50%;background:#D92D20"></span></sc-if>
+                <span style="flex:none;min-width:22px;height:20px;display:inline-grid;place-items:center;padding:0 6px;border-radius:10px;background:{{ t.countBg }};color:{{ t.countFg }};font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ t.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </aside>
+
+        <section style="position:relative;min-height:0;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+          <div ref="{{ mapRef }}" onWheel="{{ onWheel }}" style="position:absolute;inset:0;overflow:hidden;background-color:#F4F5F7;background-image:radial-gradient(#DDE1E7 1px,transparent 1px);background-size:16px 16px">
+            <div style="position:absolute;left:0;top:0;width:1200px;height:760px;transform-origin:0 0;transform:{{ mapTransform }};transition:transform .45s cubic-bezier(.3,.7,.2,1)">
+              <sc-for list="{{ mapZones }}" as="z">
+                <div style="position:absolute;left:{{ z.x }};top:{{ z.y }};width:{{ z.w }};height:{{ z.h }};background:#fff;border:{{ z.border }};border-radius:10px;opacity:{{ z.op }};transition:opacity .3s">
+                  <div onClick="{{ z.select }}" style="position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid #EEF0F3;cursor:pointer;border-radius:10px 10px 0 0" style-hover="background:#F9FAFB">
+                    <span style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:{{ z.tileBg }};color:{{ z.tileFg }};font:15px/1 'Material Symbols Outlined'">{{ z.icon }}</span>
+                    <span style="font-size:14px;font-weight:600">{{ z.name }}</span>
+                    <span style="font:500 11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ z.code }}</span>
+                    <span style="margin-left:auto;font-size:12px;color:#667085">{{ z.meta }}</span>
+                  </div>
+                  <sc-for list="{{ z.lines }}" as="l">
+                    <div style="position:absolute;left:{{ l.x }};top:{{ l.y }};width:{{ l.w }};height:{{ l.h }};background:#FAFBFC;border:{{ l.border }};border-radius:8px">
+                      <div onClick="{{ l.select }}" style="position:absolute;left:0;right:0;top:0;height:24px;display:flex;align-items:center;gap:6px;padding:0 8px;cursor:pointer;border-radius:8px 8px 0 0" style-hover="background:#F2F4F7">
+                        <span style="font:14px/1 'Material Symbols Outlined';color:{{ z.tileFg }}">conveyor_belt</span>
+                        <span style="font-size:12px;font-weight:600;color:#344054;white-space:nowrap">{{ l.name }}</span>
+                        <span style="font-size:11px;color:#98A2B3;white-space:nowrap">{{ l.meta }}</span>
+                      </div>
+                      <sc-for list="{{ l.steps }}" as="st">
+                        <div onClick="{{ st.select }}" title="{{ st.tip }}" style="position:absolute;left:{{ st.x }};top:{{ st.y }};width:{{ st.w }};height:{{ st.h }};display:flex;flex-direction:column;gap:4px;padding:5px 6px;background:{{ st.bg }};border:{{ st.border }};border-radius:6px;cursor:pointer;overflow:hidden" style-hover="border-color:#98A2B3">
+                          <span style="display:flex;align-items:center;gap:4px;min-width:0"><span style="flex:none;font:12px/1 'Material Symbols Outlined';color:{{ st.iconColor }}">{{ st.icon }}</span><span style="font-size:11px;font-weight:600;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.name }}</span></span>
+                          <span style="display:flex;flex-wrap:wrap;gap:3px">
+                            <sc-for list="{{ st.assets }}" as="m">
+                              <button onClick="{{ m.select }}" title="{{ m.tip }}" style="height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 5px 0 3px;background:{{ m.bg }};border:1px solid {{ m.border }};border-radius:5px;color:{{ m.fg }};cursor:pointer;box-shadow:{{ m.ring }}"><span style="font:12px/1 'Material Symbols Outlined'">{{ m.icon }}</span><span style="font:500 9.5px 'IBM Plex Mono',monospace;white-space:nowrap">{{ m.id }}</span></button>
+                            </sc-for>
+                          </span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:12px;top:12px;display:flex;align-items:center;gap:4px;padding:4px 6px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 2px 8px rgba(16,24,40,.06)">
+            <sc-for list="{{ crumbs }}" as="c" hint-placeholder-count="1"><span style="display:flex;align-items:center;gap:4px"><sc-if value="{{ c.sep }}"><span style="color:#C4CAD4">›</span></sc-if><button onClick="{{ c.select }}" style="height:24px;padding:0 6px;background:transparent;border:0;border-radius:5px;font:{{ c.font }};color:{{ c.color }};cursor:pointer;white-space:nowrap" style-hover="background:#F2F4F7">{{ c.name }}</button></span></sc-for>
+          </div>
+          <div style="position:absolute;right:58px;bottom:12px;display:flex;align-items:center;gap:10px;padding:6px 10px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;font-size:11.5px;color:#475467">
+            <sc-for list="{{ legend }}" as="g"><span style="display:flex;align-items:center;gap:5px;white-space:nowrap"><span style="width:10px;height:10px;border-radius:3px;background:{{ g.bg }};border:1px solid {{ g.fg }}"></span>{{ g.label }}</span></sc-for>
+          </div>
+          <div style="position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <button onClick="{{ zoomIn }}" title="Zoom in" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-bottom:1px solid #EEF0F3;color:#344054;cursor:pointer;font:19px/1 'Material Symbols Outlined'" style-hover="background:#F6F7F9">add</button>
+            <button onClick="{{ zoomOut }}" title="Zoom out" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-bottom:1px solid #EEF0F3;color:#344054;cursor:pointer;font:19px/1 'Material Symbols Outlined'" style-hover="background:#F6F7F9">remove</button>
+            <button onClick="{{ fitAll }}" title="Show whole plant" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;color:#344054;cursor:pointer;font:18px/1 'Material Symbols Outlined'" style-hover="background:#F6F7F9">fit_screen</button>
+          </div>
+          <sc-if value="{{ hasCard }}">
+            <div style="position:absolute;left:12px;bottom:12px;width:340px;display:flex;flex-direction:column;gap:10px;padding:12px 14px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.12)">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <span style="flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:{{ card.tileBg }};color:{{ card.tileFg }};font:19px/1 'Material Symbols Outlined'">{{ card.icon }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:baseline;gap:6px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ card.name }}</span><span style="flex:none;font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ card.id }}</span></span><span style="font-size:12px;color:#667085">{{ card.path }}</span></span>
+                <button onClick="{{ closeCard }}" title="Close" style="flex:none;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined'">close</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#475467">
+                <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-weight:600;background:{{ card.sbg }};color:{{ card.sfg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ card.status }}</span>
+                <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:2px;background:{{ card.critColor }}"></span>{{ card.crit }}</span>
+                <span>· {{ card.type }}</span>
+                <span>· {{ card.wos }}</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{ card.open }}" style="flex:1;height:34px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3">Open asset</button>
+                <button onClick="{{ card.newWo }}" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:5px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#A30014"><span style="font:17px/1 'Material Symbols Outlined'">add</span>Work order</button>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </div>
+    </sc-if>
+  </main>
+</div>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+</sc-if>
+<dc-import name="AssetWizard" hint-size="0px,0px"></dc-import>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;map&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const WOS = { 'P-101': 2, 'TB-01': 3, 'FT2-FR-001': 2, 'CV-L3': 2, 'C-01': 1, 'V-12': 2, 'AL-01': 1, 'PH-030': 1, 'S-01': 1, 'RP-01': 1, 'MX-02': 1, 'BC-548': 1, 'V-08': 1 };
+const NOW_DAY = 1, NOW_H = 10.4, MW = 1200, MH = 760;
+const ZR = { MEL: [20, 20, 400, 340], FOR: [440, 20, 740, 340], UTL: [20, 380, 560, 360], WHS: [600, 380, 580, 360] };
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+const EMPTY = { loc: [], type: [], status: [], crit: [] };
+const hm = h => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round(h % 1 * 60)).padStart(2, '0')}`;
+const px = n => n + 'px';
+const QS = new URLSearchParams(location.search);
+class Component extends DCLogic {
+  state = { PM: null, C: null, v: 0, q: QS.get('q') || '', cls: 'all', F: { ...EMPTY, loc: QS.get('loc') ? [QS.get('loc')] : [] }, dd: null, dq: '',
+    view: (v => v === 'layout' ? 'map' : v === 'hierarchy' ? 'tree' : v)(QS.get('view') || (() => { try { return localStorage.getItem('cmms.assets.view'); } catch (e) { return null; } })() || this.props.view || 'list'), texp: { THO: 1, FOR: 1 }, tsel: 'THO', tq: '', tzoom: 1,
+    sel: 'THO', open: { THO: 1 }, selAsset: null, size: { w: 0, h: 0 }, zoom: 1, toast: null };
+  mapRef = el => { if (el === this._obs) return; if (this._obs && this._ro) this._ro.unobserve(this._obs); this._obs = el; if (el) { if (!this._ro) this._ro = new ResizeObserver(() => this.measure()); this._ro.observe(el); requestAnimationFrame(() => this.measure()); } };
+  componentDidMount() {
+    Promise.all([import('./plant-model.js'), import('./collab-model.js')]).then(([PM, C]) => {
+      const q = QS.get('loc'); let F = this.state.F;
+      if (q && !PM.node(q)) { const n = PM.NODES.find(x => x.name === q); F = { ...F, loc: n ? [n.id] : [] }; }
+      this.setState({ PM, C, F, open: { THO: 1, ...Object.fromEntries(PM.zones().map(z => [z.id, 1])) } });
+    });
+    this._a = e => { this.setState(s => ({ v: s.v + 1 })); if (e && e.detail) this.flash(e.detail.created ? `Asset ${e.detail.id} created` : 'Asset updated'); };
+    this._b = () => this.setState(s => ({ v: s.v + 1 }));
+    window.addEventListener('cmms-asset-saved', this._a); window.addEventListener('cmms-asset', this._b);
+    this._rs = () => this.measure(); window.addEventListener('resize', this._rs);
+    this._mi = setInterval(() => { if (this._obs && this._obs.clientWidth) this.measure(); }, 400);
+  }
+  componentDidUpdate() { if (this._obs && (!this.state.size.w || this._obs.clientWidth !== this.state.size.w)) requestAnimationFrame(() => this.measure()); }
+  measure() { const el = this._obs; if (!el) return; const w = el.clientWidth, h = el.clientHeight; if (w !== this.state.size.w || h !== this.state.size.h) this.setState({ size: { w, h } }); }
+  componentWillUnmount() { window.removeEventListener('cmms-asset-saved', this._a); window.removeEventListener('cmms-asset', this._b); clearTimeout(this._t); this._ro && this._ro.disconnect(); window.removeEventListener('resize', this._rs); clearInterval(this._mi); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  layout() {
+    const PM = this.state.PM, R = { THO: { x: 0, y: 0, w: MW, h: MH } };
+    PM.zones().forEach(z => { const [zx, zy, zw, zh] = ZR[z.id] || [0, 0, 300, 300]; R[z.id] = { x: zx, y: zy, w: zw, h: zh };
+      const lines = PM.children(z.id), n = lines.length, lh = (zh - 52 - 10 * (n - 1)) / n;
+      lines.forEach((l, i) => { const lr = { x: zx + 12, y: zy + 46 + i * (lh + 10), w: zw - 24, h: lh }; R[l.id] = lr;
+        const steps = PM.children(l.id), m = steps.length, sw = (lr.w - 16 - 6 * (m - 1)) / m;
+        steps.forEach((st, j) => { R[st.id] = { x: lr.x + 8 + j * (sw + 6), y: lr.y + 26, w: sw, h: lh - 34 }; }); }); });
+    return R;
+  }
+  select(id) { const PM = this.state.PM, ch = PM.chain(id); this.setState(s => ({ sel: id, zoom: 1, selAsset: null, open: { ...s.open, THO: 1, ...Object.fromEntries(ch.filter(n => n.kind !== 'step').map(n => [n.id, 1])) } })); }
+  treeVals(PM, all, statusOf, inLoc) {
+    const s = this.state, DOT = { 'In service': '#12A06E', Stopped: '#D92D20', 'Out of service': '#98A2B3' };
+    const mk = (n, lvl) => { const kids = n.kind === 'step' ? all.filter(a => a.loc === n.id).map(a => ({ id: 'a:' + a.id, name: a.name, code: a.id, kind: 'asset', lvl: lvl + 1, asset: a, c: null }))
+      : (n.id === 'THO' ? PM.zones() : PM.children(n.id)).map(c => mk(c, lvl + 1));
+      return { id: n.id, name: n.name, code: n.id === 'THO' ? PM.PLANT.code : n.id, kind: n.kind, lvl, storage: n.storage, bay: n.bay, c: kids.length ? kids : null }; };
+    const TREE = mk({ id: 'THO', name: PM.PLANT.name, kind: 'plant' }, 0);
+    const assetsUnder = n => n.kind === 'asset' ? [n.asset] : all.filter(a => inLoc(a, n.id));
+    const stOf = n => { const as = assetsUnder(n); if (n.kind === 'asset') return n.asset.status; if (!as.length) return 'In service'; if (as.some(a => a.status === 'Stopped')) return 'Stopped'; if (as.every(a => a.status === 'Out of service')) return 'Out of service'; return 'In service'; };
+    const look = n => { if (n.kind === 'plant') return ['factory', 'Plant', '#fff', '#1E2430']; if (n.kind === 'zone') { const z = PM.ZONE_LOOK[n.id] || ['grid_view', '#475467', '#EEF1F4']; return [z[0], 'Zone', z[1], z[2]]; }
+      if (n.kind === 'line') return ['conveyor_belt', 'Line', '#475467', '#EEF1F4']; if (n.kind === 'step') return [n.storage ? 'inventory_2' : n.bay ? 'garage' : 'grid_view', n.storage ? 'Storage area' : 'Step', n.storage ? '#B54708' : '#667085', n.storage ? '#FFFAEB' : '#F2F4F7'];
+      return [PM.typeIcon(n.asset.type), n.asset.cls === 'mobile' ? 'Mobile asset' : 'Equipment', '#98A2B3', 'repeating-linear-gradient(135deg,#EEF0F3 0 4px,#E4E7EC 4px 8px)']; };
+    const sel = id => this.setState(st => ({ tsel: id, texp: { ...st.texp, [id]: 1 } }));
+    const tq = s.tq.trim().toLowerCase();
+    const matches = n => !tq || n.name.toLowerCase().includes(tq) || n.code.toLowerCase().includes(tq) || (n.c || []).some(matches);
+    const treeRows = [];
+    const flat = n => { if (!matches(n)) return; const open = tq ? true : !!s.texp[n.id], [icon, , ic] = look(n), on = s.tsel === n.id;
+      treeRows.push({ name: n.name, icon, iconColor: n.kind === 'plant' ? '#1E2430' : ic, indent: (4 + n.lvl * 16) + 'px', dot: DOT[stOf(n)], chev: open ? 'expand_more' : 'chevron_right', chevVis: n.c ? 'visible' : 'hidden',
+        bg: on ? '#FBEFF0' : 'transparent', weight: on ? 600 : 500, toggle: e => { e.stopPropagation(); this.setState(st => ({ texp: { ...st.texp, [n.id]: !st.texp[n.id] } })); }, select: () => sel(n.id) });
+      if (open && n.c) n.c.forEach(flat); };
+    flat(TREE);
+    const W = 172, H = 54, GX = 18, GY = 52; let cursor = 0, maxD = 0; const nodes = [], edges = [];
+    const find = (n, id, path = []) => n.id === id ? [...path, n] : (n.c || []).reduce((r, c) => r || find(c, id, [...path, n]), null);
+    const path = find(TREE, s.tsel) || [TREE], onPath = new Set(path.map(p => p.id));
+    const lay = n => { const y = n.lvl * (H + GY); maxD = Math.max(maxD, n.lvl); const kids = s.texp[n.id] && n.c ? n.c : []; let x;
+      if (!kids.length) { x = cursor; cursor += W + GX; }
+      else { const xs = kids.map(lay); x = (xs[0] + xs[xs.length - 1]) / 2; xs.forEach(cx => { const my = y + H + GY / 2; edges.push({ d: `M${x + W / 2} ${y + H}V${my}H${cx + W / 2}V${y + H + GY}` }); }); }
+      const [icon, , ic, ib] = look(n), on = s.tsel === n.id;
+      nodes.push({ name: n.name, code: n.code, icon, iconColor: ic, iconBg: ib, dot: DOT[stOf(n)], x: x + 'px', y: y + 'px', bg: on ? '#FFF6F6' : '#fff', border: on ? '#C00018' : onPath.has(n.id) ? '#D0D5DD' : '#E4E7EC',
+        shadow: on ? '0 0 0 3px rgba(192,0,24,.12)' : '0 1px 2px rgba(16,24,40,.05)', select: () => sel(n.id) });
+      return x; };
+    lay(TREE);
+    const rawW = Math.max(W, cursor - GX), rawH = (maxD + 1) * (H + GY) - GY, z = s.tzoom;
+    const sn = path[path.length - 1], [snIcon, snLvl, snC, snB] = look(sn), st = stOf(sn), [sbg, sfg] = PM.STATUS[st];
+    const countDesc = n => (n.c || []).reduce((a, c) => a + 1 + countDesc(c), 0);
+    const wo = assetsUnder(sn).reduce((a, x) => a + (WOS[x.id] || 0), 0);
+    const all2 = []; (function walk(n) { if (n.c) { all2.push(n.id); n.c.forEach(walk); } })(TREE);
+    return { tq: s.tq, setTq: e => this.setState({ tq: e.target.value }), treeRows, nodes, edges,
+      expandAll: () => this.setState({ texp: Object.fromEntries(all2.map(id => [id, 1])) }), collapseAll: () => this.setState({ texp: { THO: 1 }, tsel: 'THO' }),
+      tzoom: z, tZoomLabel: Math.round(z * 100) + '%', tZoomIn: () => this.setState(x => ({ tzoom: Math.min(2, +(x.tzoom + 0.1).toFixed(2)) })), tZoomOut: () => this.setState(x => ({ tzoom: Math.max(0.4, +(x.tzoom - 0.1).toFixed(2)) })), tZoomReset: () => this.setState({ tzoom: 1 }),
+      chartW: rawW * z + 'px', chartH: rawH * z + 'px', chartRawW: rawW + 'px', chartRawH: rawH + 'px', chartRawWn: rawW, chartRawHn: rawH, pathLabel: path.map(p => p.name).join(' › '),
+      hasTSel: true, tsn: { name: sn.name, code: sn.code, level: snLvl, icon: snIcon, iconColor: snC, iconBg: snB, status: st, sbg, sfg, dot: DOT[st],
+        kidsLabel: sn.kind === 'step' ? 'Assets' : 'Sub-items', kids: countDesc(sn), wo, openLabel: sn.kind === 'asset' ? 'Open record' : 'Show assets',
+        open: () => { location.href = sn.kind === 'asset' ? 'AssetDetail.dc.html?id=' + encodeURIComponent(sn.code) : sn.id === 'THO' ? 'Assets.dc.html?view=list' : 'Assets.dc.html?view=list&loc=' + encodeURIComponent(sn.id); },
+        newWo: () => window.CMMSCreateWO && window.CMMSCreateWO(sn.kind === 'asset' ? { asset: sn.code } : {}) } };
+  }
+  renderVals() {
+    const s = this.state, PM = s.PM, C = s.C, F = s.F;
+    const views = [['list', 'List', 'table_rows'], ['tree', 'Hierarchy', 'account_tree'], ['map', 'Plant layout', 'map']].map(([k, label, icon]) => { const on = s.view === k; return { label, icon, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => { try { localStorage.setItem('cmms.assets.view', k); } catch (e) {} this.setState({ view: k }); } }; });
+    const base = { views, isList: s.view === 'list', isMap: s.view === 'map', isTree: s.view === 'tree', mapRef: this.mapRef, create: () => window.RelixAssetWizard && window.RelixAssetWizard(null), toast: s.toast };
+    if (!PM || !C) return { ...base, zoneCards: [], classSeg: [], filters: [], rows: [], tree: [], mapZones: [], crumbs: [], legend: [], subtitle: 'Thourotte Plant', q: s.q, mapTransform: 'scale(.5)', allIcon: 'unfold_more', allLabel: 'Expand all', treeRows: [], nodes: [], edges: [], hasTSel: false, tsn: {}, tq: s.tq, chartW: '0px', chartH: '0px', chartRawW: '0px', chartRawH: '0px', tzoom: 1, hasCard: false, card: {}, empty: false, countLabel: '', anyFilter: false };
+    const all = PM.assets(), q = s.q.trim().toLowerCase();
+    const inLoc = (a, id) => id === 'THO' || a.loc === id || PM.chain(a.loc).some(x => x.id === id);
+    const reservedNow = a => a.cls === 'mobile' && PM.reservationsOf(a.id).find(r => r.day === NOW_DAY && r.from <= NOW_H && r.to > NOW_H);
+    const statusOf = a => { const r = reservedNow(a); return r ? { label: `Reserved until ${hm(r.to)}`, bg: '#EAF1FD', fg: '#2456B8' } : { label: a.status, bg: PM.STATUS[a.status][0], fg: PM.STATUS[a.status][1] }; };
+    const zlook = loc => { const z = PM.zoneOf(loc); return PM.ZONE_LOOK[z.id] || ['', '#475467', '#EEF1F4']; };
+    const subtitle = `Thourotte Plant · ${all.filter(a => a.cls === 'fixed').length} equipment · ${all.filter(a => a.cls === 'mobile').length} mobile assets · ${PM.storages().length} storage areas`;
+
+    if (s.view === 'tree') return { ...base, subtitle, ...this.treeVals(PM, all, statusOf, inLoc) };
+    if (s.view === 'map') {
+      const R = this.layout(), cw = s.size.w || 900, ch = s.size.h || 560, fr = R[s.sel] || R.THO, pad = s.sel === 'THO' ? 16 : 28;
+      const sc = Math.min(4, Math.min(cw / (fr.w + pad * 2), ch / (fr.h + pad * 2))) * s.zoom;
+      const tx = cw / 2 - (fr.x + fr.w / 2) * sc, ty = ch / 2 - (fr.y + fr.h / 2) * sc;
+      const selChain = PM.chain(s.sel).map(n => n.id), selZone = selChain[0];
+      const count = id => all.filter(a => inLoc(a, id)).length, stopped = id => all.filter(a => inLoc(a, id) && a.status === 'Stopped');
+      const tree = [];
+      const plantOpen = !!s.open.THO;
+      const row = (n, depth, kids) => { const on = s.sel === n.id, op = !!s.open[n.id], st = stopped(n.id), look = n.kind === 'zone' ? PM.ZONE_LOOK[n.id] : null, zl = n.kind === 'plant' ? null : zlook(n.id);
+        const icon = n.kind === 'plant' ? 'factory' : n.kind === 'zone' ? look[0] : n.kind === 'line' ? 'conveyor_belt' : n.storage ? 'inventory_2' : n.bay ? 'garage' : 'grid_view';
+        tree.push({ name: n.name, pad: px(6 + depth * 16), h: n.kind === 'step' ? '32px' : '38px', hasKids: kids, leaf: !kids, chev: op ? 'expand_more' : 'chevron_right', chevTip: op ? 'Collapse' : 'Expand',
+          tile: n.kind === 'step' ? '20px' : '26px', iconFont: n.kind === 'step' ? "14px/1 'Material Symbols Outlined'" : "16px/1 'Material Symbols Outlined'", icon,
+          tileBg: n.kind === 'plant' ? '#1E2430' : n.kind === 'zone' ? look[2] : 'transparent', tileFg: n.kind === 'plant' ? '#fff' : n.kind === 'zone' ? look[1] : n.storage ? '#B54708' : zl ? zl[1] : '#667085',
+          fs: n.kind === 'step' ? '12.5px' : '13px', weight: n.kind === 'step' ? 500 : 600, color: on ? '#A30014' : n.kind === 'step' ? '#475467' : '#1E2430',
+          hasMeta: n.kind === 'plant' || n.kind === 'zone', meta: n.kind === 'plant' ? `${PM.zones().length} zones` : `${PM.children(n.id).length} lines`,
+          hasAlert: st.length > 0, alertTip: `Stopped: ${st.map(a => a.name).join(', ')}`, count: count(n.id), countBg: on ? '#C00018' : '#F2F4F7', countFg: on ? '#fff' : '#475467',
+          bg: on ? '#FBF1F2' : 'transparent', select: () => this.select(n.id), toggle: e => { e.stopPropagation(); this.setState(st2 => ({ open: { ...st2.open, [n.id]: !op } })); } });
+        return op; };
+      if (row({ id: 'THO', name: PM.PLANT.name, kind: 'plant' }, 0, true)) PM.zones().forEach(z => { if (row(z, 1, true)) PM.children(z.id).forEach(l => { if (row(l, 2, true)) PM.children(l.id).forEach(st => row(st, 3, false)); }); });
+      const ring = id => s.sel === id ? '2px solid #C00018' : null;
+      const mapZones = PM.zones().map(z => { const zr = R[z.id], [icon, fg, bg] = PM.ZONE_LOOK[z.id], dim = s.sel !== 'THO' && selZone !== z.id;
+        return { name: z.name, code: z.id, icon, tileBg: bg, tileFg: fg, x: px(zr.x), y: px(zr.y), w: px(zr.w), h: px(zr.h), border: ring(z.id) || '1px solid #E4E7EC', op: dim ? 0.45 : 1, meta: `${count(z.id)} assets`, select: () => this.select(z.id),
+          lines: PM.children(z.id).map(l => { const lr = R[l.id];
+            return { name: l.name, meta: `${count(l.id)} assets`, x: px(lr.x - zr.x), y: px(lr.y - zr.y), w: px(lr.w), h: px(lr.h), border: ring(l.id) || '1px solid #EEF0F3', select: () => this.select(l.id),
+              steps: PM.children(l.id).map(st => { const sr = R[st.id], as = all.filter(a => a.loc === st.id);
+                return { name: st.name, tip: `${PM.pathOf(st.id)} · ${as.length} asset${as.length === 1 ? '' : 's'}`, x: px(sr.x - lr.x), y: px(sr.y - lr.y), w: px(sr.w), h: px(sr.h), icon: st.storage ? 'inventory_2' : st.bay ? 'garage' : 'grid_view', iconColor: st.storage ? '#B54708' : '#98A2B3',
+                  bg: st.storage ? '#FFFAEB' : '#fff', border: ring(st.id) || (st.storage ? '1px dashed #F5C26B' : '1px solid #E4E7EC'), select: e => { e.stopPropagation(); this.select(st.id); },
+                  assets: as.map(a => { const so = a.cls === 'mobile' ? { bg: '#EAF1FD', fg: '#2456B8' } : statusOf(a), on = s.selAsset === a.id;
+                    return { id: a.id, icon: PM.typeIcon(a.type), tip: `${a.name} · ${statusOf(a).label}`, bg: so.bg, fg: so.fg, border: on ? '#C00018' : 'transparent', ring: on ? '0 0 0 2px rgba(192,0,24,.25)' : 'none', select: e => { e.stopPropagation(); this.setState({ selAsset: a.id }); } }; }) }; }) }; }) }; });
+      const crumbs = [{ id: 'THO', name: PM.PLANT.name }, ...PM.chain(s.sel).filter(n => n.id !== 'THO')].map((n, i, arr) => ({ name: n.name, sep: i > 0, font: i === arr.length - 1 ? bold : reg, color: i === arr.length - 1 ? '#1E2430' : '#667085', select: () => this.select(n.id) }));
+      const ca = s.selAsset && PM.asset(s.selAsset);
+      const card = ca ? (() => { const [, fg, bg] = zlook(ca.loc), so = statusOf(ca), n = WOS[ca.id] || 0; return { ...ca, icon: PM.typeIcon(ca.type), tileBg: bg, tileFg: fg, path: PM.chain(ca.loc).slice(1).map(x => x.name).join(' › '), status: so.label, sbg: so.bg, sfg: so.fg, critColor: PM.CRIT[ca.crit], wos: n ? `${n} open WO${n > 1 ? 's' : ''}` : 'No open WO',
+        open: () => { location.href = 'AssetDetail.dc.html?id=' + encodeURIComponent(ca.id); }, newWo: () => window.CMMSCreateWO && window.CMMSCreateWO({ asset: ca.id }) }; })() : {};
+      const allOpen = PM.NODES.filter(n => n.kind !== 'step').every(n => s.open[n.id]);
+      return { ...base, subtitle, tree, mapZones, crumbs, mapTransform: `translate(${tx}px, ${ty}px) scale(${sc})`,
+        legend: [['In service', '#E6F4EE', '#0B6B4A'], ['Stopped', '#FDECEC', '#B42318'], ['Out of service', '#EEF1F4', '#475467'], ['Mobile', '#EAF1FD', '#2456B8'], ['Storage area', '#FFFAEB', '#F5C26B']].map(([label, bg, fg]) => ({ label, bg, fg })),
+        zoomIn: () => this.setState(st => ({ zoom: Math.min(4, st.zoom * 1.4) })), zoomOut: () => this.setState(st => ({ zoom: Math.max(0.5, st.zoom / 1.4) })), fitAll: () => this.select('THO'),
+        onWheel: e => { if (!e.ctrlKey && !e.metaKey) return; this.setState(st => ({ zoom: Math.max(0.5, Math.min(4, st.zoom * (e.deltaY < 0 ? 1.15 : 0.87))) })); },
+        hasCard: !!ca, card, closeCard: () => this.setState({ selAsset: null }),
+        toggleAll: () => this.setState({ open: allOpen ? { THO: 1 } : Object.fromEntries([['THO', 1], ...PM.NODES.filter(n => n.kind !== 'step').map(n => [n.id, 1])]) }), allIcon: allOpen ? 'unfold_less' : 'unfold_more', allLabel: allOpen ? 'Collapse all' : 'Expand all' };
+    }
+
+    const match = (a, skip) => (s.cls === 'all' || a.cls === s.cls) && (!q || [a.name, a.id, a.type, a.manufacturer, a.model, PM.pathOf(a.loc)].join(' ').toLowerCase().includes(q))
+      && (skip === 'loc' || !F.loc.length || F.loc.some(id => inLoc(a, id))) && (skip === 'type' || !F.type.length || F.type.includes(a.type))
+      && (skip === 'status' || !F.status.length || F.status.includes(a.status)) && (skip === 'crit' || !F.crit.length || F.crit.includes(a.crit));
+    const list = all.filter(a => match(a));
+    const anyFilter = !!(q || s.cls !== 'all' || Object.values(F).some(v => v.length));
+    const tog = (k, v) => this.setState(st => ({ F: { ...st.F, [k]: st.F[k].includes(v) ? st.F[k].filter(x => x !== v) : [...st.F[k], v] } }));
+    const opt = (k, v, label, x = {}) => { const on = F[k].includes(v); return { label, pad: x.pad || '8px', font: x.bold ? bold : "400 13px 'IBM Plex Sans',sans-serif", count: all.filter(a => match(a, k) && (k === 'loc' ? inLoc(a, v) : a[k] === v)).length,
+      hasIcon: !!x.icon, icon: x.icon, iconColor: x.iconColor || '#98A2B3', hasDot: !!x.dot, dot: x.dot, boxBorder: on ? '#C00018' : '#C4CAD4', boxBg: on ? '#C00018' : '#fff', boxIcon: on ? 'check' : '', toggle: () => tog(k, v) }; };
+    const dq = s.dq.trim().toLowerCase(), locOpts = [];
+    PM.zones().forEach(z => { const [ic, fg] = PM.ZONE_LOOK[z.id]; const lines = PM.children(z.id);
+      const hit = n => !dq || PM.pathOf(n.id).toLowerCase().includes(dq);
+      if (!hit(z) && !lines.some(l => hit(l) || PM.children(l.id).some(hit))) return;
+      locOpts.push(opt('loc', z.id, z.name, { bold: true, icon: ic, iconColor: fg }));
+      lines.forEach(l => { const steps = PM.children(l.id); if (!hit(l) && !steps.some(hit)) return; locOpts.push(opt('loc', l.id, l.name, { pad: '26px', icon: 'conveyor_belt' }));
+        if (dq) steps.filter(hit).forEach(st => locOpts.push(opt('loc', st.id, st.name, { pad: '46px', icon: st.storage ? 'inventory_2' : 'grid_view' }))); }); });
+    const types = [...new Set(all.map(a => a.type))].sort();
+    const FDEF = [['loc', 'Location', 'account_tree', locOpts, true, v => PM.node(v).name], ['type', 'Type', 'category', types.map(t => opt('type', t, t, { icon: PM.typeIcon(t) }))],
+      ['status', 'Status', 'donut_large', Object.keys(PM.STATUS).map(k => opt('status', k, k, { dot: PM.STATUS[k][1] }))], ['crit', 'Criticality', 'crisis_alert', Object.keys(PM.CRIT).map(k => opt('crit', k, k, { dot: PM.CRIT[k] }))]];
+    const filters = FDEF.map(([k, label, icon, options, hasSearch, fmt]) => { const v = F[k], open = s.dd === k;
+      return { label, icon, options, hasSearch: !!hasSearch, open, hasValue: v.length > 0, valueLabel: v.length === 1 ? (fmt ? fmt(v[0]) : v[0]) : `${v.length} selected`, bg: v.length ? '#FBF7F7' : '#fff', border: open || v.length ? '#98A2B3' : '#D0D5DD',
+        toggle: () => this.setState({ dd: open ? null : k, dq: '' }), clear: () => this.setState(st => ({ F: { ...st.F, [k]: [] } })) }; });
+    const zoneCards = [...PM.zones().map(z => { const [icon, fg, bg] = PM.ZONE_LOOK[z.id], as = all.filter(a => a.cls === 'fixed' && inLoc(a, z.id)), stop = as.filter(a => a.status === 'Stopped').length, on = F.loc.length === 1 && F.loc[0] === z.id;
+        return { name: z.name, icon, tileBg: on ? fg : bg, tileFg: on ? '#fff' : fg, meta: `${as.length} assets`, hasAlert: stop > 0, alert: `${stop} stopped`, alertTip: as.filter(a => a.status === 'Stopped').map(a => a.name).join(', '),
+          bg: on ? '#FBF7F7' : '#fff', border: on ? '#C00018' : '#E4E7EC', select: () => this.setState(st => ({ F: { ...st.F, loc: on ? [] : [z.id] }, cls: on ? st.cls : 'all' })) }; }),
+      (() => { const mob = all.filter(a => a.cls === 'mobile'), busy = mob.filter(reservedNow).length, on = s.cls === 'mobile';
+        return { name: 'Mobile assets', icon: 'forklift', tileBg: on ? '#2456B8' : '#EAF1FD', tileFg: on ? '#fff' : '#2456B8', meta: `${mob.length} · ${mob.length - busy} free now`, hasAlert: false, bg: on ? '#F5F8FE' : '#fff', border: on ? '#2456B8' : '#E4E7EC', select: () => this.setState({ cls: on ? 'all' : 'mobile' }) }; })()];
+    const rows = list.slice().sort((a, b) => PM.pathOf(a.loc).localeCompare(PM.pathOf(b.loc)) || a.name.localeCompare(b.name)).map(a => { const [, zfg, zbg] = zlook(a.loc), p = C.person(a.owner), so = statusOf(a), n = WOS[a.id] || 0;
+      return { ...a, mobile: a.cls === 'mobile', icon: PM.typeIcon(a.type), tileBg: zbg, tileFg: zfg,
+        path: PM.chain(a.loc).map((x, i, arr) => ({ name: x.name, sep: i > 0, weight: i === arr.length - 1 ? 600 : 400, color: i === arr.length - 1 ? '#344054' : '#667085' })),
+        status: so.label, sbg: so.bg, sfg: so.fg, critColor: PM.CRIT[a.crit], avBg: p.avBg, avFg: p.avFg, ownerName: p.name.split(' ')[0], wos: n || '—', woColor: n ? '#1E2430' : '#C4CAD4',
+        open: () => { location.href = 'AssetDetail.dc.html?id=' + encodeURIComponent(a.id); }, edit: e => { e.stopPropagation(); PM.openWizard(a.id); } }; });
+    return {
+      ...base, subtitle, zoneCards, filters, anyFilter, closeDd: () => this.setState({ dd: null }), dq: s.dq, setDq: e => this.setState({ dq: e.target.value }),
+      clearAll: () => this.setState({ F: EMPTY, q: '', cls: 'all', dd: null }), q: s.q, setQ: e => this.setState({ q: e.target.value }),
+      classSeg: [['all', 'All', 'apps'], ['fixed', 'Equipment', 'precision_manufacturing'], ['mobile', 'Mobile', 'forklift']].map(([k, label, icon]) => { const on = s.cls === k; return { label, icon, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => this.setState({ cls: k }) }; }),
+      rows, empty: !list.length, countLabel: `${list.length} of ${all.length} assets`,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0}</style>
+</helmet>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:56px 0 0 0;z-index:120;background:rgba(16,24,40,.28)"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:540px;z-index:121;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;background:#0B6B4A;color:#fff;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">task_alt</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">Mark as done</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">Work already done on site, not tracked live in Relix</p></div>
+      <button onClick="{{ close }}" title="Close" aria-label="Close" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:4px;padding:12px 14px;background:#F6F7F9;border-radius:8px">
+        <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#667085"><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ woId }}</span>{{ wo.type }}<span style="display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:10px;background:{{ stBg }};color:{{ stFg }};font-size:11.5px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ wo.status }}</span></span>
+        <span style="font-size:14px;font-weight:600">{{ wo.title }}</span>
+        <span style="font-size:12px;color:#667085">{{ wo.loc }}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 150px 110px;gap:10px">
+        <label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-size:13px;font-weight:600;color:#344054">Done by<span style="color:#C00018"> *</span></span>
+          <span style="position:relative;display:flex"><select value="{{ f.by }}" onChange="{{ on.by }}" style="appearance:none;-webkit-appearance:none;width:100%;height:42px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ byOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:11px;pointer-events:none;font:19px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">Done on<span style="color:#C00018"> *</span></span><input type="date" value="{{ f.date }}" onInput="{{ on.date }}" style="height:42px;padding:0 8px;border:1px solid {{ err.date }};border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" /></label>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">At</span><input type="time" value="{{ f.time }}" onInput="{{ on.time }}" style="height:42px;padding:0 8px;border:1px solid #D0D5DD;border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" /></label>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:600;color:#344054">Time spent<span style="color:#C00018"> *</span></span>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <label style="height:42px;display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid {{ err.time }};border-radius:8px"><input value="{{ f.h }}" onInput="{{ on.h }}" inputmode="numeric" aria-label="Hours" style="width:34px;border:0;outline:none;font:600 15px 'IBM Plex Mono',monospace;text-align:right;color:#1E2430" /><span style="color:#667085">h</span></label>
+          <label style="height:42px;display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid {{ err.time }};border-radius:8px"><input value="{{ f.m }}" onInput="{{ on.m }}" inputmode="numeric" aria-label="Minutes" style="width:34px;border:0;outline:none;font:600 15px 'IBM Plex Mono',monospace;text-align:right;color:#1E2430" /><span style="color:#667085">min</span></label>
+          <sc-for list="{{ quickDur }}" as="d"><button onClick="{{ d.pick }}" style="height:32px;padding:0 10px;background:{{ d.bg }};border:1px solid {{ d.border }};border-radius:16px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:{{ d.color }};cursor:pointer">{{ d.label }}</button></sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:600;color:#344054">Result</span>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <sc-for list="{{ results }}" as="o"><button onClick="{{ o.pick }}" style="height:46px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;background:{{ o.bg }};border:{{ o.border }};border-radius:8px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ o.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ o.icon }}</span>{{ o.label }}</button></sc-for>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;font-weight:600;color:#344054">Equipment operational?<span style="color:#C00018"> *</span></span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <sc-for list="{{ opOpts }}" as="o"><button onClick="{{ o.pick }}" style="height:42px;display:flex;align-items:center;justify-content:center;gap:6px;background:{{ o.bg }};border:{{ o.border }};border-radius:8px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ o.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ o.icon }}</span>{{ o.label }}</button></sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ needCause }}" hint-placeholder-val="{{ true }}">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">Failure cause<span style="color:#C00018"> *</span></span>
+            <span style="position:relative;display:flex"><select value="{{ f.cause }}" onChange="{{ on.cause }}" style="appearance:none;-webkit-appearance:none;width:100%;height:42px;padding:0 30px 0 10px;border:1px solid {{ err.cause }};border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select…</option><sc-for list="{{ causeOpts }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:8px;top:11px;pointer-events:none;font:19px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          </label>
+        </sc-if>
+      </div>
+
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">What was done<span style="color:#C00018"> *</span></span>
+        <textarea value="{{ f.report }}" onInput="{{ on.report }}" rows="3" placeholder="Actions performed, parts replaced, anything the next shift should know" style="padding:10px 12px;border:1px solid {{ err.report }};border-radius:8px;font:14px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea>
+      </label>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onClick="{{ toggleFollow }}" style="display:flex;align-items:center;gap:12px;padding:0;background:transparent;border:0;text-align:left;cursor:pointer;font-family:inherit">
+          <span style="position:relative;width:38px;height:22px;flex:none;border-radius:11px;background:{{ followTrack }}"><span style="position:absolute;top:3px;left:{{ followKnob }};width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s"></span></span>
+          <span style="font-weight:600;color:#1E2430">Follow-up required</span>
+        </button>
+        <sc-if value="{{ f.followUp }}">
+          <input value="{{ f.fuTitle }}" onInput="{{ on.fuTitle }}" aria-label="Follow-up title" style="height:40px;padding:0 10px;border:1px solid #D0D5DD;border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+          <span style="font-size:12px;color:#667085">A new work order is created in Requested for {{ wo.asset }}.</span>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <button onClick="{{ close }}" style="height:40px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;white-space:nowrap" style-hover="border-color:#98A2B3">Cancel</button>
+      <span style="flex:1;min-width:0;font-size:12.5px;color:{{ footColor }};text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ footNote }}</span>
+      <button onClick="{{ complete }}" style="height:40px;display:flex;align-items:center;gap:6px;padding:0 18px 0 12px;background:{{ doneBg }};border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ doneColor }};cursor:pointer;white-space:nowrap"><span style="font:19px/1 'Material Symbols Outlined'">task_alt</span>Complete work order</button>
+    </div>
+  </aside>
+</sc-if>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:130;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:820}}">
+const TECHS = ['GD', 'MD', 'PL', 'AM', 'SM', 'SB', 'JM'];
+const ST = { Requested: ['#F3EEFC', '#6941C6'], Scheduled: ['#EAF1FD', '#2456B8'], 'In progress': ['#E6F4EE', '#0B6B4A'], Completed: ['#EEF1F4', '#475467'] };
+const RESULTS = [['completed', 'Completed', 'task_alt', '#0B6B4A', '#E6F4EE'], ['partial', 'Partially done', 'timelapse', '#B54708', '#FEF3E2'], ['unable', 'Not possible', 'block', '#B42318', '#FDECEC']];
+const CAUSES = ['Mechanical', 'Electrical', 'Hydraulic', 'Pneumatic', 'Instrumentation', 'Software / PLC'];
+const blank = () => ({ by: 'GD', date: '2026-09-29', time: '', h: '', m: '', result: 'completed', op: '', cause: '', report: '', followUp: false, fuTitle: '' });
+class Component extends DCLogic {
+  state = { open: false, wo: {}, f: blank(), tried: false, toast: null };
+  componentDidMount() {
+    Promise.all([import('./collab-model.js'), import('./config-model.js')]).then(([C, CFG]) => this.setState({ C, CFG }));
+    this._open = e => { const d = (e && e.detail) || {}, C = this.state.C;
+      const by = d.assignee && TECHS.includes(d.assignee) ? d.assignee : (C && d.who && C.byName(d.who)) || 'GD';
+      this.setState({ open: true, tried: false, wo: { key: d.key, title: d.title || `${d.asset} — ${d.task}`, asset: d.asset || '', task: d.task || '', loc: d.loc || '', type: d.type || 'Corrective', prio: d.prio || '', status: d.status || 'Requested' },
+        f: { ...blank(), by, date: (d.date || '').slice(0, 10) || '2026-09-29', time: (d.date || '').slice(11, 16), fuTitle: `${d.asset || ''} — Follow-up` } }); };
+    this._key = e => { if (e.key === 'Escape' && this.state.open) this.setState({ open: false }); };
+    window.addEventListener('cmms-quick-complete', this._open); window.addEventListener('keydown', this._key);
+    window.CMMSQuickComplete = d => window.dispatchEvent(new CustomEvent('cmms-quick-complete', { detail: d || {} }));
+    // Shown on its own (component artboard): open with a sample work order.
+    if (/QuickComplete\.dc\.html/.test(decodeURIComponent(location.pathname))) setTimeout(() => this._open({ detail: { key: 'WO-1339870', asset: 'Conveyor Line 2', task: 'Abnormal noise on belt', loc: 'Float Line', type: 'Corrective', prio: 'Medium', status: 'Requested', assignee: 'JM' } }), 400);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-quick-complete', this._open); window.removeEventListener('keydown', this._key); clearTimeout(this._t); }
+  setF(k, v) { this.setState(s => ({ f: { ...s.f, [k]: v } })); }
+  mins() { const f = this.state.f; return (parseInt(f.h, 10) || 0) * 60 + (parseInt(f.m, 10) || 0); }
+  missing() { const f = this.state.f, w = this.state.wo, out = []; if (!f.date) out.push('date'); if (!this.mins()) out.push('time spent'); if (!f.op) out.push('equipment state'); if (w.type === 'Corrective' && !f.cause) out.push('failure cause'); if (!f.report.trim()) out.push('what was done'); return out; }
+  complete() {
+    const s = this.state, C = s.C, f = s.f, w = s.wo; if (!C) return;
+    if (this.missing().length) return this.setState({ tried: true });
+    C.completeWithoutIntervention(w.key, { by: f.by, at: `${f.date}${f.time ? 'T' + f.time : ''}`, mins: this.mins(), result: f.result, operational: f.op, cause: f.cause, report: f.report.trim(), followUp: f.followUp ? f.fuTitle : '' });
+    if (f.followUp && f.fuTitle.trim()) { const [asset, ...rest] = f.fuTitle.split(' — '); C.createWo({ task: rest.join(' — ') || f.fuTitle, asset: rest.length ? asset : w.asset, loc: w.loc, type: 'Corrective', prio: 'Medium', status: 'Requested', createdBy: C.ME, desc: `Follow-up of ${C.displayId(w.key)} · ${w.title}` }); }
+    this.setState({ open: false, toast: `${C.displayId(w.key)} completed · recorded after the fact${f.followUp ? ' · follow-up created' : ''}` });
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 4000);
+  }
+  renderVals() {
+    const s = this.state, C = s.C, f = s.f, w = s.wo, t = s.tried, mins = this.mins(), miss = this.missing();
+    const [stBg, stFg] = ST[w.status] || ST.Requested, red = '#F04438', grey = '#D0D5DD';
+    const pickBtn = (on, fg, bg) => ({ bg: on ? bg : '#fff', border: on ? `2px solid ${fg}` : `1px solid ${grey}`, color: on ? fg : '#344054' });
+    return {
+      open: s.open, close: () => this.setState({ open: false }), toast: s.toast, wo: w, woId: C && w.key ? C.displayId(w.key) : w.key || '', stBg, stFg, f,
+      on: Object.fromEntries(['by', 'date', 'time', 'h', 'm', 'cause', 'report', 'fuTitle'].map(k => [k, ev => this.setF(k, ev.target.value)])),
+      byOpts: TECHS.map(k => ({ v: k, l: C ? `${C.person(k).name}${k === 'GD' ? ' (you)' : ''} · ${C.person(k).role}` : k })),
+      err: { date: t && !f.date ? red : grey, time: t && !mins ? red : grey, cause: t && w.type === 'Corrective' && !f.cause ? red : grey, report: t && !f.report.trim() ? red : grey },
+      quickDur: [[15, '15 min'], [30, '30 min'], [60, '1 h'], [120, '2 h'], [240, 'Half day']].map(([v, label]) => { const on = mins === v; return { label, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : grey, color: on ? '#fff' : '#344054', pick: () => this.setState(st => ({ f: { ...st.f, h: String(Math.floor(v / 60) || ''), m: String(v % 60 || '') } })) }; }),
+      results: RESULTS.map(([k, label, icon, fg, bg]) => ({ label, icon, ...pickBtn(f.result === k, fg, bg), pick: () => this.setF('result', k) })),
+      opOpts: [['yes', 'Yes', 'check_circle', '#0B6B4A', '#E6F4EE'], ['no', 'No', 'cancel', '#B42318', '#FDECEC']].map(([k, label, icon, fg, bg]) => { const p = pickBtn(f.op === k, fg, bg); return { label, icon, ...p, border: f.op === k ? p.border : `1px solid ${t && !f.op ? red : grey}`, pick: () => this.setF('op', k) }; }),
+      needCause: w.type === 'Corrective', causeOpts: s.CFG && s.CFG.names ? s.CFG.names('failures') : CAUSES,
+      toggleFollow: () => this.setF('followUp', !f.followUp), followTrack: f.followUp ? '#C00018' : '#D0D5DD', followKnob: f.followUp ? '19px' : '3px',
+      footNote: miss.length ? `Required: ${miss.join(', ')}` : `Recorded as Completed · ${mins} min`, footColor: t && miss.length ? '#B42318' : '#667085',
+      complete: () => this.complete(), doneBg: miss.length ? '#F2F4F7' : '#C00018', doneColor: miss.length ? '#98A2B3' : '#fff',
+    };
+  }
+}
+</script>
+</body>
+</html>
