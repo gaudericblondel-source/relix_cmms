@@ -5,6 +5,7 @@ Clickable prototype of the mobile app that complements the Relix CMMS web app.
 - **Open:** https://gaudericblondel-source.github.io/relix_cmms/mobile/ (on a phone: open it directly, then *Add to Home Screen*)
 - **Demo QR codes to print:** [`qr.html`](qr.html) — scan them with the app, or with the phone camera (opens the app on the equipment)
 - **Previous version:** [`v1/`](v1/)
+- **Rethought version (review of Oct 9, 2026):** [`v3/`](v3/) — scan-first, role-adaptive, voice-first
 
 Fake data, nothing is sent; state stays in the browser (`localStorage` key `relix.mobile.v2`, *Me › Reset the demo*).
 Persona: **Pierre Leroy**, mechanic, Mechanical team, Thourotte Plant — Tuesday, September 29.
