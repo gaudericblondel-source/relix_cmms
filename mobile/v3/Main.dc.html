@@ -13,7 +13,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&amp;display=block" />
 <style>
 body{margin:0;background:#E9E4DF}
-*{box-sizing:border-box}
+*{box-sizing:border-box;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
 .rx-s>*{flex-shrink:0}
 button{font-family:'IBM Plex Sans',system-ui,sans-serif}
 a{color:#34050D}a:hover{color:#1A1412}
@@ -35,7 +36,6 @@ a{color:#34050D}a:hover{color:#1A1412}
   <div class="rx-s" style="position:absolute;inset:0;overflow-y:auto;padding:58px 20px 120px;display:flex;flex-direction:column;gap:22px">
     <div style="display:flex;flex-direction:column;gap:6px">
       <h1 style="margin:0;font-size:32px;line-height:38px;font-weight:600;letter-spacing:-.02em">{{ home.hello }}</h1>
-      <p style="margin:0;font-size:17px;line-height:24px;color:#5F5752">{{ home.sub }}</p>
     </div>
     <div style="display:flex;gap:10px">
       <button onClick="{{ go.assets }}" style="flex:1;min-width:0;height:54px;display:flex;align-items:center;gap:10px;padding:0 16px;border:0;border-radius:18px;background:#fff;color:#8E8580;font-size:16px;text-align:left;cursor:pointer"><span style="font:23px/1 'Material Symbols Rounded'">search</span>Search an asset</button>
@@ -75,18 +75,6 @@ a{color:#34050D}a:hover{color:#1A1412}
       </div>
     </sc-if>
 
-    <!-- Technician -->
-    <sc-if value="{{ role.tech }}">
-      <div style="display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:28px;background:#34050D;color:#fff">
-        <button onClick="{{ home.jobOpen }}" aria-label="Open the intervention" style="display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:0;border:0;background:none;color:#fff;text-align:left;cursor:pointer">
-        <span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:rgba(255,255,255,.75)"><span style="width:8px;height:8px;border-radius:50%;background:{{ home.jobDot }}"></span>{{ home.jobState }}</span>
-        <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:25px;line-height:30px;font-weight:600;letter-spacing:-.01em">{{ home.jobAsset }}</span><span style="font-size:17px;color:rgba(255,255,255,.8)">{{ home.jobTask }}</span></span><span style="flex:none;font:26px/1 'Material Symbols Rounded';color:rgba(255,255,255,.6)">chevron_right</span></span>
-        <sc-if value="{{ home.jobHasPct }}"><span style="height:4px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden"><span style="display:block;height:100%;width:{{ home.jobPct }};background:#fff;border-radius:2px"></span></span></sc-if>
-        </button>
-        <button onClick="{{ home.jobGo }}" style="height:56px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:16px;background:#fff;color:#34050D;font-size:18px;font-weight:600;cursor:pointer"><span style="font:26px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1">play_arrow</span>{{ home.jobBtn }}</button>
-      </div>
-    </sc-if>
-
     <!-- Manager -->
     <sc-if value="{{ role.mgr }}">
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#fff;border-radius:22px;overflow:hidden">
@@ -119,12 +107,13 @@ a{color:#34050D}a:hover{color:#1A1412}
 
     <sc-if value="{{ role.tech }}">
       <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;align-items:center;padding:0 4px"><span style="font-size:15px;font-weight:600;color:#5F5752">Later today</span><button onClick="{{ tabs.work }}" style="margin-left:auto;height:32px;padding:0;background:none;border:0;font-size:15px;font-weight:600;color:#34050D;cursor:pointer">All interventions</button></div>
+        <div style="display:flex;align-items:center;padding:0 4px"><span style="font-size:17px;font-weight:600;color:#1A1412">My to do</span><button onClick="{{ tabs.work }}" style="margin-left:auto;height:32px;padding:0;background:none;border:0;font-size:15px;font-weight:600;color:#34050D;cursor:pointer">All interventions</button></div>
         <div style="background:#fff;border-radius:20px;overflow:hidden">
           <sc-for list="{{ home.next }}" as="r" hint-placeholder-count="2">
             <button onClick="{{ r.open }}" style="width:100%;display:flex;align-items:center;gap:14px;min-height:68px;padding:12px 14px 12px 16px;border:0;border-top:{{ r.sep }};background:none;text-align:left;cursor:pointer;color:#1A1412">
-              <span style="flex:none;width:52px;font:500 15px 'IBM Plex Mono',monospace;color:#5F5752">{{ r.time }}</span>
+              <span style="flex:none;width:60px;font:500 14px 'IBM Plex Mono',monospace;color:{{ r.timeColor }}">{{ r.time }}</span>
               <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.asset }}</span><span style="font-size:15px;color:#5F5752;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.task }}</span></span>
+              <sc-if value="{{ r.crit }}"><span title="Critical" style="flex:none;width:8px;height:8px;border-radius:50%;background:#C00018"></span></sc-if>
               <span style="flex:none;font:22px/1 'Material Symbols Rounded';color:#B9B0A9">chevron_right</span>
             </button>
           </sc-for>
@@ -1109,7 +1098,9 @@ class Component extends DCLogic {
       jobState: done ? 'Next · 11:30' : mat === 1 ? 'In progress · started 09:40' : `In progress · step ${Math.min(s.stepIdx + 1, STEPS.length)} of ${STEPS.length}`, jobDot: done ? '#F7B955' : '#4ADE9B',
       jobAsset: done ? 'Hydraulic Press PH-030' : 'Pump P-101', jobTask: done ? 'Oil leak' : 'Seal replacement', jobHasPct: !done && mat > 1, jobPct: Math.round(s.stepIdx / STEPS.length * 100) + '%',
       jobBtn: done ? 'Open the intervention' : 'Resume', jobGo: done ? openJob('PH030') : () => startJob('P101'), jobOpen: done ? openJob('PH030') : openJob('P101'),
-      next: (done ? ['TF2'] : ['PH030', 'TF2']).map((k, i) => ({ time: JOBS[k].time, asset: mOf(JOBS[k].asset)[1], task: JOBS[k].task, sep: sep(i), open: openJob(k) })),
+      next: ['P101', 'V12', 'TF2S', 'PH030', 'TF2', 'PR1', ...Object.keys(s.newJobs)].filter(k => !['done'].includes(stOf(k))).slice(0, 8).map((k, i) => { const j = jobOf(k), st = stOf(k);
+        const time = st === 'progress' ? 'Now' : st === 'paused' ? 'Paused' : st === 'late' ? 'Late' : st === 'incomplete' ? 'To fill' : j.group === 'tomorrow' ? 'Tmrw' : j.time;
+        return { time, timeColor: st === 'progress' ? '#0F7B55' : st === 'paused' || st === 'incomplete' ? '#B5560B' : st === 'late' ? '#C00018' : '#5F5752', asset: mOf(j.asset)[1], task: k === 'P101' && st === 'progress' && mat > 1 ? `${j.task} · ${Math.min(s.stepIdx + 1, 8)}/8` : j.group === 'tomorrow' ? `${j.task} · tomorrow ${j.time}` : j.task, crit: j.prio === 'Critical', sep: sep(i), open: openJob(k) }; }),
       kpis: [[String(reqLeft), 'Requests to review', '#B5560B', () => this.go('review')], ['7', 'Overdue', '#C00018', () => this.tab('work')], ['2', 'Critical open', '#1A1412', () => this.tab('work')]].map(([value, label, color, g], i) => ({ value, label, color, go: g, sep: i ? LINE : '0' })),
       hasReq: reqLeft > 0, noReq: reqLeft === 0, reqState: reqLeft ? `${reqLeft} request${reqLeft > 1 ? 's' : ''} to review` : 'All requests reviewed', reqAsset: rq.asset, reqText: rq.text, reqMeta: `${P[rq.by][0]} · ${rq.ago}`,
       team: ['PL', 'MD', 'AM', 'SM', 'JM', 'SL'].map(k => ({ ini: k, bg: P[k][3], fg: P[k][4], dot: k === 'MD' ? '#0F7B55' : k === 'JM' ? '#B9B0A9' : k === 'SL' ? '#0F7B55' : '#E8A13A', tip: P[k][0] })),
