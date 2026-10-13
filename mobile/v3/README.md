@@ -21,5 +21,5 @@ Terminology: *Intervention / Interventions* everywhere (no "work order" or "job"
 
 Notes
 - Fake data; part pictures are drawings, request photos are placeholders.
-- No status bar is drawn; screens keep a top safe area.
+- Every screen is shown centered in an iPhone frame (status bar, Dynamic Island, home indicator); the app itself is 390 × 844.
 - `support.js` is the Design Component runtime needed to open the screens.
