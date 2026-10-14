@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+</helmet>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:0;background:rgba(16,24,40,.32);z-index:80"></div>
+  <div style="position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:81;width:{{ width }};max-height:calc(100vh - 110px);display:flex;flex-direction:column;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:{{ tileBg }};color:{{ tileFg }};font:20px/1 'Material Symbols Outlined'">{{ tileIcon }}</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ title }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">{{ sub }}</p></div>
+      <button onClick="{{ close }}" title="Close" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ isQr }}">
+        <div style="display:grid;grid-template-columns:1fr 120px;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Label format</span><span style="position:relative;display:flex"><select value="{{ fmt }}" onChange="{{ setFmt }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ fmts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Copies each</span><input type="number" min="1" max="20" value="{{ copies }}" onInput="{{ setCopies }}" style="height:36px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+        </div>
+        <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">Print preview</span>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px;background:#F2F4F7;border-radius:8px">
+          <sc-for list="{{ labels }}" as="l">
+            <div style="width:{{ l.w }};height:{{ l.h }};display:flex;align-items:center;gap:8px;padding:6px;background:#fff;border:1px dashed #C4CAD4;border-radius:4px;overflow:hidden">
+              <span style="flex:none;width:{{ l.q }};height:{{ l.q }};display:grid;place-items:center;background:#F9FAFB"><sc-if value="{{ l.ready }}"><img src="{{ l.src }}" alt="QR code" style="width:100%;height:100%;display:block" /></sc-if></span>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;font-size:{{ l.fs }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }}</span><span style="font:500 11px 'IBM Plex Mono',monospace;color:#475467">{{ l.id }}</span><sc-if value="{{ l.more }}"><span style="font-size:10.5px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.type }} · {{ l.status }}</span><span style="font-size:10.5px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.path }}</span></sc-if></span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ hasMoreLabels }}"><span style="align-self:center;font-size:12.5px;color:#667085">+ {{ moreLabels }} more</span></sc-if>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#EAF1FD;border-radius:8px;color:#1D3F85;font-size:12.5px;line-height:1.45"><span style="font:17px/1 'Material Symbols Outlined'">link</span><span style="min-width:0;word-break:break-all">Each QR code opens the equipment sheet: <b style="font-weight:600">{{ qrUrl }}</b></span></div>
+      </sc-if>
+
+      <sc-if value="{{ isDecom }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Reason<span style="color:#C00018"> *</span></span><span style="position:relative;display:flex"><select value="{{ d.reason }}" onChange="{{ setReason }}" style="appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 30px 0 10px;border:1px solid {{ reasonBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select a reason</option><sc-for list="{{ reasons }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:8px;top:9px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Decommissioning date<span style="color:#C00018"> *</span></span><input type="date" value="{{ d.date }}" onInput="{{ setDate }}" style="height:36px;padding:0 10px;border:1px solid {{ dateBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+        </div>
+        <sc-if value="{{ dateErr }}"><span style="margin-top:-8px;font-size:12px;color:#B42318">{{ dateErr }}</span></sc-if>
+        <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Note</span><textarea value="{{ d.note }}" onInput="{{ setNote }}" rows="2" placeholder="Replacement asset, disposal reference…" style="padding:8px 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px/1.5 'IBM Plex Sans',sans-serif;outline:none;resize:vertical"></textarea></label>
+        <sc-for list="{{ warnings }}" as="w"><div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FEF3E2;border-radius:8px;color:#93370D;font-size:12.5px;line-height:1.45"><span style="font:17px/1 'Material Symbols Outlined'">warning</span><span>{{ w }}</span></div></sc-for>
+        <sc-if value="{{ hasPlans }}"><button onClick="{{ togglePlans }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;padding:0;background:transparent;border:0;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ plBorder }};background:{{ plBg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ plIcon }}</span>Remove the asset from its maintenance plans (no more preventive interventions)</button></sc-if>
+        <span style="font-size:12.5px;color:#667085;line-height:1.45">The asset is set to <b style="font-weight:600;color:#475467">Out of service</b> and kept with its full history. It can be recommissioned later from its sheet.</span>
+      </sc-if>
+
+      <sc-if value="{{ isDelete }}">
+        <sc-if value="{{ blocked }}">
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FEF6F6;border:1px solid #FBD5D5;border-radius:8px;color:#B42318;font-size:12.5px;line-height:1.45"><span style="font:17px/1 'Material Symbols Outlined'">block</span><span><b style="font-weight:600">This asset is still in use and cannot be deleted.</b> Decommission it instead to keep its history, or remove these links first:</span></div>
+          <sc-for list="{{ usage }}" as="u"><div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #E4E7EC;border-radius:8px"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">{{ u.icon }}</span><span style="flex:1">{{ u.label }}</span><span style="font-weight:600">{{ u.n }}</span></div></sc-for>
+        </sc-if>
+        <sc-if value="{{ canDelete }}"><span style="line-height:1.5;color:#344054">No intervention, plan, document, spare part or reservation references <b style="font-weight:600">{{ delName }}</b>. Deleting it removes the record permanently.</span></sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isImport }}">
+        <div style="display:flex;gap:6px">
+          <sc-for list="{{ impSteps }}" as="st"><span style="flex:1;display:flex;flex-direction:column;gap:5px"><span style="height:4px;border-radius:2px;background:{{ st.bar }}"></span><span style="font-size:12px;font-weight:{{ st.w }};color:{{ st.c }}">{{ st.label }}</span></span></sc-for>
+        </div>
+        <sc-if value="{{ impUpload }}">
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:170px;border:1.5px dashed #C4CAD4;border-radius:10px;background:#F9FAFB;cursor:pointer;text-align:center;padding:20px">
+            <span style="font:30px/1 'Material Symbols Outlined';color:#98A2B3">upload_file</span>
+            <span style="font-weight:600">Drop a CSV file or click to browse</span>
+            <span style="font-size:12.5px;color:#667085">One row per asset · comma or semicolon separated · first row = column names</span>
+            <input type="file" accept=".csv,text/csv" onChange="{{ pickFile }}" style="display:none" />
+          </label>
+          <div style="display:flex;align-items:center;gap:10px"><button onClick="{{ useSample }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">dataset</span>Use the sample file</button><button onClick="{{ downloadTemplate }}" style="height:34px;padding:0 8px;background:transparent;border:0;font:600 13px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Download template</button></div>
+        </sc-if>
+        <sc-if value="{{ impMap }}">
+          <span style="color:#475467">{{ impFileLabel }} — match each Relix field with a column of your file.</span>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:8px 12px;align-items:center">
+            <span style="font-size:12px;font-weight:600;color:#667085">Relix field</span><span style="font-size:12px;font-weight:600;color:#667085">Column in your file</span><span style="font-size:12px;font-weight:600;color:#667085">First value</span>
+            <sc-for list="{{ mapRows }}" as="m">
+              <span style="font-weight:500">{{ m.label }}<sc-if value="{{ m.req }}"><span style="color:#C00018"> *</span></sc-if></span>
+              <span style="position:relative;display:flex"><select value="{{ m.value }}" onChange="{{ m.set }}" style="appearance:none;-webkit-appearance:none;width:100%;height:34px;padding:0 28px 0 10px;border:1px solid {{ m.border }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">— Not imported —</option><sc-for list="{{ m.opts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:6px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+              <span style="font:12px 'IBM Plex Mono',monospace;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.sample }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ impCheck }}">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ checkKpis }}" as="k"><div style="display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid #E4E7EC;border-radius:8px"><span style="font-size:20px;font-weight:600;color:{{ k.color }}">{{ k.n }}</span><span style="font-size:12px;color:#667085">{{ k.label }}</span></div></sc-for>
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <sc-for list="{{ impOpts }}" as="o"><button onClick="{{ o.toggle }}" style="display:flex;align-items:center;gap:8px;padding:0;background:transparent;border:0;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ o.border }};background:{{ o.bg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ o.icon }}</span>{{ o.label }}</button></sc-for>
+          </div>
+          <div style="border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ checkRows }}" as="r"><div style="display:grid;grid-template-columns:40px 110px minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:center;min-height:38px;padding:4px 12px;border-bottom:1px solid #F2F4F7;background:{{ r.bg }}"><span style="font:12px 'IBM Plex Mono',monospace;color:#98A2B3">#{{ r.n }}</span><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:{{ r.color }}"><span style="font:15px/1 'Material Symbols Outlined'">{{ r.icon }}</span>{{ r.state }}</span><span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b style="font-weight:600">{{ r.code }}</b> {{ r.name }}</span><span style="font-size:12px;color:#475467;line-height:1.35">{{ r.msg }}</span></div></sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <sc-if value="{{ hasSecondary }}"><button onClick="{{ secondary }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">{{ secondaryIcon }}</span>{{ secondaryLabel }}</button></sc-if>
+      <button onClick="{{ cancel }}" style="margin-left:auto;height:36px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">{{ cancelLabel }}</button>
+      <sc-if value="{{ hasPrimary }}"><button onClick="{{ primary }}" disabled="{{ primaryDisabled }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:{{ primaryBg }};border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:{{ primaryColor }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ primaryIcon }}</span>{{ primaryLabel }}</button></sc-if>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const FIELDS = [['code', 'Code', 1, /^(code|id|asset ?(id|code)|tag)$/i], ['name', 'Name', 1, /^(name|asset|designation|description)$/i], ['type', 'Type', 1, /^(type|asset type|category)$/i], ['loc', 'Location (Line › Step)', 1, /^(location|loc|step|area|line)/i], ['status', 'Status', 0, /^status$/i], ['crit', 'Criticality', 0, /^crit/i], ['owner', 'Owner', 0, /^owner|responsible/i], ['manufacturer', 'Manufacturer', 0, /^manufact|brand|maker/i], ['model', 'Model', 0, /^model/i], ['serial', 'Serial number', 0, /^serial/i], ['year', 'Year', 0, /^year/i], ['commissioned', 'Commissioning date', 0, /^commission|start.?up|in service date/i]];
+const SAMPLE = `Code,Name,Type,Location,Status,Criticality,Owner,Manufacturer,Model,Year,Commissioning date
+CV-L4,Conveyor Line 4,Conveyor,Float Line > Cold end,In service,High,GD,Bystronic,Cold-end 4,2024,2024-03-12
+P-102,Pump P-102,Pump,Tempering Line > Pumping,In service,Medium,Pierre Leroy,KSB,Etanorm 65-200,2022,2022-06-01
+DS-01,Dust collector DS-01,Dust collector,Cutting Line > Dust extraction,In service,Medium,AM,Donaldson,DFO 3-24,2023,
+WR-02,Stretch wrapper W-02,Wrapper,Packaging > Wrapping,In service,Low,JM,Robopac,Rotoplat 708,2025,2025-02-10
+,Unnamed press,Press,Maintenance Workshop > Press area,In service,Medium,PL,Lasco,,2019,
+CV-L3,Conveyor Line 3,Conveyor,Float Line > Cold end,In service,High,GD,Bystronic,Cold-end 3,2016,2016-05-20
+FN-09,Fan V-09,Fan,Float Line > Annealing lehr,Running,Medium,AM,Ziehl-Abegg,ZN80,2021,2021-13-40`;
+const parseCsv = txt => { const lines = txt.replace(/\r/g, '').split('\n').filter(l => l.trim()); if (!lines.length) return { head: [], rows: [] }; const sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
+  const split = l => { const out = []; let cur = '', q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === sep && !q) { out.push(cur.trim()); cur = ''; } else cur += ch; } out.push(cur.trim()); return out; };
+  return { head: split(lines[0]), rows: lines.slice(1).map(split) }; };
+const TODAY = '2026-09-29';
+class Component extends DCLogic {
+  state = { kind: null, ids: [], fmt: '70x35', copies: 1, src: {}, d: { reason: '', date: TODAY, note: '' }, rmPlans: true, tried: false, imp: null, toast: null };
+  componentDidMount() {
+    Promise.all([import('./plant-model.js'), import('./collab-model.js'), import('./plans-model.js'), import('./docs-model.js'), import('./parts-model.js'), import('./config-model.js'), import('./qr-util.js')]).then(([PM, C, P, D, PA, CFG, Q]) => this.setState({ PM, C, P, D, PA, CFG, Q }));
+    this._open = e => { const d = (e && e.detail) || {}; this.setState({ kind: d.kind, ids: d.ids || [], extra: d, fmt: d.fmt || '70x35', copies: 1, d: { reason: '', date: TODAY, note: '' }, rmPlans: true, tried: false, imp: d.kind === 'import' ? { step: 0, head: [], rows: [], map: {}, createTypes: true, createLocs: true, file: '' } : null }, () => this.loadQr()); };
+    window.addEventListener('cmms-asset-action', this._open);
+    window.RelixAssetActions = (kind, ids, extra) => window.dispatchEvent(new CustomEvent('cmms-asset-action', { detail: { kind, ids: ids || [], ...(extra || {}) } }));
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-asset-action', this._open); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 3200); }
+  close() { this.setState({ kind: null }); }
+  list() { const PM = this.state.PM; return PM ? this.state.ids.map(id => PM.asset(id)).filter(Boolean) : []; }
+  qrAsset(a) { const PM = this.state.PM; return { id: a.id, name: a.name, type: a.type, path: PM.pathOf(a.loc), status: a.status }; }
+  loadQr() { if (this.state.kind !== 'qr') return; import('./qr-util.js').then(Q => Q.load().then(q => { const src = {}; this.list().slice(0, 8).forEach(a => { src[a.id] = Q.svgUrl(q, Q.assetUrl(a.id)); }); this.setState({ src }); })).catch(() => {}); }
+  usage(a) { const s = this.state, C = s.C, P = s.P, D = s.D, PA = s.PA, PM = s.PM, ex = s.extra || {};
+    const wos = C.createdWos().filter(w => w.assetCode === a.id || w.asset === a.name), open = wos.filter(w => w.status !== 'Completed');
+    return [['build', 'Interventions (history and open)', wos.length + (+ex.wos || 0)], ['event_repeat', 'Maintenance plans', P.forAsset(a.id).length], ['description', 'Linked documents', D.linkedTo('asset', a.id).length], ['inventory_2', 'Spare parts linked to the asset', PA.parts().filter(p => (p.assets || []).includes(a.id)).length], ['event_busy', 'Reservations', PM.reservationsOf(a.id).length]].map(([icon, label, n]) => ({ icon, label, n })).filter(u => u.n > 0).concat(open.length ? [] : []); }
+  impParse(txt, file) { const { head, rows } = parseCsv(txt), map = {}; FIELDS.forEach(([k, , , re]) => { const i = head.findIndex(h => re.test(h)); if (i >= 0 && !Object.values(map).includes(i)) map[k] = i; }); this.setState(s => ({ imp: { ...s.imp, step: 1, head, rows, map, file } })); }
+  resolveLoc(v) { const PM = this.state.PM; if (!v) return { err: 'Location missing' }; if (PM.node(v) && PM.node(v).kind === 'step') return { id: v };
+    const parts = v.split(/\s*(?:›|>|\/)\s*/).filter(Boolean), low = x => (x || '').toLowerCase();
+    if (parts.length === 1) { const st = PM.NODES.filter(n => n.kind === 'step' && low(n.name) === low(parts[0])); return st.length === 1 ? { id: st[0].id } : { err: st.length ? 'Ambiguous step — use Line › Step' : `Unknown location “${v}”` }; }
+    const line = PM.NODES.find(n => n.kind === 'line' && low(n.name) === low(parts[parts.length - 2])); if (!line) return { err: `Unknown line “${parts[parts.length - 2]}”` };
+    const st = PM.children(line.id).find(n => low(n.name) === low(parts[parts.length - 1])); return st ? { id: st.id } : { create: { line, name: parts[parts.length - 1] } }; }
+  checked() { const s = this.state, I = s.imp, PM = s.PM, C = s.C, CFG = s.CFG; if (!I) return [];
+    const types = new Set([...PM.assets().map(a => a.type), ...CFG.list('assetTypes').map(t => t.name)].map(x => x.toLowerCase())), seen = {};
+    return I.rows.map((r, i) => { const g = k => I.map[k] != null ? (r[I.map[k]] || '').trim() : ''; const o = Object.fromEntries(FIELDS.map(([k]) => [k, g(k)])), errs = [], notes = [];
+      FIELDS.filter(f => f[2]).forEach(([k, label]) => { if (!o[k]) errs.push(`${label.replace(/ \(.*/, '')} missing`); });
+      if (o.code) { if (seen[o.code]) errs.push(`Duplicate code (row ${seen[o.code]})`); seen[o.code] = i + 1; }
+      if (o.status && !PM.STATUS[o.status]) errs.push(`Unknown status “${o.status}”`); if (o.crit && !PM.CRIT[o.crit]) errs.push(`Unknown criticality “${o.crit}”`);
+      if (o.commissioned && (!/^\d{4}-\d{2}-\d{2}$/.test(o.commissioned) || isNaN(new Date(o.commissioned + 'T12:00')) || new Date(o.commissioned + 'T12:00').toISOString().slice(0, 10) !== o.commissioned)) errs.push('Invalid commissioning date (YYYY-MM-DD)');
+      else if (o.commissioned && o.commissioned > TODAY) errs.push('Commissioning date in the future');
+      const L = o.loc ? this.resolveLoc(o.loc) : {}; if (L.err) errs.push(L.err); if (L.create) { if (I.createLocs) notes.push(`New step “${L.create.name}” under ${L.create.line.name}`); else errs.push(`Unknown step “${L.create.name}”`); }
+      if (o.type && !types.has(o.type.toLowerCase())) { if (I.createTypes) notes.push(`New asset type “${o.type}”`); else errs.push(`Unknown type “${o.type}”`); }
+      const owner = o.owner ? (C.PEOPLE[o.owner] ? o.owner : C.byName(o.owner)) : ''; if (o.owner && !owner) notes.push(`Owner “${o.owner}” not found — left empty`);
+      const exists = o.code && PM.asset(o.code) && PM.asset(o.code).id === o.code; if (exists && !errs.length) notes.unshift('Existing asset — will be updated');
+      return { n: i + 2, o, L, owner, errs, notes, state: errs.length ? 'error' : exists ? 'update' : 'new' }; }); }
+  doImport() { const s = this.state, PM = s.PM, CFG = s.CFG, rows = this.checked().filter(r => r.state !== 'error'); const newTypes = new Set(), made = {};
+    rows.forEach(r => { const o = r.o; let loc = r.L.id;
+      if (!loc && r.L.create) { const key = r.L.create.line.id + '|' + r.L.create.name.toLowerCase(); if (!made[key]) { const id = `${r.L.create.line.id}-${r.L.create.name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase()}${Math.floor(Math.random() * 90 + 10)}`; PM.saveNode({ id, name: r.L.create.name, kind: 'step', parent: r.L.create.line.id }); made[key] = id; } loc = made[key]; }
+      if (!CFG.get('assetTypes', o.type) && !PM.assets().some(a => a.type.toLowerCase() === o.type.toLowerCase())) newTypes.add(o.type);
+      const prev = PM.asset(o.code), base = prev && prev.id === o.code ? {} : { cls: 'fixed', specs: [], docs: [], desc: '', status: 'In service', crit: 'Medium', owner: '', manufacturer: '', model: '', serial: '', year: '', commissioned: '' };
+      const data = { ...base, name: o.name, type: o.type, loc, imported: true }; ['status', 'crit', 'manufacturer', 'model', 'serial', 'year', 'commissioned'].forEach(k => { if (o[k]) data[k] = o[k]; }); if (r.owner) data.owner = r.owner;
+      PM.saveAsset(o.code, data); });
+    newTypes.forEach(t => CFG.upsert('assetTypes', { name: t, code: t.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(), cls: 'Equipment', icon: 'precision_manufacturing', crit: 'Medium' }));
+    const nNew = rows.filter(r => r.state === 'new').length, nUp = rows.length - nNew; this.close();
+    this.flash(`${nNew} asset${nNew === 1 ? '' : 's'} created · ${nUp} updated${newTypes.size ? ` · ${newTypes.size} new type${newTypes.size > 1 ? 's' : ''}` : ''}${Object.keys(made).length ? ` · ${Object.keys(made).length} new location${Object.keys(made).length > 1 ? 's' : ''}` : ''}`); }
+  renderVals() {
+    const s = this.state, PM = s.PM, k = s.kind;
+    if (!k || !PM || !s.C) return { open: false, toast: s.toast };
+    const L = this.list(), a = L[0] || {}, base = { open: true, toast: s.toast, isQr: k === 'qr', isDecom: k === 'decommission', isDelete: k === 'delete', isImport: k === 'import', close: () => this.close(), cancel: () => this.close(), cancelLabel: 'Cancel', hasSecondary: false, hasPrimary: true, primaryDisabled: false, primaryBg: '#C00018', primaryColor: '#fff', width: '640px' };
+    if (k === 'qr') { const Q = s.Q, F = Q ? Q.FORMATS[s.fmt] : { w: 70, h: 35, qr: 29, lines: 4 }, sc = 3.4;
+      return { ...base, tileIcon: 'qr_code_2', tileBg: '#F2F4F7', tileFg: '#344054', title: L.length > 1 ? `Print QR codes · ${L.length} assets` : `QR code · ${a.name}`, sub: L.length > 1 ? 'Labels for the selected equipment' : `${a.id} · ${PM.pathOf(a.loc)}`, width: '720px',
+        fmt: s.fmt, fmts: Q ? Object.keys(Q.FORMATS).map(v => ({ v, l: Q.FORMATS[v].label })) : [], setFmt: e => this.setState({ fmt: e.target.value }), copies: s.copies, setCopies: e => this.setState({ copies: Math.max(1, Math.min(20, +e.target.value || 1)) }),
+        labels: L.slice(0, 6).map(x => ({ id: x.id, name: x.name, type: x.type, status: x.status, path: PM.pathOf(x.loc), more: F.lines > 2, src: s.src[x.id] || '', ready: !!s.src[x.id], w: F.w * sc + 'px', h: F.h * sc + 'px', q: F.qr * sc + 'px', fs: F.h > 30 ? '13px' : '11.5px' })),
+        hasMoreLabels: L.length > 6, moreLabels: L.length - 6, qrUrl: Q ? Q.assetUrl(a.id || '') : '',
+        hasSecondary: L.length === 1, secondaryIcon: 'download', secondaryLabel: 'Download PNG', secondary: () => Q && Q.downloadPng(this.qrAsset(a)).then(() => this.flash(`QR-${a.id}.png downloaded`)),
+        primaryIcon: 'print', primaryLabel: L.length > 1 ? `Print ${L.length * s.copies} labels` : 'Print label', primary: () => { if (!Q) return; Q.printLabels(L.map(x => this.qrAsset(x)), s.fmt, s.copies).then(ok => { this.close(); this.flash(ok ? `${L.length * s.copies} label${L.length * s.copies > 1 ? 's' : ''} sent to print · ${Q.FORMATS[s.fmt].label}` : 'Allow pop-ups to print labels'); }); } }; }
+    if (k === 'decommission') { const P = s.P, C = s.C, plans = P.forAsset(a.id), open = C.createdWos().filter(w => (w.assetCode === a.id || w.asset === a.name) && w.status !== 'Completed').length + (+(s.extra || {}).openWos || 0), d = s.d;
+      const dateErr = !d.date ? 'Date is required' : d.date > TODAY ? 'Decommissioning date cannot be in the future' : a.commissioned && d.date < a.commissioned ? 'Date is before the commissioning date' : '';
+      const ok = d.reason && !dateErr, set = (f, v) => this.setState(st => ({ d: { ...st.d, [f]: v } }));
+      return { ...base, tileIcon: 'block', tileBg: '#FEF3E2', tileFg: '#B54708', title: `Decommission ${a.name}`, sub: `${a.id} · ${a.status}`, d, reasons: ['Obsolete', 'Replaced by a new asset', 'Sold', 'Scrapped', 'Transferred to another site', 'Other'],
+        setReason: e => set('reason', e.target.value), setDate: e => set('date', e.target.value), setNote: e => set('note', e.target.value), reasonBorder: s.tried && !d.reason ? '#F04438' : '#D0D5DD', dateBorder: dateErr ? '#F04438' : '#D0D5DD', dateErr,
+        warnings: [open ? `${open} open intervention${open > 1 ? 's are' : ' is'} still linked to this asset — complete or cancel ${open > 1 ? 'them' : 'it'}.` : '', plans.filter(p => p.active).length ? `${plans.filter(p => p.active).length} active maintenance plan${plans.filter(p => p.active).length > 1 ? 's' : ''} include this asset: ${plans.filter(p => p.active).map(p => p.name).join(', ')}.` : ''].filter(Boolean),
+        hasPlans: plans.length > 0, togglePlans: () => this.setState({ rmPlans: !s.rmPlans }), plBorder: s.rmPlans ? '#C00018' : '#C4CAD4', plBg: s.rmPlans ? '#C00018' : '#fff', plIcon: s.rmPlans ? 'check' : '',
+        primaryIcon: 'block', primaryLabel: 'Decommission', primaryBg: ok ? '#C00018' : '#F2F4F7', primaryColor: ok ? '#fff' : '#98A2B3',
+        primary: () => { if (!ok) return this.setState({ tried: true }); PM.saveAsset(a.id, { status: 'Out of service', decommissioned: { reason: d.reason, date: d.date, note: d.note, by: C.ME } });
+          if (s.rmPlans) plans.forEach(p => { const rest = p.assets.filter(x => x !== a.id); P.save({ ...p, assets: rest, active: rest.length ? p.active : false }); });
+          this.close(); this.flash(`${a.name} decommissioned${s.rmPlans && plans.length ? ` · removed from ${plans.length} plan${plans.length > 1 ? 's' : ''}` : ''}`); } }; }
+    if (k === 'delete') { const u = this.usage(a), blocked = u.length > 0;
+      return { ...base, tileIcon: 'delete', tileBg: '#FDECEC', tileFg: '#B42318', title: `Delete ${a.name}?`, sub: `${a.id} · ${PM.pathOf(a.loc)}`, width: '520px', blocked, canDelete: !blocked, usage: u, delName: a.name,
+        hasSecondary: blocked && !a.decommissioned, secondaryIcon: 'block', secondaryLabel: 'Decommission instead', secondary: () => this.setState({ kind: 'decommission', tried: false }),
+        hasPrimary: !blocked, primaryIcon: 'delete', primaryLabel: 'Delete asset', primaryBg: '#B42318', cancelLabel: blocked ? 'Close' : 'Cancel',
+        primary: () => { PM.removeAsset(a.id); this.close(); if (/AssetDetail/.test(location.pathname)) location.href = 'Assets.dc.html'; else this.flash(`${a.name} deleted`); } }; }
+    // import
+    const I = s.imp, step = I.step, setI = p => this.setState(st => ({ imp: { ...st.imp, ...p } })), rows = step === 2 ? this.checked() : [];
+    const reqOk = FIELDS.filter(f => f[2]).every(([key]) => I.map[key] != null), valid = rows.filter(r => r.state !== 'error').length;
+    return { ...base, tileIcon: 'upload_file', tileBg: '#EAF1FD', tileFg: '#2456B8', title: 'Import assets', sub: 'Create or update equipment from a CSV file', width: '820px',
+      impSteps: ['Upload file', 'Map columns', 'Check & import'].map((label, i) => ({ label, bar: i === step ? '#C00018' : i < step ? '#1E2430' : '#E4E7EC', w: i === step ? 600 : 500, c: i <= step ? '#1E2430' : '#98A2B3' })),
+      impUpload: step === 0, impMap: step === 1, impCheck: step === 2, impFileLabel: `${I.file} · ${I.rows.length} row${I.rows.length === 1 ? '' : 's'}`,
+      pickFile: e => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => this.impParse(String(r.result || ''), f.name); r.readAsText(f); },
+      useSample: () => this.impParse(SAMPLE, 'assets-sample.csv'),
+      downloadTemplate: () => { const l = document.createElement('a'); l.download = 'relix-assets-template.csv'; l.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(FIELDS.map(f => f[1].replace(/ \(.*/, '')).join(',') + '\n'); document.body.appendChild(l); l.click(); l.remove(); },
+      mapRows: FIELDS.map(([key, label, req]) => ({ label, req: !!req, value: I.map[key] != null ? String(I.map[key]) : '', border: req && I.map[key] == null ? '#F04438' : '#D0D5DD', opts: I.head.map((h, i) => ({ v: String(i), l: h || `Column ${i + 1}` })), sample: I.map[key] != null && I.rows[0] ? I.rows[0][I.map[key]] || '' : '',
+        set: e => { const v = e.target.value; setI({ map: { ...I.map, [key]: v === '' ? undefined : +v } }); } })),
+      checkKpis: [['Rows', rows.length, '#1E2430'], ['New assets', rows.filter(r => r.state === 'new').length, '#0B6B4A'], ['Updates', rows.filter(r => r.state === 'update').length, '#2456B8'], ['Errors (skipped)', rows.filter(r => r.state === 'error').length, rows.some(r => r.state === 'error') ? '#B42318' : '#1E2430']].map(([label, n, color]) => ({ label, n, color })),
+      impOpts: [['createTypes', 'Create missing asset types'], ['createLocs', 'Create missing steps under existing lines']].map(([key, label]) => ({ label, border: I[key] ? '#C00018' : '#C4CAD4', bg: I[key] ? '#C00018' : '#fff', icon: I[key] ? 'check' : '', toggle: () => setI({ [key]: !I[key] }) })),
+      checkRows: rows.map(r => ({ n: r.n, code: r.o.code || '—', name: r.o.name, state: r.state === 'error' ? 'Error' : r.state === 'update' ? 'Update' : 'New', icon: r.state === 'error' ? 'error' : r.state === 'update' ? 'sync' : 'add_circle', color: r.state === 'error' ? '#B42318' : r.state === 'update' ? '#2456B8' : '#0B6B4A', bg: r.state === 'error' ? '#FEF6F6' : '#fff', msg: [...r.errs, ...r.notes].join(' · ') || 'Ready' })),
+      hasSecondary: step > 0, secondaryIcon: 'chevron_left', secondaryLabel: 'Back', secondary: () => setI({ step: step - 1 }),
+      hasPrimary: step > 0, primaryIcon: step === 2 ? 'upload' : 'chevron_right', primaryLabel: step === 2 ? `Import ${valid} asset${valid === 1 ? '' : 's'}` : 'Check data',
+      primaryBg: (step === 1 && !reqOk) || (step === 2 && !valid) ? '#F2F4F7' : '#C00018', primaryColor: (step === 1 && !reqOk) || (step === 2 && !valid) ? '#98A2B3' : '#fff',
+      primary: () => { if (step === 1) { if (reqOk) setI({ step: 2 }); } else if (step === 2 && valid) this.doImport(); } };
+  }
+}
+</script>
+</body>
+</html>

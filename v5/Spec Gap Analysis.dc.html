@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:#F6F7F9;color:#1E2430;font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#C00018;text-decoration:none}
+a:hover{color:#8F0012;text-decoration:underline}
+</style>
+</helmet>
+<div style="max-width:1360px;margin:0 auto;padding:32px 24px 72px;display:flex;flex-direction:column;gap:24px">
+  <header style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#C00018">GAP ANALYSIS · RELIX</span>
+      <h1 style="margin:0;font:600 28px/1.2 'IBM Plex Sans',sans-serif;color:#1E2430">CMMS MVP specification vs. Relix</h1>
+      <p style="margin:0;max-width:900px;font-size:13.5px;line-height:1.55;color:#667085;text-wrap:pretty">Source: Functional Requirement Specification Document — CMMS, V1, 03/03/2026 (L. Bordron, D. Domas). Compared with the Relix app as of Oct 7, 2026 — updated after the implementation pass: every point was re-checked against the current app; resolved points are marked “Resolved · Oct 7” and counted as covered. Every requirement is reproduced in spec order (translated from French) and highlighted; the margin note says how Relix behaves today and which modules a change would touch. Highlights inside a line mark a part rated differently from the rest. The spec has no section 20.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:8px">
+      <sc-for list="{{ legend }}" as="l" hint-placeholder-count="6">
+        <button onClick="{{ l.select }}" style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:{{ l.cardBg }};border:1px solid {{ l.border }};border-radius:8px;text-align:left;cursor:pointer;font-family:'IBM Plex Sans',sans-serif" style-hover="border-color:#98A2B3">
+          <span style="display:flex;align-items:center;gap:8px">
+            <span style="width:28px;height:16px;border-radius:3px;background:{{ l.bg }}"></span>
+            <span style="flex:1;font-size:13px;font-weight:600;color:{{ l.ink }}">{{ l.label }}</span>
+            <span style="font:600 15px/1 'IBM Plex Mono',monospace;color:#1E2430">{{ l.count }}</span>
+          </span>
+          <span style="font-size:12px;line-height:1.4;color:#667085;text-wrap:pretty">{{ l.desc }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#F2F4F7">
+        <sc-for list="{{ bar }}" as="b"><span title="{{ b.title }}" style="width:{{ b.w }};background:{{ b.bg }}"></span></sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:13px;color:#475467">
+        <span><strong style="color:#1E2430">{{ total }}</strong> requirements</span>
+        <span><strong style="color:#0B6B4A">{{ pctG }}</strong> fully covered</span>
+        <span><strong style="color:#1E2430">{{ pctGL }}</strong> covered or almost</span>
+        <span><strong style="color:#B54708">{{ pctBuild }}</strong> to build</span>
+        <span><strong style="color:#B42318">{{ nR }}</strong> conflicts</span>
+        <span><strong style="color:#0B6B4A">{{ nRes }}</strong> resolved in the Oct 7 pass</span>
+        <span><strong style="color:#475467">{{ nX }}</strong> to clarify</span>
+        <sc-if value="{{ filtered }}">
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12.5px">Showing only <strong style="color:#1E2430">{{ filterLabel }}</strong><button onClick="{{ clearFilter }}" style="height:26px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;background:#fff;font:500 12px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer">Show all</button></span>
+        </sc-if>
+      </div>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:24px">
+    <aside style="flex:1 1 220px;max-width:268px;min-width:0">
+    <nav style="position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:12px 8px;display:flex;flex-direction:column;gap:2px">
+      <span style="padding:2px 10px 8px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#98A2B3">Contents</span>
+      <sc-for list="{{ toc }}" as="c" hint-placeholder-count="12">
+        <a href="{{ c.href }}" style="display:flex;flex-direction:column;gap:5px;padding:7px 10px;border-radius:6px;color:#1E2430;text-decoration:none" style-hover="background:#F6F7F9;text-decoration:none;color:#1E2430">
+          <span style="display:flex;gap:8px;font-size:13px;line-height:1.3"><span style="flex:none;width:18px;font:500 12px/17px 'IBM Plex Mono',monospace;color:#98A2B3">{{ c.n }}</span><span style="flex:1;min-width:0">{{ c.title }}</span></span>
+          <span style="margin-left:26px;display:flex;height:4px;border-radius:2px;overflow:hidden;background:#F2F4F7"><sc-for list="{{ c.bars }}" as="b"><span style="width:{{ b.w }};background:{{ b.bg }}"></span></sc-for></span>
+        </a>
+      </sc-for>
+      <div style="height:1px;background:#EEF0F3;margin:6px 10px"></div>
+      <a href="#beyond" style="padding:7px 10px 7px 36px;border-radius:6px;font-size:13px;color:#1E2430" style-hover="background:#F6F7F9;text-decoration:none;color:#1E2430">In Relix, not in the spec</a>
+      <a href="#summary" style="padding:7px 10px 7px 36px;border-radius:6px;font-size:13px;font-weight:600;color:#C00018" style-hover="background:#FBF7F7;text-decoration:none">Summary</a>
+    </nav>
+    </aside>
+
+    <main style="flex:999 1 520px;min-width:0;align-self:flex-start;display:flex;flex-direction:column;gap:20px">
+      <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+        <section id="{{ s.id }}" data-screen-label="{{ s.label }}" style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 16px;padding:16px 20px">
+            <div style="flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <h2 style="margin:0;font:600 17px/1.3 'IBM Plex Sans',sans-serif;color:#1E2430">{{ s.n }}. {{ s.title }}</h2>
+              <sc-if value="{{ s.hasPurpose }}"><p style="margin:0;font-size:13px;line-height:1.5;color:#667085;text-wrap:pretty">{{ s.purpose }}</p></sc-if>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <sc-for list="{{ s.counts }}" as="k"><span title="{{ k.label }}" style="height:22px;min-width:22px;display:inline-flex;align-items:center;justify-content:center;padding:0 7px;border-radius:4px;background:{{ k.bg }};font:600 12px/1 'IBM Plex Mono',monospace;color:{{ k.ink }}">{{ k.n }}</span></sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ s.subs }}" as="sub">
+            <sc-if value="{{ sub.hasTitle }}"><div style="padding:8px 20px;background:#FAFBFC;border-top:1px solid #EEF0F3;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">{{ sub.title }}</div></sc-if>
+            <sc-for list="{{ sub.items }}" as="it">
+              <div id="{{ it.anchor }}" style="display:flex;flex-wrap:wrap;gap:8px 28px;padding:12px 20px;border-top:1px solid #EEF0F3;background:{{ it.rowBg }}">
+                <div style="flex:1.15 1 340px;min-width:0;display:flex;gap:10px">
+                  <a href="{{ it.href }}" style="flex:none;width:38px;font:500 11px/22px 'IBM Plex Mono',monospace;color:#98A2B3">{{ it.ref }}</a>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <sc-if value="{{ it.hasZone }}"><span style="font-size:12px;font-weight:600;line-height:18px;color:#475467">{{ it.zone }}</span></sc-if>
+                    <p style="margin:0;font-size:14px;line-height:23px;color:#1E2430;text-wrap:pretty"><sc-for list="{{ it.segs }}" as="sg"><span style="background:{{ sg.bg }};padding:2px 1px;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone">{{ sg.t }}</span></sc-for></p>
+                  </div>
+                </div>
+                <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+                  <div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px">
+                    <span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:4px;background:{{ it.chipBg }};font-size:11.5px;font-weight:600;color:{{ it.ink }}">{{ it.label }}</span>
+                    <sc-if value="{{ it.hasNote }}"><p style="margin:0;font-size:13px;line-height:1.5;color:#475467;text-wrap:pretty">{{ it.note }}</p></sc-if>
+                    <sc-if value="{{ it.hasDeps }}">
+                      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
+                        <span style="font-size:11.5px;color:#98A2B3">Impacts</span>
+                        <sc-for list="{{ it.deps }}" as="d"><span style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border:1px solid #E4E7EC;border-radius:10px;font-size:11.5px;color:#475467;white-space:nowrap">{{ d.name }}</span></sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </sc-for>
+        </section>
+      </sc-for>
+
+      <sc-if value="{{ noMatch }}"><div style="padding:32px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;font-size:13px;color:#667085;text-align:center">No requirement with this rating.</div></sc-if>
+
+      <section id="beyond" data-screen-label="Beyond spec" style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:4px">
+          <h2 style="margin:0;font:600 17px/1.3 'IBM Plex Sans',sans-serif">In Relix, not in the spec</h2>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:#667085;text-wrap:pretty">Not rated. These exist in Relix and are either absent from the spec or scoped differently — several of the conflicts above come from here. Confirm with the spec authors whether each stays in the MVP.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,1.4fr);border-top:1px solid #EEF0F3;background:#FAFBFC;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">
+          <span style="padding:8px 20px">Relix feature</span><span style="padding:8px 12px">Spec position</span><span style="padding:8px 20px 8px 12px">Why it matters</span>
+        </div>
+        <sc-for list="{{ beyond }}" as="b" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,1.4fr);border-top:1px solid #EEF0F3;font-size:13px;line-height:1.45">
+            <span style="padding:10px 20px;font-weight:600;color:#1E2430">{{ b.name }}</span>
+            <span style="padding:10px 12px;color:#475467">{{ b.spec }}</span>
+            <span style="padding:10px 20px 10px 12px;color:#475467;text-wrap:pretty">{{ b.why }}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <section id="summary" data-screen-label="Summary" style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <div style="padding:20px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font:600 20px/1.3 'IBM Plex Sans',sans-serif">Summary</h2>
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#667085;text-wrap:pretty">Shares are counted per requirement line (all ratings, unweighted). After the Oct 7 pass the remaining gaps are the sub-type taxonomy, asset depth, condition-based maintenance, the Home operational layer and the model-level decisions still open with the spec authors.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px">
+            <div style="flex:1 1 150px;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid #E4E7EC;border-radius:8px"><span style="font:600 26px/1.1 'IBM Plex Sans',sans-serif;color:#0B6B4A">{{ pctG }}</span><span style="font-size:12.5px;color:#667085">fully covered</span></div>
+            <div style="flex:1 1 150px;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid #E4E7EC;border-radius:8px"><span style="font:600 26px/1.1 'IBM Plex Sans',sans-serif;color:#1E2430">{{ pctGL }}</span><span style="font-size:12.5px;color:#667085">covered or almost (green + light green)</span></div>
+            <div style="flex:1 1 150px;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid #E4E7EC;border-radius:8px"><span style="font:600 26px/1.1 'IBM Plex Sans',sans-serif;color:#B54708">{{ pctBuild }}</span><span style="font-size:12.5px;color:#667085">to build ({{ nY }} easy · {{ nO }} significant)</span></div>
+            <div style="flex:1 1 150px;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid #E4E7EC;border-radius:8px"><span style="font:600 26px/1.1 'IBM Plex Sans',sans-serif;color:#B42318">{{ nR }}</span><span style="font-size:12.5px;color:#667085">conflicts · {{ nX }} to clarify</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 72px 72px;gap:12px;padding:8px 14px;background:#FAFBFC;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085"><span>Area</span><span>Ratings</span><span style="text-align:right">Lines</span><span style="text-align:right">Covered*</span></div>
+            <sc-for list="{{ modules }}" as="m" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 72px 72px;gap:12px;align-items:center;padding:9px 14px;border-top:1px solid #EEF0F3;font-size:13px">
+                <span style="font-weight:600;color:#1E2430">{{ m.name }}</span>
+                <span style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#F2F4F7"><sc-for list="{{ m.bars }}" as="b"><span title="{{ b.title }}" style="width:{{ b.w }};background:{{ b.bg }}"></span></sc-for></span>
+                <span style="text-align:right;font-family:'IBM Plex Mono',monospace;color:#667085">{{ m.n }}</span>
+                <span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;color:#1E2430">{{ m.pct }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:8px 14px;border-top:1px solid #EEF0F3;font-size:12px;color:#98A2B3">* green + light green</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+            <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #E4E7EC;border-radius:8px">
+              <h3 style="margin:0;font-size:14px;font-weight:600">Done in the Oct 7 pass</h3>
+              <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.5;color:#344054">
+                <li>Preventive engine: shared plans model, automatic work-order generation with lead time, meter readings, “Preventive due soon” notifications (<a href="#s13">§13</a>, <a href="#s11">§11</a>, <a href="#s17">§17</a>)</li>
+                <li>Asset sheet: photo, commissioning date, Preventive and History tabs, indicators, decommission / delete, real QR with PNG and label formats (<a href="#s6">§6</a>, <a href="#s8">§8</a>)</li>
+                <li>Asset list: status KPIs, selection, row menu, export, bulk QR, import with mapping and validation (<a href="#s5">§5</a>, <a href="#s7">§7</a>)</li>
+                <li>Pagination on every list; “?” help icon; sign-in screen (<a href="#s2">§2</a>, <a href="#s4">§4</a>)</li>
+                <li>Home: last update, period selector, filters, calibration / control reminders (<a href="#s4">§4</a>)</li>
+                <li>Work orders: In progress KPI, request date, mandatory description, date checks, “Create another”, history trail, root cause analysis (<a href="#s9">§9</a>, <a href="#s10">§10</a>, <a href="#s19">§19</a>)</li>
+                <li>Alert rules per asset scope / owner / zone with recurring-failure detection (<a href="#s17">§17</a>)</li>
+                <li><b style="font-weight:600">Oct 12:</b> condition-based maintenance — measurement points, limits, automatic interventions (<a href="#s1">§1</a>); Smart alerts restored with a “more than N interventions” trigger (<a href="#s17">§17</a>)</li>
+              </ul>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #E4E7EC;border-radius:8px">
+              <h3 style="margin:0;font-size:14px;font-weight:600">Still missing</h3>
+              <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.5;color:#344054">
+                <li>Type › Sub-type taxonomy, Palliative sub-type, Opportunistic sub-type (<a href="#s1">§1</a>) — taxonomy left out of this pass</li>
+                <li>FMEA and an RCA record grouping several work orders (<a href="#s1">§1</a>)</li>
+                <li>Home: operational KPI set, priority alert cards, “My planning” tab (<a href="#s4">§4</a>)</li>
+                <li>5-level asset breakdown Machine › Sub-assembly › Component (<a href="#s5">§5</a>)</li>
+                <li>Team (pool) assignment on work orders (<a href="#s11">§11.1</a>); context KPIs on Plans (<a href="#s3">§3.2</a>)</li>
+              </ul>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #E4E7EC;border-radius:8px">
+              <h3 style="margin:0;font-size:14px;font-weight:600">Decisions pending with the spec authors</h3>
+              <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.5;color:#344054">
+                <li>Work orders called “Interventions” (<a href="#s2">§2.1</a>) and the “Preventive” menu label</li>
+                <li>Overdue / Waiting for parts as statuses — Relix shows them as badges, filters and KPIs (<a href="#s9">§9</a>)</li>
+                <li>Mandatory assignee at creation (<a href="#s10">§10</a>); one form vs. the 4-step wizard</li>
+                <li>Spare parts in the MVP (<a href="#s4">§4</a>); typed / branching checklists (<a href="#s12">§12</a>); notification centre (<a href="#s21">§21</a>)</li>
+                <li>Permission matrix to validate (<a href="#s15">§15</a>); autonomous maintenance as rounds, not work orders (<a href="#s1">§1</a>)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid #E4E7EC;border-radius:8px">
+            <h3 style="margin:0;font-size:14px;font-weight:600">Priorities</h3>
+            <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.5;color:#344054">
+              <li><strong style="color:#1E2430">Settle the open decisions with the spec authors</strong> — vocabulary, status model, mandatory assignee, Spare parts scope, checklist scope, notification centre, permission matrix.</li>
+              <li><strong style="color:#1E2430">Type › Sub-type taxonomy</strong> — unlocks Palliative → curative follow-up and Opportunistic work grouped on planned shutdowns.</li>
+              <li><strong style="color:#1E2430">Fix the asset hierarchy depth</strong> (5 levels) — the import format and QR labels already exist and will follow.</li>
+              <li><strong style="color:#1E2430">Home operational layer</strong> — KPI set and priority alert cards on top of the reminders now in place.</li>
+              <li><strong style="color:#1E2430">Condition-based maintenance</strong> — measurement points and thresholds on top of the new meter readings.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;highlight&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Marker&quot;,&quot;Row tint&quot;],&quot;default&quot;:&quot;Marker&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;}}">
+const R = {
+  g: { label: 'Covered', bg: '#CDEBD9', tint: '#F0F9F4', ink: '#0B6B4A', desc: 'Implemented or fully covered by the current Relix design.' },
+  lg: { label: 'Almost covered', bg: '#E2F0BE', tint: '#F6FAEA', ink: '#4A6A10', desc: 'Covered with a small adjustment.' },
+  y: { label: 'Missing · easy to add', bg: '#FFEA94', tint: '#FFF9DC', ink: '#7A5A00', desc: 'Missing, simple to add within the current architecture and UX.' },
+  o: { label: 'Significant change', bg: '#FFD3AB', tint: '#FFF2E6', ink: '#B54708', desc: 'Large change or impacts several modules.' },
+  r: { label: 'Conflicts with Relix', bg: '#FFC9C9', tint: '#FFF1F1', ink: '#B42318', desc: 'Different approach — would break or strongly challenge a Relix concept.' },
+  x: { label: 'Clarify / out of scope', bg: '#E1E5EB', tint: '#F4F5F7', ink: '#475467', desc: 'Unclear, duplicated, out of MVP scope or needs a decision.' },
+};
+const ORDER = ['g', 'lg', 'y', 'o', 'r', 'x'];
+
+const S = [
+  { n: '1', t: 'Maintenance strategy definitions', p: 'Reference names used in the application. The type describes the purpose of the intervention; the sub-type the triggering or execution logic.', subs: [['', [
+    ['Taxonomy', 'Two levels: Type (purpose) + Sub-type (trigger / execution logic), used consistently across the app.', 'y', 'Site configuration › WO types has one level; the sub-type is only a free “strategy” description. Add a Sub-types list per type and a Sub-type field on work orders.', ['Site configuration', 'WorkOrderPanel', 'WO filters', 'Maintenance plans', 'KPIs']],
+    ['Corrective · Palliative', 'Temporary return to service after a breakdown or defect. Example: temporary fix.', 'lg', 'Corrective type exists. Missing: Palliative sub-type and a prompt to create the curative follow-up when closing a palliative work order (follow-ups already exist at closure).', ['WO types', 'Intervention review']],
+    ['Corrective · Curative', 'Permanent repair after a breakdown or defect. Example: replace a bearing.', 'g', 'Corrective work order, Quick intervention, failure category, production-stop flag.'],
+    ['Preventive · Systematic', 'Triggered by a date, a duration, a counter or cycles. Example: oil change every 5,000 h.', 'lg', 'Maintenance plans offer calendar- and meter-based triggers. Hour counters are not recorded on assets yet, so meter plans cannot actually fire.', ['Maintenance plans', 'Asset Detail', 'Intervention']],
+    ['Preventive · Condition-based (CBM)', 'Triggered by a measured state or a threshold crossing. Example: vibration threshold exceeded.', 'o', 'Checklist Number steps have a normal range and raise anomalies, but nothing turns a reading into a work order. Needs measurement points per asset, reading history and threshold rules.', ['plant-model', 'Checklists', 'Maintenance plans', 'Notifications']],
+    ['Preventive · Predictive (PdM)', 'Anticipated from the forecast evolution of degradation. Example: failure expected within three weeks.', 'x', '“Predictive” exists as a work-order type. A forecasting engine (sensor data, models) is beyond a CMMS MVP — confirm whether the label is enough.'],
+    ['Improvement · Continuous improvement', 'Modification to durably improve reliability. Example: change a sensor mounting.', 'lg', 'Improvement type exists but is inactive by default — activate it.', ['Site configuration']],
+    ['Proactive · RCA / FMEA', 'Identify and remove the root causes of failures. Example: correct a misalignment.', 'o', 'Only a failure category exists. No root-cause fields, no RCA record grouping several work orders, no FMEA. New object and views.', ['Work order', 'Asset Detail', 'Site configuration']],
+    ['Prescriptive · Decision optimization', 'Recommend the optimal action given risks, costs and constraints. Example: reduce load before the shutdown.', 'x', 'Decision-support / analytics topic, not an MVP screen. Clarify whether it is only a type label.'],
+    ['Opportunity · Opportunistic intervention', 'Performed during a stop that is already required. Example: replacement during the annual shutdown.', 'y', 'Add as a sub-type. Its real value needs planned-shutdown windows in Planning to group work on — that part is larger.', ['WO types', 'Planning']],
+    ['Autonomous · TPM', 'Simple operator tasks to maintain equipment and detect anomalies. Example: cleaning, inspection, lubrication.', 'lg', 'Planning has an “Autonomous maintenance” track (operator rounds, missed / anomaly) — sample data only, no rounds model, not a work-order type. Relix treats it as rounds, not work orders: confirm that reading.', ['Planning', 'Checklists', 'Operator role']],
+  ]]] },
+  { n: '2', t: 'Navigation architecture', subs: [
+    ['2.1 Main menu', [
+      ['1 · Home', 'Dashboard.', 'g', ''],
+      ['2 · Assets', 'List / Graphic view / Equipment sheet.', 'g', 'List, Hierarchy and Plant layout views + Asset Detail.'],
+      ['3 · Interventions', 'List / Kanban / Creation.', 'g', 'Work orders: Board + List + creation panel.'],
+      ['Naming', 'The spec calls work orders “Interventions”.', 'r', 'In Relix, “Work order” is the record and “Intervention” is the focused execution mode (Start / Resume intervention). Adopting the spec wording merges two concepts. Recommended: Work order (OT) for the record, Intervention for execution.', ['All pages', 'Notifications', 'Chat']],
+      ['4 · Preventive', 'Maintenance plans / Checklists.', 'lg', 'Same content under “Maintenance setup”. Label only.', ['Sidebar']],
+      ['5 · Planning', 'Calendar.', 'g', ''],
+      ['6 · Documents', 'Document library.', 'g', ''],
+      ['Secondary · Teams & Users', 'Manage teams, users and access.', 'g', ''],
+      ['Secondary · Administration', 'Configuration.', 'g', 'Sidebar label is “Site configuration” (page = Administration). Align the label.'],
+      ['Scope', 'The spec menu has no Site dashboard, Spare parts or Suppliers & providers.', 'x', 'All three exist in Relix; Spare parts feeds checklists, Waiting and costs (see §4 correction). Scope decision needed.', ['Sidebar']],
+    ]],
+    ['2.2 Global top bar', [
+      ['', 'Global search with the reference placeholder “Search equipment, part, intervention…”.', 'g', 'Ctrl+K across equipment, work orders, parts, people, sites and locations.'],
+      ['', 'Plant / site selector.', 'g', 'Current plant switcher.'],
+      ['', 'Notifications with a counter badge.', 'g', 'Bell + unread badge, toasts, mark as read.'],
+      ['', 'Help / support through a “?” icon.', 'lg', 'Help & support sits in the profile menu. Add a dedicated “?” icon.', ['TopBar']],
+      ['', 'User profile: name + role + dropdown menu.', 'g', ''],
+    ]],
+    ['2.3 Cross-cutting behaviours', [
+      ['', 'List pages have search, filters, row actions and [y]pagination[/].', 'y', 'Search, filters and row “…” menus exist. No list is paginated — Relix lists scroll inside a 100vh page. Add a pagination footer (page size + pages) to the shared list pattern.', ['Assets', 'Work orders', 'Documents', 'Spare parts', 'Checklists', 'Plans', 'Teams']],
+      ['', 'Creation / editing in a right-side panel where the mockup provides one.', 'g', 'Work order and Quick intervention panels, Asset wizard, Documents and Administration drawers.'],
+      ['', 'Status indicators use colour + label; colour is never the only carrier of information.', 'g', 'Every status, priority and Waiting pill carries text (and often an icon).'],
+      ['', 'Forms mark mandatory fields with a red asterisk.', 'lg', 'Asterisks on plans and assets; the work-order wizard relies on a disabled “Next step” + “Required: …” note. Harmonise.', ['WorkOrderPanel', 'QuickIntervention']],
+    ]],
+  ] },
+  { n: '3', t: 'Visual system and UI/UX rules', subs: [
+    ['3.1 Palette observed in the mockups', [
+      ['Main navigation', '#34050D (very dark burgundy) — top bar and sidebar.', 'g', ''],
+      ['Global action / accent', '#C00018 — creation CTAs, active selection, critical errors.', 'g', ''],
+      ['Validation / success', '#0B6B4A (dark green, mockup approximation, “to review”) — validation buttons on planning / preventive, active statuses.', 'x', 'Relix uses #0B6B4A for success / In progress only; every primary button is red. Green validation buttons would introduce a second primary colour — see §21.'],
+      ['Main background', '#F6F7F9 — neutral surfaces and backgrounds.', 'g', ''],
+      ['Text', 'Primary #1E2430 — titles and content · Secondary #667085 — subtitles, metadata.', 'g', ''],
+      ['Information', 'Blue — Scheduled, information and some KPIs.', 'g', '#2456B8.'],
+      ['Warning', 'Orange — intermediate priority / alert.', 'g', '#B54708 — Medium priority, Waiting flag.'],
+      ['Critical', 'Red — delays, critical, stops.', 'g', '#B42318 / #C00018 — overdue rows, Critical priority.'],
+    ]],
+    ['3.2 Composition principles', [
+      ['', 'Fixed left navigation and fixed global top bar.', 'g', 'Sidebar 232 / 64 px (collapsible) + 56 px top bar.'],
+      ['', 'Page titles top-left with a short explanatory subtitle.', 'g', ''],
+      ['', 'Context KPIs below the title when relevant.', 'lg', 'Work orders and Site dashboard have KPI strips; Assets shows zone cards; Planning, Documents and Plans have none.', ['Assets', 'Planning', 'Documents']],
+      ['', 'Filters aligned horizontally above lists / calendars.', 'g', 'Documents deliberately uses a left browse rail instead.'],
+      ['', 'Primary actions top-right; secondary actions in a “…” menu.', 'g', ''],
+      ['', 'Side panels for quick create / edit without leaving the list context.', 'g', ''],
+      ['', 'Light-bordered cards, slightly rounded corners, high information density.', 'g', '1 px #E4E7EC, radius 8, no shadow.'],
+    ]],
+  ] },
+  { n: '4', t: 'Home page', p: 'Give an immediate view of the site maintenance situation and of the signed-in user’s tasks.', subs: [
+    ['Entries / navigation', [
+      ['', 'Main menu → Home.', 'g', ''],
+      ['', 'Landing page after sign-in.', 'lg', 'Home is the default page; no sign-in screen is designed yet.', ['New: Sign-in']],
+    ]],
+    ['Expected content', [
+      ['Header', 'Hello [First name] + [y]date / time of last update[/]; [y]period selector[/]; [y]Filters button[/]; Create intervention button.', 'lg', 'Greeting, date, plant and team + Quick intervention / New work order exist. Missing: “updated at”, period selector, Filters.', ['Home']],
+      ['KPIs', 'Interventions today; Interventions in progress; [x]Parts consumed (month); References used (month)[/]; [lg]Preventive plan / delays[/].', 'y', 'Relix Home shows management KPIs instead (planned ratio, MTTR / MTBF, backlog, unplanned downtime). The spec’s counters are easy to compute; decide which set, or offer both through role-based presets.', ['Home']],
+      ['Priority alerts', 'Overdue interventions; out-of-stock parts; intervention requests; critically overdue preventive. Cards are clickable to their context.', 'y', 'No dedicated alert block. Data exists (derived Overdue, Requested status, part stock); overdue preventive depends on plans generating work orders.', ['Home', 'parts-model', 'Maintenance plans']],
+      ['Most failing equipment', 'Equipment list + number of failures over 30 days + visual trend.', 'g', 'KPI carousel slide “Most failures · Last 30 days” with trend.'],
+      ['My ToDo', 'Tabs [x]Interventions / My planning / My interventions[/]. Grouped by date, time, equipment, title / type, priority.', 'lg', 'Relix: My to-do / Team to-do, grouped by state (Scheduled, Overdue, Urgent, Paused…) with Start / Resume. “Interventions” vs. “My interventions” is unclear; “My planning” (day agenda) is easy to add.', ['Home']],
+      ['Real-time activity', 'Recent events: WO completed, part consumed, intervention request, preventive done, low stock.', 'g', 'Home hub › Activity (work-order events, stock alerts, mentions).'],
+      ['Reminders', 'Due dates of controls / calibrations with remaining time.', 'y', 'No calibration / regulatory-control tracking. Simplest: next due of Inspection plans + certificate expiry from Documents (Certificate category exists).', ['Maintenance plans', 'Documents', 'Home']],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Direct access to an intervention from My ToDo.', 'g', 'Row click opens the work order; Start / Resume runs it.'],
+      ['', '“View all…” link to the full list of alerts, equipment, interventions, activity or reminders.', 'g', 'Panel-header “View all” pattern; alert / reminder targets come with those blocks.'],
+      ['', 'Home is described as “customizable”; the mechanism is not defined.', 'x', 'Not designed. Role-based presets (Technician / Supervisor / Manager) are light; a user-arranged widget layout would be a significant change.', ['Home']],
+    ]],
+    ['To correct', [
+      ['', 'KPIs “parts consumed” and “low stock” appear in the mockup, but the Spare Parts module is V2 / Core.', 'r', 'Relix ships Spare parts in the MVP and depends on it: required parts on checklist steps, Waiting = parts, parts used at closure, costs, storerooms in the plant hierarchy. Removing it breaks these flows — recommend keeping a light Spare parts in the MVP.', ['Spare parts', 'Checklists', 'Work orders', 'Costs', 'Intervention']],
+    ]],
+  ] },
+  { n: '5', t: 'Assets — List and graphic view', p: 'Centralise equipment and allow navigation by list or by graphic tree.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Assets.', 'g', ''],
+      ['', 'Tabs List / Graphic view.', 'g', 'Three views: List, Hierarchy, Plant layout.'],
+    ]],
+    ['Expected content', [
+      ['KPIs', 'Total equipment; In service; Stopped; Out of service.', 'lg', 'The three statuses exist; the strip shows zone cards instead. Add status counts.', ['Assets']],
+      ['Search', 'By equipment, code, type, location.', 'g', ''],
+      ['Filters', 'Status; Type; Location; Criticality; Filters button.', 'g', 'Plus Owner and Fixed / Mobile.'],
+      ['List', '[y]Selection[/]; [y]photo[/]; Equipment; Code; Type; Location; Status; Criticality; Owner; [lg]Actions[/].', 'lg', 'Relix: Asset · location (code in mono), Type, Status, Criticality, Owner, Open WOs. Missing row checkboxes (needed for bulk QR / export), photo, row “…” menu.', ['Assets']],
+      ['Graphic view', 'Hierarchical tree with a left tree panel, zoom, legend, coloured statuses and equipment selection.', 'g', 'Hierarchy view: searchable tree + node chart, zoom, selected-node card.'],
+      ['Business hierarchy', 'The RFQ asks for up to 5 levels: Location / Production line → Area / Asset → Machine → Sub-assembly → Component.', 'o', 'Relix: Plant › Zone › Line › Step (functional locations) › Asset, with assets as leaves. No Machine › Sub-assembly › Component breakdown. Needs asset parent / child across wizard, tree, map, work orders on a component, parts and docs per component. Map level names first.', ['plant-model', 'AssetWizard', 'Assets', 'Asset Detail', 'Work orders', 'Spare parts']],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Switch List ↔ Graphic view without changing module.', 'g', ''],
+      ['', 'Click an equipment to open its sheet.', 'g', ''],
+      ['', 'Create an equipment from the top-right CTA.', 'g', 'New asset → Asset wizard.'],
+      ['', 'Pagination and number of items per page.', 'y', 'See §2.3.', ['Assets']],
+    ]],
+  ] },
+  { n: '6', t: 'Assets — Equipment sheet', p: 'Show all useful information about an equipment with direct access to interventions, preventive, documents and QR code.', subs: [
+    ['Entries / navigation', [
+      ['', 'Assets → click an equipment.', 'g', ''],
+      ['', 'QR code → opens the equipment sheet.', 'lg', 'Asset Detail has a deep link (?id=) and Quick intervention can scan. The QR shown is a generated pattern — it must encode the Asset Detail URL.', ['Asset Detail', 'QuickIntervention']],
+    ]],
+    ['Expected content', [
+      ['Identity', '[y]Photo[/], name, status, code, type, hierarchical location.', 'lg', 'All but the photo — assets have no photo yet.', ['AssetWizard', 'Asset Detail', 'Assets']],
+      ['Tabs', 'Summary; Interventions; [y]Preventive[/]; Documents — with counters.', 'y', 'Relix: Overview / Work orders / Documents (/ Reservations for mobile assets). A Preventive tab needs plans in a shared model — plan data lives inside the Maintenance plans page today.', ['Maintenance plans', 'Asset Detail']],
+      ['General information', 'Code; Type; Manufacturer; Model; Year; Location; Owner; Criticality; Status; [y]Commissioning date[/].', 'lg', 'All present except the commissioning date.', ['AssetWizard']],
+      ['Maintenance indicators', 'Open WOs; Overdue WOs; [y]Active preventive plans; Next preventive[/].', 'y', 'Work-order counts come from the WO store; plan figures depend on the shared plans model.', ['Asset Detail', 'Maintenance plans']],
+      ['Recent interventions', 'WO number; description; assignee; status; age / date.', 'g', ''],
+      ['Description', 'Equipment description.', 'g', ''],
+      ['Key characteristics', 'Mockup examples: max temperature, capacity, power, voltage.', 'g', 'Key specifications + custom fields per asset type, with site units.'],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create intervention button prefilled with the current equipment.', 'g', ''],
+      ['', 'QR code button to display / print the QR.', 'g', 'QR code + Print label.'],
+      ['', '“…” action menu: edit / [y]decommission[/] / [y]delete[/], according to rights.', 'y', 'Only Edit exists. Decommission = Out of service + reason / date + warning on open WOs and active plans; Delete = usage-checked confirmation (pattern exists in Administration). Rights follow the permission matrix.', ['Asset Detail', 'Maintenance plans', 'Permissions']],
+    ]],
+    ['Open points', [
+      ['', 'The “key characteristics” are illustrative; the list of configurable attributes is not defined.', 'g', 'Answered by Relix: custom fields per asset type (Site configuration › Custom fields).'],
+    ]],
+  ] },
+  { n: '7', t: 'Assets — Creation, editing and actions', subs: [
+    ['7.1 Creation / editing', [
+      ['General information', 'Code*; Name*; Type*; Model; Manufacturer; Year.', 'g', 'Asset wizard › Type + Identity.'],
+      ['Location', 'Line*; Zone*.', 'lg', 'Relix asks Zone › Line › Step — deeper than this. Note the spec is inconsistent: 5 levels in §5, 2 here.', ['AssetWizard']],
+      ['Additional information', 'Status*; Criticality*; Owner; [y]Commissioning date[/].', 'lg', 'Commissioning date missing.'],
+      ['Description', 'Free text.', 'g', ''],
+      ['Photo', 'Optional upload by drag & drop or file selection.', 'y', 'Reuse the Spare parts image upload (resized).', ['AssetWizard', 'Asset Detail', 'Assets']],
+      ['Form', 'Cancel; Save; mandatory-field validation; creation and editing through the same side panel.', 'lg', 'Same component for create / edit. Relix uses a 5-step wizard (Type → Location → Identity → Specifications → Documents) rather than one form — allow Save from any step in edit mode.', ['AssetWizard']],
+    ]],
+    ['7.2 Global and per-equipment actions', [
+      ['Global', 'Import equipment.', 'o', 'No import. Needs upload, column mapping, validation report and creation of missing locations / types — touches the plant hierarchy and configuration.', ['Assets', 'plant-model', 'config-model']],
+      ['Global', 'Export the list.', 'y', 'Work orders already has Export — reuse.', ['Assets']],
+      ['Global', 'Generate / print QR codes.', 'y', 'Depends on row selection (§5).', ['Assets']],
+      ['Global', 'Data configuration → Administration.', 'lg', 'Asset types, criticality, plant hierarchy and custom fields live in Site configuration; add the shortcut to the Assets “…” menu.'],
+      ['Per equipment', 'Edit the equipment; Display / print the QR code.', 'g', ''],
+      ['Per equipment', 'Decommission; Delete the equipment.', 'y', 'See §6 actions.'],
+    ]],
+  ] },
+  { n: '8', t: 'Assets — QR codes', p: 'Quick identification of an equipment and direct access to its sheet via QR code.', subs: [
+    ['Entries / navigation', [
+      ['', 'Assets global action menu → Generate / print QR codes.', 'y', 'No bulk entry yet.', ['Assets']],
+      ['', 'Equipment action menu → Display / print the QR code.', 'g', ''],
+    ]],
+    ['Expected content', [
+      ['Single QR', 'Equipment identity + code + type + location + status; QR code; [y]PNG download[/].', 'lg', 'Label dialog exists; add Download PNG.', ['Asset Detail']],
+      ['Printing', '[y]Label format choice[/]; print preview; Print QR code button.', 'lg', 'Print label exists with one layout; add format presets (e.g. 50×25 mm, 70×35 mm, A4 sheet).', ['Asset Detail']],
+      ['Bulk QR', 'Select equipment from the list, then generate / print as a batch.', 'y', 'Row selection + A4 label-sheet layout.', ['Assets']],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'The QR must point to the equipment sheet.', 'lg', 'Encode Asset Detail.dc.html?id=… (current QR is a placeholder pattern).'],
+      ['', 'Download the QR as a PNG image; print in a label format chosen by the user.', 'x', 'Duplicate of the rows above.'],
+    ]],
+  ] },
+  { n: '9', t: 'Interventions — List / Kanban', p: 'Track and prioritise all maintenance interventions.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Interventions.', 'g', 'Work orders (see naming conflict §2.1).'],
+      ['', 'Home → My ToDo / alerts / Create intervention CTA.', 'g', 'Alerts depend on §4.'],
+    ]],
+    ['Expected content', [
+      ['KPIs', 'Open; Overdue; Critical; [lg]In progress[/].', 'lg', 'Relix: Open, Overdue, Critical, Waiting (clickable filters). Add or swap In progress.', ['Work orders']],
+      ['Modes', 'Kanban / List.', 'g', 'Board (default) / List.'],
+      ['Search', 'Search an intervention.', 'g', ''],
+      ['Filters', 'Team; Status; Priority; Filters button; Reset.', 'g', 'Plus type, line, assignee, due, production stop, incomplete.'],
+      ['List columns', 'Selection; WO number; Intervention title + sub-information; Equipment; Status; Priority; Assigned to; Planned; Actions.', 'lg', 'All present. Relix identifies a work order by “Asset — Task” with the WO-ID secondary; the spec puts the number first. Keep the ID as a secondary column.'],
+      ['Visible statuses', 'Overdue; Scheduled; In progress; Waiting for parts; Completed.', 'r', 'In Relix, Overdue is derived (Scheduled + past date) and Waiting is a flag with several reasons that coexists with any open status; Requested is a real status the spec omits. Board columns, drag & drop rules and KPIs rely on this. Show Overdue / Waiting as badges, not statuses.', ['Workflow model', 'Board', 'Planning', 'Home', 'KPIs']],
+      ['Visible priorities', 'Critical; High; Medium; Low.', 'g', ''],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create intervention CTA.', 'g', ''],
+      ['', 'Sort on relevant columns.', 'g', ''],
+      ['', 'Pagination.', 'y', 'See §2.3.', ['Work orders']],
+      ['', 'Contextual actions per intervention via “…”.', 'g', ''],
+    ]],
+  ] },
+  { n: '10', t: 'Interventions — Create an intervention', p: 'Quickly create a corrective, preventive, improvement or inspection work order from any context.', subs: [
+    ['Entries / navigation', [
+      ['', 'Interventions / Home / Equipment sheet → Create an intervention.', 'g', 'Same panel from anywhere, plus Quick intervention (declare and start in 2 steps).'],
+      ['', 'Planning → creation from a slot.', 'y', 'Planning only has “Create work order” in the backlog. Add click / drag on an empty slot → panel with date, time and technician prefilled.', ['Planning', 'WorkOrderPanel']],
+    ]],
+    ['Expected content', [
+      ['Structure', 'One form in three blocks: General information · Details · Parts and documents.', 'lg', 'Relix uses a 4-step wizard (Essentials → Checklists → People → Details). Same fields, different order; checklists and people are steps the spec does not have.'],
+      ['1. General information', 'Equipment*; Intervention type*: Corrective / Preventive / Improvement / Inspection; Priority*; Desired date and time.', 'g', 'Relix also offers Predictive. The date sits in the Details step.'],
+      ['1. General information', 'Request date*.', 'lg', 'Relix stamps it automatically (“Requested by”). Make it editable only for back-dated declarations.'],
+      ['1. General information', 'Assigned to* — mandatory at creation.', 'r', 'Relix allows unassigned requests (status Requested, assign when scheduling) and assigns per checklist part by skill. A mandatory assignee blocks operator requests and Quick intervention. Keep optional; require it to schedule.', ['WorkOrderPanel', 'QuickIntervention', 'AssignmentEditor', 'Planning']],
+      ['2. Details', 'Title*; Description*; Failure category; Production stop Yes / No.', 'lg', 'All present; Description is optional in Relix (fast declarations). Decide whether it is mandatory for Corrective only.'],
+      ['3. Parts and documents', 'Required parts → Add a part; Documents → Add a document.', 'g', 'Parts auto-added from checklists (“From checklist”) + manual add; documents.'],
+      ['Form footer', '[y]Create another intervention[/]; Cancel; Create the intervention.', 'lg', 'Relix: Cancel / Previous / Next step / Create work order. Add “Create another” on the last step.', ['WorkOrderPanel']],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'From an equipment sheet, the equipment must be prefilled.', 'g', ''],
+      ['', 'Creation produces a WO identifier and makes the WO visible in the list and in planning according to its date.', 'g', 'WO-xxxx; dated work orders appear in Planning, undated ones in the backlog.'],
+      ['', 'The RFQ also asks to define WO steps; in the MVP mockups this is carried by checklists.', 'g', 'Several checklists per work order with typed steps.'],
+    ]],
+  ] },
+  { n: '11', t: 'Planning', p: 'Plan and re-plan interventions considering technicians, teams and workload.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Planning.', 'g', ''],
+      ['', 'Preventive → automatically generated interventions visible in planning.', 'y', '“Generate work order now” only shows a confirmation; plans do not write work orders to the shared store yet.', ['Maintenance plans', 'WO store', 'Planning', 'Work orders']],
+    ]],
+    ['Expected content', [
+      ['KPIs', 'Planned interventions; Overdue; Critical; Planned load; Average load rate.', 'lg', 'Load per technician is shown (load bars, Over / Off) but there is no KPI strip.', ['Planning']],
+      ['Views', 'Day / Week / Month.', 'g', ''],
+      ['Time navigation', 'Previous / next period, date selector, Today button.', 'g', ''],
+      ['Resources', 'All technicians filter + technician and team rows / avatars.', 'g', 'Technician filter, workload toggle, off-shift and absence shading.'],
+      ['Calendar', 'Day columns, hour rows; intervention cards with equipment, subject and assignee.', 'g', ''],
+      ['Filters', 'Technician / team + additional filters.', 'g', ''],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create an intervention from a calendar slot.', 'y', 'See §10.', ['Planning']],
+      ['', 'Schedule / re-schedule an existing intervention.', 'g', 'Drag & drop, backlog, split per checklist part, undo.'],
+      ['', 'Workload visibility is expected; the exact capacity calculation is not defined.', 'g', 'Answered by Relix: capacity = weekly shifts − absences; slots without a qualified, available person are striped and refuse drops.'],
+    ]],
+    ['11.1 Creation from planning', [
+      ['Equipment*', 'Select an equipment.', 'g', ''],
+      ['Intervention type*', 'Corrective / Preventive / Improvement / Inspection.', 'g', ''],
+      ['Title*', 'Intervention title.', 'g', ''],
+      ['Priority*', 'Priority selector.', 'g', ''],
+      ['Technician / Team*', 'Assignment.', 'lg', 'People are assigned per checklist part; assigning a team (pool) exists on plans, not on work orders. On “mandatory”, see §10.', ['PeopleSelect', 'WorkOrderPanel']],
+      ['Checklist', 'Optional checklist + [y]create a new checklist[/].', 'lg', 'Checklist step with picker and preview; no “New checklist” shortcut inside the panel.', ['WorkOrderPanel', 'Checklist Editor']],
+      ['Date and time*', 'Prefilled from the selected slot.', 'y', 'Depends on slot creation.'],
+      ['Estimated duration', 'Planned duration.', 'g', 'Also derived from checklist step minutes.'],
+      ['Description', 'Optional free text.', 'g', ''],
+    ]],
+  ] },
+  { n: '12', t: 'Preventive — Checklists', p: 'Create reusable checklists defining the tasks to perform during a preventive intervention.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Preventive → Checklists.', 'g', ''],
+      ['', 'Planning → create an intervention → New checklist.', 'y', 'See §11.1.', ['WorkOrderPanel']],
+    ]],
+    ['Expected content', [
+      ['List', 'Checklist name; Description; Number of tasks; Created on; Modified on; actions.', 'g', 'Plus Used in; Edit / Duplicate / Delete.'],
+      ['Search / filters', 'Search a checklist + Filters menu.', 'g', ''],
+      ['General information', 'Checklist name*; optional description.', 'g', ''],
+      ['Tasks', 'Manual add; [y]search among existing tasks[/]; ordered list.', 'lg', 'Quick-add and step-type palette exist; no picker to reuse steps from other checklists.', ['Checklist Editor', 'checklist-model']],
+      ['Simple task (mockup)', 'Task label; checkbox; reorder handle; delete.', 'g', ''],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create a checklist; add / delete tasks; reorder tasks by drag & drop; save or cancel.', 'g', ''],
+    ]],
+    ['Open points', [
+      ['', 'The sources show a linear checklist. Yes / No conditions, value entries, parts / consumables per step and workflow logic are not in these files and are therefore not confirmed requirements.', 'r', 'Relix goes well beyond: typed steps (Yes / No, Number, Single choice, Parts…), branching workflow view, skills + minutes, tools and documents per step. Assignment by skill, required parts, tool reservations and costs are computed from them. Keep, and submit them to the authors as proposed requirements; the list view already covers the linear case.', ['Checklist Editor', 'StepEditor', 'AssignmentEditor', 'Planning', 'Spare parts', 'Costs']],
+    ]],
+  ] },
+  { n: '13', t: 'Preventive — Maintenance plans', p: 'Define preventive rules able to generate interventions automatically.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Preventive → Maintenance plans.', 'g', ''],
+    ]],
+    ['Expected content', [
+      ['List', 'Plan name; Equipment(s); Frequency; Checklist; Estimated duration; Status; actions.', 'g', 'Plus Next work order.'],
+      ['Search / filters', 'Search a plan + Filters.', 'g', 'Trigger filter: Calendar / Meter.'],
+      ['Creation — general', 'Plan name*; optional description; Equipment*.', 'g', ''],
+      ['Frequency', 'Repeat every [value] [unit] — mockup example: 500 hours.', 'lg', 'The form supports it; hour counters are not recorded on assets (see §1, Systematic).', ['plant-model', 'Asset Detail']],
+      ['Checklist', 'Associated checklist* + New checklist CTA.', 'g', ''],
+      ['Duration', 'Estimated duration.', 'g', ''],
+      ['Status', 'Active / inactive; an active plan generates interventions automatically.', 'lg', 'Toggle exists; generation is simulated.'],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create, edit, activate / deactivate a plan.', 'g', 'Plus Delete, Generate now, View in planning.'],
+      ['', 'Generate interventions automatically according to the frequency.', 'y', 'Write generated work orders to the WO store — also needed by Home alerts, the Asset Detail Preventive tab and reminders.', ['Maintenance plans', 'WO store', 'Home', 'Asset Detail']],
+      ['', 'Generated interventions appear in the list and in planning.', 'y', 'Same dependency.', ['Work orders', 'Planning']],
+    ]],
+  ] },
+  { n: '14', t: 'Documents', p: 'Centralise technical documents and make them findable from Documents and from the linked business objects.', subs: [
+    ['Entries / navigation', [
+      ['', 'Menu → Documents; Equipment sheet → Documents tab; Intervention → add a document.', 'g', 'Shared linked-documents block on Asset Detail, Work order and checklist steps.'],
+    ]],
+    ['Expected content', [
+      ['KPIs', 'Total documents; Plans; Procedures.', 'lg', 'Counts per category in the left rail; no KPI strip.', ['Documents']],
+      ['Search', 'By document, machine or type.', 'g', ''],
+      ['Filters', 'Type; Equipment; Filters button.', 'g', 'Category, plant zone, views (Favorites, Updated, Not linked, Archived).'],
+      ['Categories', 'All; Plans; Manuals; Procedures; Photos; Reports; Others.', 'lg', 'Relix: Drawing, Manual, Procedure, Datasheet, Certificate, Photo, Report… Rename Drawing → Plans (watch the clash with “Maintenance plans”).', ['docs-model']],
+      ['Display', 'Document cards with preview, name, type, version, equipment, date, favourite and context menu.', 'g', 'List and grid.'],
+      ['Preview panel', 'Title; type / version; equipment; metadata; Open; Download; actions; document preview with zoom.', 'g', ''],
+    ]],
+    ['Actions and behaviours', [
+      ['', 'Create / import a new document.', 'g', ''],
+      ['', 'Link the document to an equipment and / or an intervention.', 'g', 'Plus checklist steps.'],
+      ['', 'Search, filter, open, download.', 'g', ''],
+      ['', 'The RFQ asks for versioning and document updates; the version UI is not shown in the mockups.', 'g', 'Upload new version, version history with notes, archive.'],
+    ]],
+  ] },
+  { n: '15', t: 'Teams & Users', p: 'Part of the MVP navigation, used for access management. No detailed mockup in the sources.', subs: [['', [
+    ['Teams', 'Manage the technicians and teams used in assignment and planning.', 'g', 'Plus skills catalogue, shifts and absences.'],
+    ['Users', 'Identified users with their role visible in the top bar.', 'g', ''],
+    ['Assignments', 'Assign tasks / interventions and equipment to owners.', 'g', 'Asset owner + work-order assignments per checklist part.'],
+    ['Access', 'Linked to access management; the exact role / permission matrix is to be defined.', 'lg', '“Permissions by role” matrix designed as a proposal to validate.'],
+    ['To specify', 'Users list, teams screen, roles, permissions, invitation / deactivation, per-site scope.', 'g', 'All designed: users list, roles, permission matrix, Invite user, Deactivated status, site access.'],
+  ]]] },
+  { n: '16', t: 'Administration', p: 'The Administration entry is explicitly in the MVP; detailed screens are not provided.', subs: [['', [
+    ['Asset data configuration', 'Manage equipment types and locations from Administration.', 'g', 'Asset types + plant hierarchy editing.'],
+    ['Settings', 'Entry point for the reference lists used by dropdowns.', 'g', 'Schema-driven lists: asset types, criticality, WO types, failures, priorities, statuses, part categories, cost centers, custom fields, labels, units, sites.'],
+    ['Security / users', 'Part of the cross-cutting MVP scope, without a detailed screen.', 'x', 'User access lives in Teams & users. Password policy / SSO not designed — clarify the need.'],
+    ['To specify', 'Configurable reference lists, administration rights, configuration of priorities / statuses / types, site / plant management.', 'lg', 'All present. Status configuration must stay label / colour only — the workflow (Requested → Scheduled → In progress → Completed) is fixed.', ['config-model', 'Workflow model']],
+  ]]] },
+  { n: '17', t: 'Notifications and alerts', subs: [['', [
+    ['Top bar', 'Bell icon + counter badge.', 'g', ''],
+    ['Home', 'Priority alerts block and Reminders block.', 'x', 'Duplicate of §4 (rated there).'],
+    ['Planning', 'Reminder before a preventive intervention is due.', 'y', 'Add a “Preventive due soon” type to the notification catalogue (lead time per plan); depends on generated work orders.', ['notif-model', 'Maintenance plans']],
+    ['RFQ', 'Alerts for inspections, delays, recurring failures; customisable and assignable to machines / owners.', 'o', 'Relix has personal preferences (level, email, push, scope, quiet hours) but no alert rules per asset / owner and no recurring-failure detection. Needs a rule object (trigger × asset scope × recipients).', ['notif-model', 'Notification Settings', 'Assets', 'Home']],
+    ['Note', 'The full notification centre, read / unread and notification preferences are not defined in the screens.', 'g', 'Already designed: bell list with read state, toasts, Notification settings.'],
+  ]]] },
+  { n: '18', t: 'Reference business journeys', subs: [
+    ['18.1 Curative breakdown', [
+      ['1', 'Detection / declaration: identify the equipment, possibly via QR code.', 'g', 'Quick intervention: search or scan.'],
+      ['2', 'Create the intervention: title, description, priority, assigned technician.', 'g', ''],
+      ['3', 'Planning: date, duration and required parts if needed.', 'g', ''],
+      ['4', 'Execution: status switches to In progress.', 'g', 'Set when the intervention starts.'],
+      ['5', 'Closure: report, parts used, time, documents.', 'g', 'Review & close: report, parts used, actual time, photos, costs.'],
+      ['6', 'History: automatic update of the equipment sheet.', 'lg', 'Closed work orders appear in the asset’s Work orders tab; no asset timeline (readings, replaced parts, status changes).', ['Asset Detail']],
+    ]],
+    ['18.2 Recurring preventive', [
+      ['1', 'Create the maintenance plan and its frequency.', 'g', ''],
+      ['2', 'Create or associate the checklist.', 'g', ''],
+      ['3', 'Automatically generate the intervention when due.', 'y', 'Simulated today (§13).', ['Maintenance plans', 'WO store']],
+      ['4', 'Show the intervention in planning.', 'y', 'Same dependency.'],
+      ['5', 'Notify the technician before the due date.', 'y', 'See §17.'],
+      ['6', 'Execute / close the intervention and update history.', 'g', ''],
+    ]],
+  ] },
+  { n: '19', t: 'Data and validation rules', subs: [['', [
+    ['', 'Fields marked * are mandatory and block saving when invalid.', 'g', ''],
+    ['', 'Dates must be consistent; the RFQ requires blocking incorrect entries.', 'lg', 'Mobile-equipment conflicts block saving; generic date checks (end before start, desired before request) are not systematic.', ['Forms']],
+    ['', 'Statuses, priorities, types and categories come from controlled reference lists.', 'g', ''],
+    ['', 'Each equipment and each intervention has a unique identifier.', 'g', ''],
+    ['', 'Destructive actions (deletion) are protected by a confirmation.', 'g', 'Delete confirmation with usage check.'],
+    ['', 'Business histories remain viewable from the equipment and / or the intervention.', 'y', 'Work orders have a Discussion but no audit trail of status, assignment and date changes. Add a History timeline on work orders and assets.', ['Work order', 'Asset Detail', 'WO store']],
+  ]]] },
+  { n: '21', t: 'To finish (open points)', subs: [['', [
+    ['', 'Exact content of the intervention sheet during execution and closure.', 'g', 'Relix proposal exists: focused Intervention mode (one step at a time, docked chat, pause) + Review & close. Share it with the authors.'],
+    ['', 'Teams & Users screens and roles / permissions matrix.', 'g', 'Designed; matrix to validate.'],
+    ['', 'Administration screens and configurable reference lists.', 'g', ''],
+    ['', 'Notification centre and user preferences (rather remove from the MVP?).', 'r', 'Relix relies on notifications for chat mentions, reassignment requests and critical toasts. Removing the centre breaks collaboration; at most defer advanced preferences (quiet hours, push).', ['TopBar', 'Chat', 'notif-model']],
+    ['', 'CTA colour rule: global red vs. validation green in some mockups.', 'g', 'Decided in Relix: red = primary action, green = success status only.'],
+    ['', 'Exact Home customisation mechanism (by role, positions, etc.).', 'x', 'Duplicate of §4.'],
+  ]]] },
+];
+
+const MODULES = [['Foundations (nav, UI)', ['1', '2', '3']], ['Home', ['4']], ['Assets & QR', ['5', '6', '7', '8']], ['Work orders', ['9', '10']], ['Planning', ['11']], ['Checklists & plans', ['12', '13']], ['Documents', ['14']], ['Teams & admin', ['15', '16']], ['Notifications', ['17']], ['Journeys & data rules', ['18', '19']], ['Open points', ['21']]];
+
+const BEYOND = [
+  ['Spare parts & storerooms', 'V2 / Core', 'Feeds checklist steps, the Waiting flag, parts used at closure and costs.'],
+  ['Suppliers & providers', 'Not in spec', 'Hourly rates, travel fees and rental rates used by work-order costs.'],
+  ['Work-order costs', 'Not in spec', 'Labour, parts, consumables, services, rentals — role rates are fixed defaults.'],
+  ['Site dashboard & multi-site', 'Site selector only', 'Business › site hierarchy, per-site KPIs and units.'],
+  ['Collaboration', 'Not in spec', 'Work-order chat, team / site channels, direct messages, @mentions — depends on the notification centre (§21).'],
+  ['Skills, shifts, absences, auto-assignment', 'Capacity “not defined” (§11)', 'Answers the load calculation; drives slot striping and suggestions.'],
+  ['Mobile assets & reservations', 'Not in spec', 'Blocks scheduling on conflicts; striped slots in Planning.'],
+  ['Quick intervention', 'Partly (§18.1 step 1)', 'Declare and start in 2 steps; work order flagged “Information incomplete”.'],
+  ['Waiting flag with reasons', '“Waiting for parts” status', 'Conflict in §9.'],
+  ['Typed steps & branching workflow', 'Linear checklist', 'Conflict in §12.'],
+  ['Autonomous maintenance track', 'Type only (§1)', 'Sample data; no rounds model yet.'],
+  ['Display language selector', 'Not in spec', 'UI only.'],
+];
+
+// Implementation pass of Oct 7, 2026 — requirements verified or implemented in the app.
+const RES = {"1-04":"Asset meters (operating hours, cycles) with reading history on Asset Detail › Preventive; meter plans compute the next threshold and ETA from real readings and generate their work order.",
+  "1-05":"Condition-based maintenance (Oct 12): measurement points per asset with min / max limits and reading history (Asset Detail › Preventive); a reading out of limits creates a Preventive intervention marked condition-based (once while one is open) or notifies, and feeds the “Measurement out of limits” Smart alert. Maturity: Preventive level 3.",
+  "1-07":"Improvement type is active by default (Site configuration › WO types); offered in the wizard and used by RCA actions.",
+  "2-14":"Dedicated “?” icon in the top bar: user guide, getting started, contact support, what’s new + keyboard shortcuts.",
+  "2-16":"Shared pagination footer (rows per page + pages) on Assets, Work orders list, Documents, Spare parts, Checklists, Maintenance plans, Teams & users and Suppliers.",
+  "2-19":"Verified: the work-order wizard and Quick intervention already mark required fields with red asterisks; Details now also marks Request date* and Description*.",
+  "4-02":"Sign-in screen (SignIn.dc.html): SSO or email + password, validation; lands on Home. Sign out returns to it.",
+  "4-03":"Home header now shows “Updated HH:MM” + refresh, a Today / This week / This month period selector and a Filters popover (plant zone, my teams).",
+  "4-09":"Home analytics carousel opens on “Reminders”: upcoming controls and calibrations (inspection plans) with remaining days, linked to the plan.",
+  "5-03":"Status KPI strip on Assets › List: Total, In service, Stopped, Out of service (click to filter).",
+  "5-06":"Row checkboxes with select-all, asset photo thumbnail, row “…” menu (edit, QR, create WO, decommission, delete).",
+  "5-12":"Pagination footer on the asset list.",
+  "6-02":"QR codes are real and encode AssetDetail.dc.html?id=… (shared QR dialog).",
+  "6-03":"Photo upload in the Asset wizard (Identity); shown in the asset header and list.",
+  "6-04":"Asset Detail tabs: Overview / Work orders / Preventive / Documents / History (+ Reservations), with counters.",
+  "6-05":"Commissioning date in the wizard, Details panel and import.",
+  "6-06":"Indicator strip on Asset Detail: Open WOs, Overdue WOs, Active preventive plans, Next preventive.",
+  "6-12":"Asset “…” menu: Edit, QR, Decommission (reason, date, plans clean-up, warning on open WOs) / Recommission, Delete with usage check.",
+  "7-02":"Verified: Relix asks Zone › Line › Step, which covers Zone* and Line*.",
+  "7-03":"Commissioning date added (validated: not in the future, not before the year installed).",
+  "7-05":"Drag & drop or file selection, resized automatically.",
+  "7-06":"Verified: the same wizard creates and edits; “Save changes” is available from any step in edit mode.",
+  "7-07":"Import assets (Assets › … › Import): CSV upload or sample, column mapping, validation report (errors skipped, updates, new), optional creation of missing types and steps.",
+  "7-08":"Export to CSV from the Assets “…” menu or the selection bar.",
+  "7-09":"Generate / print QR codes for the selection (or the filtered list).",
+  "7-10":"“Data configuration” shortcut in the Assets “…” menu opens Site configuration.",
+  "7-12":"Decommission and Delete from the row menu and the asset sheet.",
+  "8-01":"Assets “…” menu › Generate / print QR codes.",
+  "8-03":"QR dialog: Download PNG (QR + identity).",
+  "8-04":"Label formats 50×25, 70×35, 100×50 mm and A4 sheet (3×8), copies, print preview.",
+  "8-05":"Select rows, then Print QR codes from the selection bar.",
+  "8-06":"QR encodes the equipment-sheet URL.",
+  "9-03":"Work orders KPI strip: Open, Overdue, In progress, Critical, Waiting.",
+  "9-07":"Verified: all columns present; the WO-ID stays a secondary column as recommended.",
+  "9-12":"Pagination footer on the work-order list.",
+  "10-02":"Verified: clicking an empty Planning slot opens the creation panel with date, time and technician prefilled.",
+  "10-05":"Request date* in Details, prefilled with now and editable for back-dated declarations (not in the future).",
+  "10-07":"Description is now mandatory in the creation wizard (Quick intervention stays the fast path).",
+  "10-09":"“Create another” option on the last step keeps the panel open with the same asset.",
+  "11-02":"Active plans write real preventive work orders to the WO store when due within their lead time; they appear in Planning and Work orders.",
+  "11-03":"Planning KPI strip: Planned interventions, Overdue, Critical, Planned load, Average load rate.",
+  "11-09":"Verified: slot click → creation panel (see §10).",
+  "11-17":"“New checklist” shortcut in the wizard’s Checklists step (opens the editor in a new tab).",
+  "11-18":"Verified: date and time prefilled from the slot.",
+  "12-02":"Same shortcut as §11.1.",
+  "12-06":"Checklist editor: “Reuse an existing task” search across the other checklists, one click to add.",
+  "13-05":"Meter plans use the asset meter: last service reading, current reading, next threshold and ETA.",
+  "13-08":"Generation is real (automatic on load + “Generate work order now”).",
+  "13-10":"Automatic generation per frequency with a configurable lead time.",
+  "13-11":"Generated work orders show in Work orders, Planning and the asset’s Preventive / History tabs.",
+  "14-02":"Documents KPI strip: Total documents, Plans, Procedures, Manuals (click to filter).",
+  "14-05":"Drawing renamed “Plan” across Documents, assets and uploads (existing data migrated).",
+  "16-04":"Verified: statuses are locked system values in Site configuration (no rename, delete or deactivate).",
+  "17-03":"“Preventive due soon” notification type (bell, configurable) sent when a plan generates its work order.",
+  "17-04":"Smart alerts (Notification settings › Smart alerts, advanced — Alerts & notifications level 3): trigger (too many interventions matching a condition, recurring failures, overdue, stopped, control due, measurement out of limits) × asset scope (all, assets, owner, zone, criticality) × recipients, with live matches and notifications.",
+  "18-06":"Asset Detail › History: status / location / owner changes, decommissioning, meter readings, work orders created and completed.",
+  "18-09":"Done (see §13).",
+  "18-10":"Done (see §11).",
+  "18-11":"Done (see §17).",
+  "19-02":"Blocking date checks: request vs desired date (WO wizard), commissioning / decommissioning dates, meter readings (no decrease), import dates.",
+  "19-06":"History timeline on work orders (status, assignment, priority, planned date — who and when) and on assets."};
+const UPD = {"1-08":["lg","Root cause analysis on corrective work orders: problem, 5 whys, root-cause category, actions that create Improvement work orders, Open / Closed. Not done: FMEA and an RCA record grouping several work orders.",["Work order","Asset Detail"]],"1-10":[null,"Still missing. Depends on the Type › Sub-type taxonomy (§1 Taxonomy), left out of this pass."],"9-08":[null,"Relix recommendation in place: Overdue is derived and Waiting is a flag — both shown as badges, offered in the Status filter and as KPIs. The status model itself still needs the authors’ decision."]};
+const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '0%';
+const segParse = (t, r, mode) => {
+  const out = [], re = /\[(g|lg|y|o|r|x)\](.*?)\[\/\]/g; let i = 0, m;
+  while ((m = re.exec(t))) { if (m.index > i) out.push([t.slice(i, m.index), r]); out.push([m[2], m[1]]); i = re.lastIndex; }
+  if (i < t.length) out.push([t.slice(i), r]);
+  return out.map(([s, k]) => ({ t: s, bg: mode === 'marker' || k !== r ? R[k].bg : 'transparent' }));
+};
+const bars = c => { const n = ORDER.reduce((a, k) => a + c[k], 0); return ORDER.filter(k => c[k]).map(k => ({ w: (c[k] / n * 100) + '%', bg: R[k].bg, title: `${R[k].label}: ${c[k]}` })); };
+const zero = () => ({ g: 0, lg: 0, y: 0, o: 0, r: 0, x: 0 });
+
+class Component extends DCLogic {
+  state = { filter: null };
+  renderVals() {
+    const f = this.state.filter;
+    const mode = (this.props.highlight ?? 'Marker') === 'Row tint' ? 'row' : 'marker';
+    const showNotes = this.props.showNotes ?? true;
+    const total = zero(), bySec = {}; let nRes = 0;
+    const sections = S.map(sec => {
+      const c = zero(); let k = 0;
+      const subs = sec.subs.map(([st, items]) => ({
+        title: st, hasTitle: !!st,
+        items: items.map(([zone, text, r, note, deps]) => {
+          k++; const ref = sec.n + '-' + String(k).padStart(2, '0'), res = RES[ref], up = UPD[ref];
+          if (res) { r = 'g'; note = res; deps = null; text = text.replace(/\[(g|lg|y|o|r|x)\](.*?)\[\/\]/g, '$2'); nRes++; }
+          else if (up) { if (up[0]) { r = up[0]; text = text.replace(/\[(g|lg|y|o|r|x)\](.*?)\[\/\]/g, '$2'); } note = up[1]; if (up[2]) deps = up[2]; }
+          c[r]++; total[r]++;
+          return { r, ref, anchor: 'r' + ref, href: '#r' + ref, zone, hasZone: !!zone, segs: segParse(text, r, mode), chipBg: res ? '#0B6B4A' : R[r].bg, ink: res ? '#fff' : R[r].ink, label: res ? 'Resolved · Oct 7' : R[r].label, note: note || '', hasNote: !!note, deps: (deps || []).map(name => ({ name })), hasDeps: !!(deps && deps.length), rowBg: mode === 'row' ? R[r].tint : '#fff' };
+        }).filter(it => !f || it.r === f),
+      })).filter(s => s.items.length);
+      bySec[sec.n] = c;
+      return { id: 's' + sec.n, label: sec.n + ' ' + sec.t, n: sec.n, title: sec.t, purpose: sec.p || '', hasPurpose: !!sec.p, subs, counts: ORDER.filter(x => c[x]).map(x => ({ n: c[x], bg: R[x].bg, ink: R[x].ink, label: R[x].label })) };
+    });
+    const visible = sections.filter(s => s.subs.length);
+    const N = ORDER.reduce((a, k) => a + total[k], 0);
+    return {
+      showNotes,
+      legend: ORDER.map(k => ({ ...R[k], count: total[k], cardBg: f === k ? R[k].tint : '#fff', border: f === k ? R[k].ink : '#E4E7EC', select: () => this.setState({ filter: f === k ? null : k }) })),
+      bar: bars(total),
+      total: N, pctG: pct(total.g, N), pctGL: pct(total.g + total.lg, N), pctBuild: pct(total.y + total.o, N),
+      nY: total.y, nO: total.o, nR: total.r, nX: total.x, nRes,
+      filtered: !!f, filterLabel: f ? R[f].label : '', clearFilter: () => this.setState({ filter: null }),
+      sections: visible, noMatch: !visible.length,
+      toc: S.map(sec => ({ href: '#s' + sec.n, n: sec.n, title: sec.t, bars: bars(bySec[sec.n]) })),
+      modules: MODULES.map(([name, ns]) => { const c = zero(); ns.forEach(n => ORDER.forEach(k => { c[k] += bySec[n][k]; })); const n = ORDER.reduce((a, k) => a + c[k], 0); return { name, n, pct: pct(c.g + c.lg, n), bars: bars(c) }; }),
+      beyond: BEYOND.map(([name, spec, why]) => ({ name, spec, why })),
+    };
+  }
+}
+</script>
+</body>
+</html>

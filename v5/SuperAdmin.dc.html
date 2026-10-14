@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="superadmin" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 0;display:flex;flex-direction:column;gap:16px" data-screen-label="Super Admin">
+    <header style="flex:none;display:flex;align-items:center;gap:14px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;display:flex;align-items:center;gap:10px;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Super Admin<span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px 0 6px;border-radius:11px;background:#34050D;color:#fff;font-size:11.5px;font-weight:600;letter-spacing:0"><span style="font:14px/1 'Material Symbols Outlined'">admin_panel_settings</span>Organization level</span></h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ subtitle }}</p>
+      </div>
+      <sc-if value="{{ isOrg }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ addBusiness }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px 0 9px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;color:#1E2430;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">domain_add</span>Add business</button>
+        <button onClick="{{ addSite }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New site</button>
+      </sc-if>
+      <sc-if value="{{ isScopes }}"><button onClick="{{ addScope }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New super user</button></sc-if>
+    </header>
+
+    <div style="flex:none;display:flex;gap:4px;border-bottom:1px solid #E4E7EC">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.select }}" style="position:relative;height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;background:transparent;border:0;font:{{ t.font }};color:{{ t.color }};cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}<span style="font-size:11px;font-weight:600;color:#475467;background:#F2F4F7;border-radius:9px;padding:1px 6px">{{ t.count }}</span><span style="position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:{{ t.bar }}"></span></button>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;margin:0 -28px;padding:0 28px 28px">
+    <sc-if value="{{ isOrg }}" hint-placeholder-val="{{ true }}">
+      <section style="flex:none;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+          <label style="width:300px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search business, site, country, city…" style="flex:1;min-width:0;border:0;outline:none;background:transparent;font:13px 'IBM Plex Sans',sans-serif" /></label>
+          <span style="margin-left:auto;font-size:12.5px;color:#667085">{{ orgSummary }}</span>
+        </div>
+        <div style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:minmax(280px,1.6fr) minmax(160px,1fr) 170px minmax(170px,1fr) 100px 112px;align-items:center;height:36px;padding-left:14px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+          <span>Business › Sub-business › Site</span><span>Country · City</span><span>Latitude, longitude</span><span>Site administrators</span><span>Status</span><span></span>
+        </div>
+        <sc-for list="{{ orgRows }}" as="r" hint-placeholder-count="9">
+          <div style="display:grid;grid-template-columns:minmax(280px,1.6fr) minmax(160px,1fr) 170px minmax(170px,1fr) 100px 112px;align-items:center;min-height:48px;padding-left:14px;border-bottom:1px solid #F2F4F7;background:{{ r.bg }};opacity:{{ r.op }}" style-hover="background:#F9FAFB">
+            <span style="display:flex;align-items:center;gap:8px;min-width:0;padding-left:{{ r.pad }}">
+              <sc-if value="{{ r.isBiz }}">
+                <button onClick="{{ r.toggle }}" aria-label="Expand or collapse" style="flex:none;width:22px;height:22px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:4px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:18px/1 'Material Symbols Outlined';transform:{{ r.chev }};transition:transform .15s">expand_more</span></button>
+                <span style="flex:none;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:{{ r.tileBg }};color:{{ r.tileFg }};font:16px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+                <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:{{ r.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ r.meta }}</span></span>
+              </sc-if>
+              <sc-if value="{{ r.isSite }}">
+                <span style="flex:none;width:44px;height:24px;border-radius:5px;display:grid;place-items:center;background:#F2F4F7;color:#475467;font:600 11px 'IBM Plex Mono',monospace">{{ r.code }}</span>
+                <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ r.meta }}</span></span>
+              </sc-if>
+            </span>
+            <span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">{{ r.place }}</span>
+            <span style="font:12px 'IBM Plex Mono',monospace;color:#475467">{{ r.coords }}</span>
+            <span style="display:flex;align-items:center;gap:6px;min-width:0">
+              <sc-if value="{{ r.isSite }}">
+                <span style="display:flex"><sc-for list="{{ r.admins }}" as="a"><span title="{{ a.name }}" style="width:24px;height:24px;margin-right:-6px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;background:{{ a.bg }};color:{{ a.fg }};font:600 9px 'IBM Plex Sans',sans-serif">{{ a.ini }}</span></sc-for></span>
+                <span style="margin-left:8px;font-size:12px;color:{{ r.adminColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.adminLabel }}</span>
+              </sc-if>
+            </span>
+            <span><sc-if value="{{ r.isSite }}"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;background:{{ r.sbg }};color:{{ r.sfg }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span></sc-if></span>
+            <span style="display:flex;justify-content:flex-end;gap:2px;padding-right:10px">
+              <sc-if value="{{ r.canAddChild }}"><button onClick="{{ r.addChild }}" title="{{ r.addTip }}" aria-label="{{ r.addTip }}" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:18px/1 'Material Symbols Outlined'">{{ r.addIcon }}</span></button></sc-if>
+              <button onClick="{{ r.edit }}" title="Edit" aria-label="Edit" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:18px/1 'Material Symbols Outlined'">edit</span></button>
+              <button onClick="{{ r.del }}" title="Delete" aria-label="Delete" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+            </span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noOrg }}"><div style="padding:32px;text-align:center;color:#667085">Nothing matches “{{ q }}”.</div></sc-if>
+      </section>
+      <p style="flex:none;margin:0;font-size:12px;color:#667085">Sites created here appear in the site switcher of their administrators and super users. Site users manage everything inside their site (assets, plant hierarchy, users) from Site configuration and Teams &amp; users.</p>
+    </sc-if>
+
+    <sc-if value="{{ isScopes }}">
+      <section style="flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <sc-for list="{{ howTo }}" as="h">
+          <div style="display:flex;gap:10px;padding:14px 16px;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+            <span style="flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#EAF1FD;color:#2456B8;font:17px/1 'Material Symbols Outlined'">{{ h.icon }}</span>
+            <span style="display:flex;flex-direction:column;gap:3px"><span style="font-weight:600">{{ h.title }}</span><span style="font-size:12.5px;color:#475467;line-height:1.45;text-wrap:pretty">{{ h.text }}</span></span>
+          </div>
+        </sc-for>
+      </section>
+      <section style="flex:none;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:grid;grid-template-columns:minmax(200px,1.2fr) minmax(220px,1.4fr) 170px minmax(200px,1.4fr) 84px;align-items:center;height:36px;padding-left:16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;border-radius:8px 8px 0 0;font-size:12px;font-weight:600;color:#667085">
+          <span>User</span><span>Access scope</span><span>Role on these sites</span><span>Sites covered today</span><span></span>
+        </div>
+        <sc-for list="{{ scopeRows }}" as="r">
+          <div style="display:grid;grid-template-columns:minmax(200px,1.2fr) minmax(220px,1.4fr) 170px minmax(200px,1.4fr) 84px;align-items:center;min-height:56px;padding-left:16px;border-bottom:1px solid #F2F4F7" style-hover="background:#F9FAFB">
+            <span style="display:flex;align-items:center;gap:10px;min-width:0"><span data-person="{{ r.person }}" style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:{{ r.avBg }};color:{{ r.avFg }};font:600 11px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ r.ini }}</span><span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ r.name }}</span><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.note }}</span></span></span>
+            <span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="flex:none;width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:#EAF1FD;color:#2456B8;font:15px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.scope }}</span></span>
+            <span style="color:#344054">{{ r.role }}</span>
+            <span style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px 6px 0"><sc-for list="{{ r.sites }}" as="s"><span title="{{ s.name }}" style="height:22px;display:inline-flex;align-items:center;padding:0 7px;border-radius:5px;background:#F2F4F7;color:#475467;font:600 11px 'IBM Plex Mono',monospace">{{ s.code }}</span></sc-for><sc-if value="{{ r.noSites }}"><span style="font-size:12px;color:#B54708">No active site in this scope yet</span></sc-if></span>
+            <span style="display:flex;justify-content:flex-end;gap:2px;padding-right:10px">
+              <button onClick="{{ r.edit }}" title="Edit" aria-label="Edit" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#EEF0F3"><span style="font:18px/1 'Material Symbols Outlined'">edit</span></button>
+              <button onClick="{{ r.del }}" title="Remove scope" aria-label="Remove scope" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+            </span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noScopes }}"><div style="padding:28px;text-align:center;color:#667085">No super user yet — everyone works on the sites they were given.</div></sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isAdmins }}">
+      <section style="flex:none;max-width:760px;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #EEF0F3">
+          <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">Super Admins</span><span style="font-size:12.5px;color:#667085">Manage businesses, sites, super users and initial site administrators. Not tied to any site.</span></span>
+          <span style="position:relative;display:flex"><select value="" onChange="{{ addSA }}" style="appearance:none;-webkit-appearance:none;height:34px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none;cursor:pointer"><option value="">Add a Super Admin…</option><sc-for list="{{ saOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+        </div>
+        <sc-for list="{{ saRows }}" as="u">
+          <div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 12px 6px 16px;border-bottom:1px solid #F2F4F7">
+            <span style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#34050D;color:#fff;font:600 11px 'IBM Plex Sans',sans-serif">{{ u.ini }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ u.name }}</span><span style="font-size:12px;color:#667085">{{ u.email }}</span></span>
+            <sc-if value="{{ u.isYou }}"><span style="font-size:12px;color:#98A2B3">You</span></sc-if>
+            <sc-if value="{{ u.canRemove }}"><button onClick="{{ u.remove }}" style="height:30px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer">Remove</button></sc-if>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ sdOpen }}">
+    <div onClick="{{ closeSd }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:560px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px 12px">
+        <span style="flex:none;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#FBE7EA;color:#A30014;font:20px/1 'Material Symbols Outlined'">factory</span>
+        <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ sd.title }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">{{ sd.sub }}</p></div>
+        <button onClick="{{ closeSd }}" aria-label="Close" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <sc-if value="{{ sd.isNew }}">
+        <div style="display:flex;gap:6px;padding:0 20px 12px;border-bottom:1px solid #EEF0F3">
+          <sc-for list="{{ sd.steps }}" as="st"><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="height:4px;border-radius:2px;background:{{ st.bar }}"></span><span style="font-size:12px;font-weight:{{ st.weight }};color:{{ st.color }}">{{ st.label }}</span></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sd.isEdit }}"><div style="border-bottom:1px solid #EEF0F3"></div></sc-if>
+      <div style="flex:1;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ sd.showIdentity }}">
+          <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#98A2B3">Identity</span>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Site name<span style="color:#C00018"> *</span></span><input value="{{ sd.f.name }}" onInput="{{ sd.on.name }}" placeholder="e.g. Lyon Plant" style="height:44px;padding:0 12px;border:1px solid {{ sd.b.name }};border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Code<span style="color:#C00018"> *</span></span><input value="{{ sd.f.code }}" onInput="{{ sd.on.code }}" disabled="{{ sd.isEdit }}" maxlength="4" placeholder="LYO" style="height:44px;padding:0 12px;border:1px solid {{ sd.b.code }};border-radius:6px;font:500 14px 'IBM Plex Mono',monospace;text-transform:uppercase;outline:none;background:{{ sd.codeBg }}" /></label>
+          </div>
+          <sc-if value="{{ sd.e.code }}"><span style="margin-top:-10px;font-size:12px;color:#B42318">{{ sd.e.code }}</span></sc-if>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Business<span style="color:#C00018"> *</span></span><span style="position:relative;display:flex"><select value="{{ sd.f.biz }}" onChange="{{ sd.on.biz }}" style="appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 30px 0 12px;border:1px solid {{ sd.b.biz }};border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select…</option><sc-for list="{{ sd.bizOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:12px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Sub-business</span><span style="position:relative;display:flex"><select value="{{ sd.f.sub }}" onChange="{{ sd.on.sub }}" style="appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 30px 0 12px;border:1px solid #D0D5DD;border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">None — directly under the business</option><sc-for list="{{ sd.subOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:12px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+          </div>
+          <sc-if value="{{ sd.isEdit }}"><button onClick="{{ sd.toggleActive }}" style="align-self:flex-start;display:flex;align-items:center;gap:10px;padding:0;background:transparent;border:0;cursor:pointer;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430"><span style="flex:none;width:36px;height:20px;border-radius:10px;background:{{ sd.activeTrack }};position:relative"><span style="position:absolute;top:2px;left:{{ sd.activeKnob }};width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.2)"></span></span>Site active<span style="font-size:12px;color:#98A2B3">— inactive sites disappear from site switchers</span></button></sc-if>
+        </sc-if>
+        <sc-if value="{{ sd.showLocation }}">
+          <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#98A2B3">Location</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Country<span style="color:#C00018"> *</span></span><span style="position:relative;display:flex"><select value="{{ sd.f.country }}" onChange="{{ sd.on.country }}" style="appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 30px 0 12px;border:1px solid {{ sd.b.country }};border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select…</option><sc-for list="{{ sd.countryOpts }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:10px;top:12px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">City</span><input value="{{ sd.f.city }}" onInput="{{ sd.on.city }}" style="height:44px;padding:0 12px;border:1px solid #D0D5DD;border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Latitude<span style="color:#C00018"> *</span></span><input type="number" step="0.0001" value="{{ sd.f.lat }}" onInput="{{ sd.on.lat }}" placeholder="49.4700" style="height:44px;padding:0 12px;border:1px solid {{ sd.b.lat }};border-radius:6px;font:14px 'IBM Plex Mono',monospace;outline:none" /></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Longitude<span style="color:#C00018"> *</span></span><input type="number" step="0.0001" value="{{ sd.f.lon }}" onInput="{{ sd.on.lon }}" placeholder="2.8800" style="height:44px;padding:0 12px;border:1px solid {{ sd.b.lon }};border-radius:6px;font:14px 'IBM Plex Mono',monospace;outline:none" /></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Time zone</span><span style="position:relative;display:flex"><select value="{{ sd.f.tz }}" onChange="{{ sd.on.tz }}" style="appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 30px 0 12px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ sd.tzOpts }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:10px;top:12px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+          </div>
+          <sc-if value="{{ sd.e.coords }}"><span style="margin-top:-10px;font-size:12px;color:#B42318">{{ sd.e.coords }}</span></sc-if>
+          <span style="margin-top:-6px;font-size:12px;color:#98A2B3">Decimal degrees (WGS 84). Used for the organization map and local time.</span>
+        </sc-if>
+        <sc-if value="{{ sd.showAdmins }}">
+          <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#98A2B3">Site administrators</span>
+          <span style="margin-top:-8px;font-size:12.5px;color:#475467;line-height:1.45">They get the Administrator role on this site so it is manageable right away: they invite the team, set up teams, the plant hierarchy and the configuration.</span>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ sd.chosen }}" as="a">
+              <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 8px 4px 10px;border:1px solid #E4E7EC;border-radius:8px;background:#FBFBFC">
+                <span style="flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:{{ a.bg }};color:{{ a.fg }};font:600 10px 'IBM Plex Sans',sans-serif">{{ a.ini }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ a.name }}</span><span style="font-size:11.5px;color:#667085">{{ a.sub }}</span></span>
+                <sc-if value="{{ a.isInvite }}"><span style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#EAF1FD;color:#2456B8;font-size:11px;font-weight:600">Invitation</span></sc-if>
+                <button onClick="{{ a.remove }}" aria-label="Remove" style="flex:none;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">close</span></button>
+              </div>
+            </sc-for>
+            <sc-if value="{{ sd.e.admins }}"><span style="font-size:12px;color:#B42318">{{ sd.e.admins }}</span></sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12.5px;font-weight:500;color:#344054">Add an existing user</span>
+            <label style="height:40px;display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:17px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ sd.uq }}" onInput="{{ sd.setUq }}" placeholder="Search people across the organization…" style="flex:1;min-width:0;border:0;outline:none;background:transparent;font:13px 'IBM Plex Sans',sans-serif" /></label>
+            <div style="display:flex;flex-direction:column;max-height:176px;overflow:auto;border:1px solid #EEF0F3;border-radius:8px">
+              <sc-for list="{{ sd.candidates }}" as="p">
+                <button onClick="{{ p.add }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 10px;background:transparent;border:0;border-bottom:1px solid #F2F4F7;cursor:pointer;text-align:left;font-family:inherit;color:#1E2430" style-hover="background:#F9FAFB">
+                  <span style="flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:{{ p.bg }};color:{{ p.fg }};font:600 10px 'IBM Plex Sans',sans-serif">{{ p.ini }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:500">{{ p.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ p.sub }}</span></span>
+                  <span style="font:18px/1 'Material Symbols Outlined';color:#C00018">add_circle</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12.5px;font-weight:500;color:#344054">Or invite a new administrator</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) auto;gap:8px">
+              <input value="{{ sd.f.invName }}" onInput="{{ sd.on.invName }}" placeholder="Full name" style="height:40px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+              <input value="{{ sd.f.invEmail }}" onInput="{{ sd.on.invEmail }}" placeholder="name@company.com" style="height:40px;padding:0 10px;border:1px solid {{ sd.b.invite }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" />
+              <button onClick="{{ sd.addInvite }}" style="height:40px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Add</button>
+            </div>
+            <sc-if value="{{ sd.e.invite }}"><span style="font-size:12px;color:#B42318">{{ sd.e.invite }}</span></sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ sd.back }}" style="height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ sd.backLabel }}</button>
+        <span style="flex:1"></span>
+        <button onClick="{{ sd.next }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ sd.nextLabel }}<span style="font:17px/1 'Material Symbols Outlined'">{{ sd.nextIcon }}</span></button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ bdOpen }}">
+    <div onClick="{{ closeBd }}" style="position:fixed;inset:0;z-index:60;background:rgba(16,24,40,.32)"></div>
+    <div role="dialog" style="position:fixed;top:110px;left:50%;transform:translateX(-50%);z-index:61;width:460px;background:#fff;border-radius:10px;box-shadow:0 24px 64px rgba(16,24,40,.3);font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #EEF0F3"><span style="font:20px/1 'Material Symbols Outlined';color:#475467">{{ bd.icon }}</span><span style="flex:1;font-size:16px;font-weight:600">{{ bd.title }}</span><button onClick="{{ closeBd }}" aria-label="Close" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button></div>
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;padding:2px;background:#F2F4F7;border-radius:7px">
+          <sc-for list="{{ bd.levels }}" as="l"><button onClick="{{ l.select }}" style="flex:1;height:32px;background:{{ l.bg }};border:0;border-radius:5px;box-shadow:{{ l.shadow }};font:{{ l.font }};color:{{ l.color }};cursor:pointer">{{ l.label }}</button></sc-for>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Name<span style="color:#C00018"> *</span></span><input value="{{ bd.f.name }}" onInput="{{ bd.setName }}" placeholder="{{ bd.ph }}" style="height:40px;padding:0 10px;border:1px solid {{ bd.nameBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+        <sc-if value="{{ bd.isSub }}"><label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Parent business<span style="color:#C00018"> *</span></span><span style="position:relative;display:flex"><select value="{{ bd.f.parent }}" onChange="{{ bd.setParent }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 30px 0 10px;border:1px solid {{ bd.parentBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select…</option><sc-for list="{{ bd.parents }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:10px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label></sc-if>
+        <sc-if value="{{ bd.err }}"><span style="font-size:12px;color:#B42318">{{ bd.err }}</span></sc-if>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #EEF0F3;background:#FBFBFC;border-radius:0 0 10px 10px">
+        <button onClick="{{ closeBd }}" style="height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+        <button onClick="{{ bd.save }}" style="height:34px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ bd.saveLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ scOpen }}">
+    <div onClick="{{ closeSc }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+    <aside style="position:fixed;top:56px;right:0;bottom:0;width:520px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+        <div style="flex:1"><h2 style="margin:0;font-size:16px;font-weight:600">{{ sc.title }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">Access to every site of a business, sub-business, country or a list of sites</p></div>
+        <button onClick="{{ closeSc }}" aria-label="Close" style="width:32px;height:32px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+        <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">User<span style="color:#C00018"> *</span></span><span style="position:relative;display:flex"><select value="{{ sc.f.uid }}" onChange="{{ sc.setUid }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 30px 0 10px;border:1px solid {{ sc.uidBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><option value="">Select a user…</option><sc-for list="{{ sc.userOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:10px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Scope<span style="color:#C00018"> *</span></span>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+            <sc-for list="{{ sc.types }}" as="t"><button onClick="{{ t.select }}" style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:8px;font:{{ t.font }};color:{{ t.color }};cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">{{ sc.valuesLabel }}<span style="color:#C00018"> *</span></span>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ sc.values }}" as="v"><button onClick="{{ v.toggle }}" style="height:32px;display:flex;align-items:center;gap:6px;padding:0 12px 0 8px;background:{{ v.bg }};border:1px solid {{ v.border }};border-radius:16px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined';color:{{ v.iconColor }}">{{ v.icon }}</span>{{ v.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12.5px;font-weight:500;color:#344054">Role on these sites<span style="color:#C00018"> *</span></span>
+          <span style="position:relative;display:flex"><select value="{{ sc.f.role }}" onChange="{{ sc.setRole }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 30px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ sc.roleOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:8px;top:10px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          <span style="font-size:11.5px;color:#98A2B3">A role given directly on one site (e.g. site administrator) still wins on that site. Financial stays a per-user permission.</span>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:500;color:#344054">Note</span><input value="{{ sc.f.note }}" onInput="{{ sc.setNote }}" placeholder="e.g. Regional maintenance director" style="height:40px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+          <span style="font-weight:600">{{ sc.coverLabel }}</span>
+          <div style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ sc.cover }}" as="s"><span style="height:24px;display:inline-flex;align-items:center;gap:5px;padding:0 8px 0 4px;border-radius:5px;background:#fff;border:1px solid #E4E7EC;font-size:12px"><span style="font:600 10.5px 'IBM Plex Mono',monospace;color:#475467;background:#F2F4F7;border-radius:3px;padding:1px 4px">{{ s.code }}</span>{{ s.name }}</span></sc-for></div>
+          <span style="font-size:11.5px;color:#667085">Sites added later to this scope are included automatically.</span>
+        </div>
+        <sc-if value="{{ sc.err }}"><span style="font-size:12px;color:#B42318">{{ sc.err }}</span></sc-if>
+      </div>
+      <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+        <button onClick="{{ closeSc }}" style="margin-left:auto;height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+        <button onClick="{{ sc.save }}" style="height:34px;padding:0 16px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ sc.saveLabel }}</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ confirm }}">
+    <div onClick="{{ closeConfirm }}" style="position:fixed;inset:0;z-index:60;background:rgba(16,24,40,.32)"></div>
+    <div role="dialog" style="position:fixed;top:140px;left:50%;transform:translateX(-50%);z-index:61;width:440px;padding:20px;background:#fff;border-radius:10px;box-shadow:0 24px 64px rgba(16,24,40,.3);font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:{{ confirm.iconBg }};color:{{ confirm.iconFg }};font:19px/1 'Material Symbols Outlined'">{{ confirm.icon }}</span><span style="font-size:16px;font-weight:600">{{ confirm.title }}</span></div>
+      <p style="margin:0;color:#475467;line-height:1.5;text-wrap:pretty">{{ confirm.text }}</p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+        <button onClick="{{ closeConfirm }}" style="height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ confirm.cancelLabel }}</button>
+        <sc-if value="{{ confirm.ok }}"><button onClick="{{ confirm.ok }}" style="height:34px;padding:0 14px;background:#B42318;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">{{ confirm.okLabel }}</button></sc-if>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const COUNTRIES = ['Belgium', 'Brazil', 'China', 'Czech Republic', 'France', 'Germany', 'India', 'Italy', 'Mexico', 'Netherlands', 'Poland', 'Portugal', 'Spain', 'United Kingdom', 'United States'];
+const TZ_OF = { France: 'Europe/Paris', Belgium: 'Europe/Brussels', Germany: 'Europe/Berlin', Spain: 'Europe/Madrid', Italy: 'Europe/Rome', Poland: 'Europe/Warsaw', Portugal: 'Europe/Lisbon', 'United Kingdom': 'Europe/London', Netherlands: 'Europe/Amsterdam', 'Czech Republic': 'Europe/Prague', 'United States': 'America/New_York', Mexico: 'America/Mexico_City', Brazil: 'America/Sao_Paulo', China: 'Asia/Shanghai', India: 'Asia/Kolkata' };
+const TZS = ['Europe/Paris', 'Europe/Brussels', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome', 'Europe/Warsaw', 'Europe/Lisbon', 'Europe/London', 'Europe/Amsterdam', 'Europe/Prague', 'America/New_York', 'America/Chicago', 'America/Mexico_City', 'America/Sao_Paulo', 'Asia/Shanghai', 'Asia/Kolkata'];
+const AV = [['#E8EEF9', '#2456B8'], ['#F3EEFC', '#6941C6'], ['#E6F4EE', '#0B6B4A'], ['#FEF3E2', '#B54708'], ['#FDECEC', '#B42318'], ['#E3F4F7', '#0E7490']];
+const avOf = id => { let h = 0; for (const c of id || '') h = (h * 31 + c.charCodeAt(0)) % 997; return AV[h % AV.length]; };
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : w.endsWith('s') ? 'es' : 's'}`;
+const slug = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 16) || 'biz';
+const STEPS = ['Identity', 'Location', 'Administrators'];
+class Component extends DCLogic {
+  state = { tab: new URLSearchParams(location.search).get('tab') || 'org', q: '', closed: {}, sd: null, bd: null, sc: null, confirm: null, toast: null, v: 0 };
+  componentDidMount() {
+    Promise.all([import('./sites-model.js'), import('./access-model.js')]).then(([SI, A]) => this.setState({ SI, A }));
+    this._r = () => this.setState(s => ({ v: s.v + 1 })); ['cmms-access', 'cmms-org'].forEach(n => window.addEventListener(n, this._r));
+  }
+  componentWillUnmount() { ['cmms-access', 'cmms-org'].forEach(n => window.removeEventListener(n, this._r)); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2800); }
+  info(title, text) { this.setState({ confirm: { icon: 'info', iconBg: '#EAF1FD', iconFg: '#2456B8', title, text, cancelLabel: 'OK', ok: null } }); }
+  ask(title, text, okLabel, ok) { this.setState({ confirm: { icon: 'delete', iconBg: '#FEF3F2', iconFg: '#B42318', title, text, cancelLabel: 'Cancel', okLabel, ok: () => { ok(); this.setState({ confirm: null }); } } }); }
+  // ---------- Sites ----------
+  openSite(site, preset = {}) { const { SI, A } = this.state;
+    if (site) { const path = SI.businessPath(site), top = path[0], sub = path.find(b => b.level === 'sub');
+      this.setState({ sd: { id: site.id, step: 0, uq: '', errors: {}, prevAdmins: A.adminsOf(site.id).map(u => u.id), f: { name: site.name, code: site.id, biz: top ? top.id : '', sub: sub ? sub.id : '', country: site.country || '', city: site.city || '', tz: site.tz || 'Europe/Paris', lat: String(site.lat ?? ''), lon: String(site.lon ?? ''), active: !site.inactive, admins: A.adminsOf(site.id).map(u => u.id), invites: [], invName: '', invEmail: '' } } }); }
+    else this.setState({ sd: { id: null, step: 0, uq: '', errors: {}, prevAdmins: [], f: { name: '', code: '', biz: preset.biz || '', sub: preset.sub || '', country: '', city: '', tz: 'Europe/Paris', lat: '', lon: '', active: true, admins: [], invites: [], invName: '', invEmail: '' } } });
+  }
+  checkStep(step) { const { SI, A } = this.state, sd = this.state.sd, f = sd.f, e = {};
+    if (step === 0 || step === 'all') { if (!f.name.trim()) e.name = 1; const code = f.code.trim().toUpperCase(); if (!/^[A-Z]{3,4}$/.test(code)) e.code = 'Use 3 or 4 letters, e.g. LYO'; else if (!sd.id && SI.SITES.some(s => s.id === code)) e.code = `${code} is already used by ${SI.SITES.find(s => s.id === code).name}`; if (!f.biz) e.biz = 1; }
+    if (step === 1 || step === 'all') { if (!f.country) e.country = 1; const la = parseFloat(f.lat), lo = parseFloat(f.lon); if (f.lat === '' || isNaN(la) || la < -90 || la > 90) { e.lat = 1; e.coords = 'Latitude must be between −90 and 90'; } if (f.lon === '' || isNaN(lo) || lo < -180 || lo > 180) { e.lon = 1; e.coords = (e.coords ? e.coords + ' · ' : '') + 'Longitude must be between −180 and 180'; } }
+    if (step === 2 || step === 'all') { if (!f.admins.length && !f.invites.length) e.admins = 'Choose at least one administrator so the site can be managed from day one'; }
+    return e; }
+  saveSite() { const { SI, A } = this.state, sd = this.state.sd, f = sd.f, code = f.code.trim().toUpperCase();
+    SI.saveSite({ id: code, name: f.name.trim(), business: f.sub || f.biz, country: f.country, city: f.city.trim(), tz: f.tz, lat: +parseFloat(f.lat).toFixed(4), lon: +parseFloat(f.lon).toFixed(4), inactive: !f.active });
+    f.admins.forEach(uid => { const u = A.user(uid); if (!u) return; A.saveUser(uid, { sites: [...new Set([...(u.sites || []), code])], siteRoles: { ...(u.siteRoles || {}), [code]: 'admin' } }); });
+    sd.prevAdmins.filter(uid => !f.admins.includes(uid)).forEach(uid => { const u = A.user(uid); if (!u) return; const sr = { ...(u.siteRoles || {}) }; delete sr[code]; A.saveUser(uid, { siteRoles: sr }); });
+    f.invites.forEach(x => A.inviteUser({ name: x.name, email: x.email, role: 'admin', sites: [code], siteRoles: { [code]: 'admin' } }));
+    const n = f.admins.length + f.invites.length;
+    this.setState({ sd: null }); this.flash(sd.id ? `${f.name.trim()} updated` : `${f.name.trim()} created · ${plural(n, 'administrator')} notified`);
+  }
+  sdVals() {
+    const { SI, A } = this.state, sd = this.state.sd; if (!sd) return { sdOpen: false, sd: { f: {}, on: {}, b: {}, e: {}, steps: [], chosen: [], candidates: [], bizOpts: [], subOpts: [], countryOpts: [], tzOpts: [] } };
+    const f = sd.f, er = sd.errors || {}, isNew = !sd.id, setF = p => this.setState(z => ({ sd: { ...z.sd, f: { ...z.sd.f, ...p }, errors: {} } }));
+    const go = step => this.setState(z => ({ sd: { ...z.sd, step, errors: {} } }));
+    const next = () => { if (!isNew) { const e = this.checkStep('all'); return Object.keys(e).length ? this.setState({ sd: { ...sd, errors: e } }) : this.saveSite(); }
+      const e = this.checkStep(sd.step); if (Object.keys(e).length) return this.setState({ sd: { ...sd, errors: e } }); if (sd.step < 2) go(sd.step + 1); else this.saveSite(); };
+    const uq = (sd.uq || '').toLowerCase();
+    const chosen = [...f.admins.map(uid => { const u = A.user(uid) || { name: uid, email: '' }, [bg, fg] = avOf(uid); return { name: u.name, sub: `${u.email} · ${A.role(u.role).name}`, ini: A.ini(u.name), bg, fg, isInvite: false, remove: () => setF({ admins: f.admins.filter(x => x !== uid) }) }; }),
+      ...f.invites.map((x, i) => ({ name: x.name, sub: x.email, ini: A.ini(x.name), bg: '#EAF1FD', fg: '#2456B8', isInvite: true, remove: () => setF({ invites: f.invites.filter((_, j) => j !== i) }) }))];
+    const candidates = A.users().filter(u => u.status !== 'Deactivated' && !f.admins.includes(u.id) && (!uq || (u.name + ' ' + u.email).toLowerCase().includes(uq))).slice(0, 30).map(u => { const [bg, fg] = avOf(u.id), sites = (u.sites || []).join(', ');
+      return { name: u.name, sub: `${A.role(u.role).name}${sites ? ' · ' + sites : ''}`, ini: A.ini(u.name), bg, fg, add: () => setF({ admins: [...f.admins, u.id] }) }; });
+    const show = k => !isNew || sd.step === k;
+    return { sdOpen: true, closeSd: () => this.setState({ sd: null }), sd: {
+      isNew, isEdit: !isNew, title: isNew ? 'New site' : `Edit ${f.name || 'site'}`, sub: isNew ? `Step ${sd.step + 1} of 3 · ${STEPS[sd.step]}` : `${f.code} · identity, location and administrators`, f,
+      steps: STEPS.map((label, i) => ({ label, bar: i <= sd.step ? '#C00018' : '#E4E7EC', weight: i === sd.step ? 600 : 500, color: i <= sd.step ? '#1E2430' : '#98A2B3' })),
+      showIdentity: show(0), showLocation: show(1), showAdmins: show(2), codeBg: isNew ? '#fff' : '#F9FAFB',
+      on: { name: e => setF({ name: e.target.value }), code: e => setF({ code: e.target.value.toUpperCase().replace(/[^A-Z]/g, '') }), biz: e => setF({ biz: e.target.value, sub: '' }), sub: e => setF({ sub: e.target.value }),
+        country: e => setF({ country: e.target.value, tz: TZ_OF[e.target.value] || f.tz }), city: e => setF({ city: e.target.value }), lat: e => setF({ lat: e.target.value }), lon: e => setF({ lon: e.target.value }), tz: e => setF({ tz: e.target.value }),
+        invName: e => setF({ invName: e.target.value }), invEmail: e => setF({ invEmail: e.target.value }) },
+      b: Object.fromEntries(['name', 'code', 'biz', 'country', 'lat', 'lon', 'invite'].map(k => [k, er[k] ? '#F04438' : '#D0D5DD'])), e: { code: er.code || '', coords: er.coords || '', admins: er.admins || '', invite: er.invite || '' },
+      bizOpts: SI.childrenOf(null).map(b => ({ v: b.id, l: b.name })), subOpts: f.biz ? SI.childrenOf(f.biz).map(b => ({ v: b.id, l: b.name })) : [],
+      countryOpts: [...new Set([...COUNTRIES, ...SI.SITES.map(s => s.country).filter(Boolean)])].sort(), tzOpts: TZS.includes(f.tz) ? TZS : [f.tz, ...TZS],
+      toggleActive: () => setF({ active: !f.active }), activeTrack: f.active ? '#0B6B4A' : '#D0D5DD', activeKnob: f.active ? '18px' : '2px',
+      chosen, candidates, uq: sd.uq, setUq: e => this.setState(z => ({ sd: { ...z.sd, uq: e.target.value } })),
+      addInvite: () => { const em = (f.invEmail || '').trim(), nm = (f.invName || '').trim(); let err = '';
+        if (!nm) err = 'Enter the full name'; else if (!/^\S+@\S+\.\S+$/.test(em)) err = 'Enter a valid email address'; else if (A.users().some(u => u.email.toLowerCase() === em.toLowerCase())) err = 'This person already has an account — pick them in the list above'; else if (f.invites.some(x => x.email.toLowerCase() === em.toLowerCase())) err = 'Already added';
+        if (err) return this.setState({ sd: { ...sd, errors: { invite: err } } }); setF({ invites: [...f.invites, { name: nm, email: em }], invName: '', invEmail: '' }); },
+      back: () => isNew && sd.step > 0 ? go(sd.step - 1) : this.setState({ sd: null }), backLabel: isNew && sd.step > 0 ? 'Previous' : 'Cancel',
+      next, nextLabel: !isNew ? 'Save changes' : sd.step < 2 ? 'Next step' : 'Create site', nextIcon: !isNew ? 'check' : sd.step < 2 ? 'arrow_forward' : 'add_business' } };
+  }
+  // ---------- Businesses ----------
+  openBiz(b, preset = {}) { this.setState({ bd: { id: b ? b.id : null, f: b ? { name: b.name, parent: b.parent || '', level: b.level || (b.parent ? 'sub' : 'business') } : { name: '', parent: preset.parent || '', level: preset.parent ? 'sub' : 'business' }, err: '' } }); }
+  bdVals() {
+    const { SI } = this.state, bd = this.state.bd; if (!bd) return { bdOpen: false, bd: { f: {}, levels: [], parents: [] } };
+    const f = bd.f, setF = p => this.setState(z => ({ bd: { ...z.bd, f: { ...z.bd.f, ...p }, err: '' } })), isSub = f.level === 'sub', hasKids = bd.id && (SI.childrenOf(bd.id).length > 0);
+    return { bdOpen: true, closeBd: () => this.setState({ bd: null }), bd: { f, isSub, icon: isSub ? 'account_tree' : 'domain', title: bd.id ? `Edit ${isSub ? 'sub-business' : 'business'}` : `New ${isSub ? 'sub-business' : 'business'}`, ph: isSub ? 'e.g. Flat Glass Nordics' : 'e.g. Building Glass',
+      levels: [['business', 'Business'], ['sub', 'Sub-business']].map(([k, label]) => { const on = f.level === k; return { label, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.12)' : 'none', font: on ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: on ? '#1E2430' : '#667085', select: () => hasKids && k === 'sub' ? this.setState({ bd: { ...bd, err: 'This business has sub-businesses — it must stay at the top level' } }) : setF({ level: k, parent: k === 'business' ? '' : f.parent }) }; }),
+      parents: SI.childrenOf(null).filter(b => b.id !== bd.id).map(b => ({ v: b.id, l: b.name })), setName: e => setF({ name: e.target.value }), setParent: e => setF({ parent: e.target.value }),
+      nameBorder: bd.err && !f.name.trim() ? '#F04438' : '#D0D5DD', parentBorder: bd.err && isSub && !f.parent ? '#F04438' : '#D0D5DD', err: bd.err, saveLabel: bd.id ? 'Save changes' : 'Create',
+      save: () => { const name = f.name.trim(); let err = !name ? 'Name is required' : isSub && !f.parent ? 'Choose the parent business' : SI.BUSINESSES.some(b => b.id !== bd.id && b.name.toLowerCase() === name.toLowerCase()) ? 'This name is already used' : '';
+        if (err) return this.setState({ bd: { ...bd, err } });
+        let id = bd.id; if (!id) { id = slug(name); let n = 2; const b0 = id; while (SI.business(id)) id = b0 + n++; }
+        SI.saveBusiness({ id, name, parent: isSub ? f.parent : null, level: isSub ? 'sub' : 'business' }); this.setState({ bd: null }); this.flash(`${name} ${bd.id ? 'updated' : 'created'}`); } } };
+  }
+  orgVals() {
+    const { SI, A } = this.state, s = this.state, q = s.q.trim().toLowerCase();
+    const siteHit = x => !q || [x.name, x.id, x.city, x.country, ...SI.businessPath(x).map(b => b.name)].join(' ').toLowerCase().includes(q);
+    const rows = [];
+    const siteRow = (x, depth) => { const admins = A.adminsOf(x.id), inactive = !!x.inactive;
+      rows.push({ isSite: true, isBiz: false, code: x.id, name: x.name, meta: `${(x.assets || 0).toLocaleString('en-US')} assets · ${SI.localTime(x)} local`, place: [x.country, x.city].filter(Boolean).join(' · ') || '—', coords: x.lat != null ? `${(+x.lat).toFixed(4)}, ${(+x.lon).toFixed(4)}` : '—',
+        pad: depth * 30 + 30 + 'px', bg: '#fff', op: inactive ? 0.6 : 1, admins: admins.slice(0, 4).map(u => { const [bg, fg] = avOf(u.id); return { name: u.name, ini: A.ini(u.name), bg, fg }; }),
+        adminLabel: admins.length ? (admins.length === 1 ? admins[0].name : plural(admins.length, 'administrator')) : 'No administrator', adminColor: admins.length ? '#475467' : '#B42318',
+        status: inactive ? 'Inactive' : 'Active', sbg: inactive ? '#EEF1F4' : '#E6F4EE', sfg: inactive ? '#475467' : '#0B6B4A', canAddChild: false,
+        edit: () => this.openSite(x), del: () => x.assets ? this.info(`${x.name} holds ${x.assets.toLocaleString('en-US')} assets`, 'A site with data cannot be deleted. Edit it and switch it to inactive instead — it disappears from site switchers but its history is kept.') : SI.current().id === x.id ? this.info('This site is open right now', 'Switch to another site before deleting it.') : this.ask(`Delete ${x.name}?`, 'The site and its access rights are removed for every user. This cannot be undone.', 'Delete site', () => { SI.removeSite(x.id); this.flash(`${x.name} deleted`); }) }); };
+    const bizRow = (b, depth) => { const kids = SI.childrenOf(b.id), sites = SI.sitesUnder(b.id), closed = !q && s.closed[b.id], sub = b.level === 'sub';
+      const anyHit = !q || b.name.toLowerCase().includes(q) || sites.some(siteHit); if (!anyHit) return;
+      rows.push({ isBiz: true, isSite: false, name: b.name, meta: `${sub ? 'Sub-business' : 'Business'} · ${plural(sites.length, 'site')}${!sub && kids.length ? ' · ' + plural(kids.length, 'sub-business') + (kids.length === 1 ? '' : '') : ''}`, icon: sub ? 'account_tree' : 'domain', tileBg: sub ? '#EAF1FD' : '#34050D', tileFg: sub ? '#2456B8' : '#fff', weight: sub ? 600 : 700,
+        pad: depth * 30 + 'px', bg: sub ? '#fff' : '#FBFBFC', op: 1, place: '', coords: '', chev: closed ? 'rotate(-90deg)' : 'rotate(0deg)', toggle: () => this.setState(z => ({ closed: { ...z.closed, [b.id]: !closed } })),
+        canAddChild: true, addIcon: sub ? 'add_business' : 'add', addTip: sub ? 'Add a site here' : 'Add a sub-business or site', addChild: () => sub ? this.openSite(null, { biz: b.parent, sub: b.id }) : this.openBiz(null, { parent: b.id }),
+        edit: () => this.openBiz(b), del: () => kids.length || sites.length ? this.info(`${b.name} is not empty`, `Move or delete its ${[kids.length ? plural(kids.length, 'sub-business') : '', sites.length ? plural(sites.length, 'site') : ''].filter(Boolean).join(' and ')} first.`) : this.ask(`Delete ${b.name}?`, 'Super-user scopes pointing to it will no longer give access to anything.', 'Delete', () => { SI.removeBusiness(b.id); this.flash(`${b.name} deleted`); }) });
+      if (closed) return;
+      kids.forEach(k => bizRow(k, depth + 1));
+      SI.SITES.filter(x => x.business === b.id && siteHit(x)).forEach(x => siteRow(x, depth));
+    };
+    SI.childrenOf(null).forEach(b => bizRow(b, 0));
+    const orphans = SI.SITES.filter(x => !SI.business(x.business) && siteHit(x)); orphans.forEach(x => siteRow(x, -1));
+    const nb = SI.BUSINESSES.filter(b => b.level !== 'sub' && !b.parent).length, ns = SI.BUSINESSES.length - nb;
+    return { orgRows: rows, noOrg: !rows.length, q: s.q, setQ: e => this.setState({ q: e.target.value }), orgSummary: `${plural(nb, 'business')} · ${plural(ns, 'sub-business')} · ${plural(SI.SITES.length, 'site')}`.replace('businesss', 'businesses').replace('sub-businesss', 'sub-businesses'),
+      addBusiness: () => this.openBiz(null), addSite: () => this.openSite(null) };
+  }
+  // ---------- Super users ----------
+  scVals() {
+    const { SI, A } = this.state, s = this.state, list = A.scopes();
+    const scopeRows = list.map(x => { const u = A.user(x.uid) || { name: x.uid, key: x.uid }, [avBg, avFg] = avOf(x.uid), t = A.SCOPE_TYPES.find(y => y[0] === x.type) || A.SCOPE_TYPES[0], cover = A.sitesOfScope(x);
+      return { name: u.name, ini: A.ini(u.name), avBg, avFg, person: `${u.key}|${u.name}`, note: x.note || A.role(u.role).name + ' on home site', icon: t[2], scope: A.scopeLabel(x), role: A.role(x.role).name,
+        sites: cover.map(id => ({ code: id, name: (SI.SITES.find(y => y.id === id) || {}).name || id })), noSites: !cover.length,
+        edit: () => this.setState({ sc: { id: x.id, f: { ...x, ids: [...x.ids] }, err: '' } }), del: () => this.ask(`Remove ${u.name}'s scope?`, 'They keep access to the sites they were given directly, but lose the wider access.', 'Remove', () => { A.saveScopes(A.scopes().filter(y => y.id !== x.id)); this.flash('Scope removed'); }) }; });
+    const sc = s.sc; let scV = { f: {}, types: [], values: [], userOpts: [], roleOpts: [], cover: [] };
+    if (sc) { const f = sc.f, setF = p => this.setState(z => ({ sc: { ...z.sc, f: { ...z.sc.f, ...p }, err: '' } })), cover = A.sitesOfScope(f);
+      const opts = f.type === 'business' ? SI.childrenOf(null).map(b => [b.id, b.name]) : f.type === 'sub' ? SI.BUSINESSES.filter(b => b.level === 'sub' || b.parent).map(b => [b.id, b.name]) : f.type === 'country' ? [...new Set(SI.SITES.map(x => x.country).filter(Boolean))].sort().map(c => [c, c]) : SI.SITES.map(x => [x.id, `${x.name} (${x.id})`]);
+      scV = { f, title: sc.id ? 'Edit super user' : 'New super user', saveLabel: sc.id ? 'Save changes' : 'Create super user', err: sc.err, uidBorder: sc.err && !f.uid ? '#F04438' : '#D0D5DD',
+        userOpts: A.users().filter(u => u.status !== 'Deactivated' && !u.superAdmin).map(u => ({ v: u.id, l: `${u.name} · ${A.role(u.role).name}` })), setUid: e => setF({ uid: e.target.value }),
+        types: A.SCOPE_TYPES.map(([k, label, icon]) => { const on = f.type === k; return { label, icon, bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#E4E7EC', color: on ? '#A30014' : '#344054', font: on ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif", select: () => setF({ type: k, ids: [] }) }; }),
+        valuesLabel: { business: 'Businesses', sub: 'Sub-businesses', country: 'Countries', sites: 'Sites' }[f.type],
+        values: opts.map(([v, label]) => { const on = f.ids.includes(v); return { label, icon: on ? 'check' : 'add', bg: on ? '#FBF1F2' : '#fff', border: on ? '#C00018' : '#D0D5DD', iconColor: on ? '#C00018' : '#98A2B3', toggle: () => setF({ ids: on ? f.ids.filter(x => x !== v) : [...f.ids, v] }) }; }),
+        roleOpts: A.roles().map(r => ({ v: r.id, l: r.name })), setRole: e => setF({ role: e.target.value }), setNote: e => setF({ note: e.target.value }),
+        coverLabel: cover.length ? `Covers ${plural(cover.length, 'site')} today` : 'No site covered yet', cover: cover.map(id => ({ code: id, name: (SI.SITES.find(y => y.id === id) || {}).name || id })),
+        save: () => { const err = !f.uid ? 'Choose a user' : !f.ids.length ? 'Pick at least one value for the scope' : ''; if (err) return this.setState({ sc: { ...sc, err } });
+          const all = A.scopes(), row = { id: sc.id || 's' + Date.now().toString(36), uid: f.uid, type: f.type, ids: f.ids, role: f.role || 'manager', note: (f.note || '').trim() };
+          A.saveScopes(sc.id ? all.map(y => y.id === sc.id ? row : y) : [...all, row]); this.setState({ sc: null }); this.flash(`${A.user(f.uid).name} · ${A.scopeLabel(row)}`); } };
+    }
+    return { scopeRows, noScopes: !list.length, scOpen: !!sc, sc: scV, closeSc: () => this.setState({ sc: null }), addScope: () => this.setState({ sc: { id: null, f: { uid: '', type: 'business', ids: [], role: 'manager', note: '' }, err: '' } }),
+      howTo: [['person', 'A regular user, with more reach', 'A super user keeps their home site and role. The scope adds every other site it covers to their site switcher.'],
+        ['account_tree', 'Scope by structure or geography', 'Business, sub-business, country or a hand-picked list of sites. Scopes are dynamic: new sites in a business or country are included automatically.'],
+        ['badge', 'One role across the scope', 'The chosen role applies on every covered site. A role given directly on a site — such as site administrator — wins there. Financial stays per user.']].map(([icon, title, text]) => ({ icon, title, text })) };
+  }
+  saVals() {
+    const { A } = this.state, sas = A.users().filter(u => u.superAdmin);
+    return { saRows: sas.map(u => ({ name: u.name, email: u.email, ini: A.ini(u.name), isYou: u.id === A.SIGNED_IN, canRemove: u.id !== A.SIGNED_IN && sas.length > 1, remove: () => this.ask(`Remove ${u.name} as Super Admin?`, 'They keep their site role and sites, but lose organization management.', 'Remove', () => { A.saveUser(u.id, { superAdmin: false }); this.flash(`${u.name} is no longer Super Admin`); }) })),
+      saOpts: A.users().filter(u => !u.superAdmin && u.status === 'Active').map(u => ({ v: u.id, l: `${u.name} · ${u.email}` })),
+      addSA: e => { const v = e.target.value; e.target.value = ''; if (!v) return; A.saveUser(v, { superAdmin: true }); this.flash(`${A.user(v).name} is now Super Admin`); } };
+  }
+  renderVals() {
+    const s = this.state, SI = s.SI, A = s.A;
+    const T = (k, label, icon, count) => ({ label, icon, count, font: s.tab === k ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: s.tab === k ? '#1E2430' : '#667085', bar: s.tab === k ? '#C00018' : 'transparent', select: () => this.setState({ tab: k }) });
+    const base = { isOrg: s.tab === 'org', isScopes: s.tab === 'scopes', isAdmins: s.tab === 'admins', confirm: s.confirm, closeConfirm: () => this.setState({ confirm: null }), toast: s.toast };
+    if (!SI || !A) return { ...base, tabs: [T('org', 'Organization', 'domain', ''), T('scopes', 'Super users', 'public', ''), T('admins', 'Super Admins', 'admin_panel_settings', '')], orgRows: [], scopeRows: [], saRows: [], howTo: [], subtitle: '', orgSummary: '', q: s.q, sd: { f: {}, on: {}, b: {}, e: {} }, bd: { f: {} }, sc: { f: {} } };
+    return { ...base, subtitle: `${SI.ORG_NAME} · businesses, sites, super users and site administrators`,
+      tabs: [T('org', 'Organization', 'domain', SI.SITES.length), T('scopes', 'Super users', 'public', A.scopes().length), T('admins', 'Super Admins', 'admin_panel_settings', A.users().filter(u => u.superAdmin).length)],
+      ...this.orgVals(), ...this.sdVals(), ...this.bdVals(), ...this.scVals(), ...this.saVals() };
+  }
+}
+</script>
+</body>
+</html>

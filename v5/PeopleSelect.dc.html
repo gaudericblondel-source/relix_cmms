@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:6px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <div style="display:flex;align-items:baseline;gap:8px">
+    <span style="flex:none;font-size:13px;font-weight:600;color:#344054;white-space:nowrap">{{ label }}</span>
+    <span style="min-width:0;font-size:12px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hint }}</span>
+    <sc-if value="{{ canSuggest }}"><button onClick="{{ applySuggest }}" style="margin-left:auto;flex:none;height:24px;display:flex;align-items:center;gap:4px;padding:0 8px 0 5px;background:transparent;border:0;border-radius:6px;font:600 12px 'IBM Plex Sans',sans-serif;color:#6941C6;cursor:pointer" style-hover="background:#F3EEFC"><span style="font:15px/1 'Material Symbols Outlined'">auto_awesome</span>Suggest best fit</button></sc-if>
+  </div>
+  <div style="position:relative">
+  <div onClick="{{ toggle }}" style="min-height:44px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:5px 36px 5px 6px;position:relative;background:#fff;border:1px solid {{ fieldBorder }};border-radius:8px;cursor:pointer">
+    <sc-for list="{{ chips }}" as="c">
+      <span style="height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 3px;background:#F2F4F7;border-radius:16px">
+        <span style="position:relative;flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:{{ c.avBg }};color:{{ c.avFg }};font:600 9.5px 'IBM Plex Sans',sans-serif">{{ c.key }}<span style="position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-radius:50%;border:2px solid #F2F4F7;background:{{ c.dot }}"></span></span>
+        <span style="font-size:12.5px;font-weight:600;white-space:nowrap">{{ c.first }}</span>
+        <button onClick="{{ c.remove }}" title="Remove" style="width:24px;height:24px;display:grid;place-items:center;background:transparent;border:0;border-radius:50%;color:#667085;cursor:pointer" style-hover="background:#E4E7EC;color:#B42318"><span style="font:15px/1 'Material Symbols Outlined'">close</span></button>
+      </span>
+    </sc-for>
+    <sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}"><span style="padding-left:6px;color:#98A2B3;font-size:13.5px;white-space:nowrap">{{ placeholder }}</span></sc-if>
+    <span style="position:absolute;right:10px;top:11px;font:20px/1 'Material Symbols Outlined';color:#98A2B3">{{ chev }}</span>
+  </div>
+  <sc-if value="{{ open }}">
+    <div onClick="{{ close }}" style="position:fixed;inset:0;z-index:20"></div>
+    <div style="position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:21;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16);overflow:hidden">
+      <div style="flex:none;padding:8px;border-bottom:1px solid #EEF0F3"><label style="height:36px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input ref="{{ qRef }}" value="{{ q }}" onInput="{{ setQ }}" placeholder="Search by name, role or skill…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430" /></label></div>
+      <div style="max-height:300px;overflow:auto;padding:4px">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+          <button onClick="{{ r.toggle }}" disabled="{{ r.disabled }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px;background:{{ r.bg }};border:0;border-radius:6px;cursor:{{ r.cursor }};opacity:{{ r.op }};text-align:left;font-family:inherit;color:#1E2430" style-hover="background:#F6F7F9">
+            <span style="flex:none;width:18px;height:18px;border-radius:4px;border:1.5px solid {{ r.boxBorder }};background:{{ r.boxBg }};display:grid;place-items:center;color:#fff;font:14px/1 'Material Symbols Outlined'">{{ r.boxIcon }}</span>
+            <span style="flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:{{ r.avBg }};color:{{ r.avFg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.key }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <span style="display:flex;align-items:baseline;gap:6px;min-width:0"><span style="font-weight:600;white-space:nowrap">{{ r.name }}</span><sc-if value="{{ r.best }}"><span style="flex:none;font-size:10.5px;font-weight:700;color:#6941C6">BEST FIT</span></sc-if><span style="min-width:0;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span></span>
+              <span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ r.skills }}" as="k"><span title="{{ k.tip }}" style="height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 6px 0 4px;border-radius:10px;background:{{ k.bg }};color:{{ k.fg }};font-size:11px;font-weight:600;white-space:nowrap"><span style="font:12px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for>
+                <sc-if value="{{ r.hasMissing }}"><span style="font-size:11px;color:#B54708;font-weight:500;white-space:nowrap">{{ r.missing }}</span></sc-if>
+              </span>
+            </span>
+            <span style="flex:none;max-width:180px;height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px 0 6px;border-radius:11px;background:{{ r.av.bg }};color:{{ r.av.fg }};font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden"><span style="flex:none;font:13px/1 'Material Symbols Outlined'">{{ r.av.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis">{{ r.av.label }}</span></span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ noRows }}"><div style="padding:18px;text-align:center;color:#98A2B3">Nobody matches “{{ q }}”</div></sc-if>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid #EEF0F3;background:#F9FAFB">
+        <span style="font-size:12px;color:#667085">{{ selLabel }}</span>
+        <span style="font-size:12px;color:#98A2B3">· {{ ctxLabel }}</span>
+        <button onClick="{{ clear }}" style="margin-left:auto;padding:0 6px;height:28px;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Clear</button>
+        <button onClick="{{ close }}" style="height:28px;padding:0 12px;background:#1E2430;border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Done</button>
+      </div>
+    </div>
+  </sc-if>
+  </div>
+  <sc-if value="{{ hasCoverage }}">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#667085">
+      <span>Required skills</span>
+      <sc-for list="{{ coverage }}" as="k"><span style="height:22px;display:inline-flex;align-items:center;gap:3px;padding:0 7px 0 5px;border-radius:11px;background:{{ k.bg }};color:{{ k.fg }};font-weight:600"><span style="font:13px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:480},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Assigned users&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;hint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Select people…&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;assign&quot;,&quot;follow&quot;],&quot;default&quot;:&quot;assign&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(keys: string[]) =&gt; void&quot;},&quot;exclude&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;excludeNote&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Already selected&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;skills&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;suggested&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;date&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DOT = { '#0B6B4A': '#12B76A', '#B54708': '#F79009', '#2456B8': '#2E90FA' };
+class Component extends DCLogic {
+  state = { C: null, PM: null, open: false, q: '' };
+  qRef = React.createRef();
+  componentDidMount() {
+    Promise.all([import('./collab-model.js'), import('./people-model.js')]).then(([C, PM]) => this.setState({ C, PM }));
+    this._chg = () => this.forceUpdate(); window.addEventListener('cmms-profile', this._chg);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-profile', this._chg); }
+  set(v) { this.props.onChange && this.props.onChange(v); }
+  renderVals() {
+    const { C, PM } = this.state, p = this.props, val = p.value || [], ex = p.exclude || [], req = p.skills || [], sug = (p.suggested || []).filter(Boolean), mode = p.mode || 'assign';
+    const base = { label: p.label || 'People', hint: p.hint || '', placeholder: p.placeholder || 'Select people…', chips: [], rows: [], empty: !val.length, chev: this.state.open ? 'expand_less' : 'expand_more', fieldBorder: this.state.open ? '#98A2B3' : '#D0D5DD', open: false, canSuggest: false, hasCoverage: false, coverage: [] };
+    if (!C || !PM) return base;
+    const d = p.date || '', iso = d.slice(0, 10) || PM.dayIso(1), hr = d.length > 11 ? +d.slice(11, 13) + (+d.slice(14, 16)) / 60 : 10.4;
+    const [, mo, dd] = iso.split('-');
+    const pool = mode === 'assign' ? PM.TECHS : Object.keys(C.PEOPLE);
+    const info = k => {
+      const pr = C.person(k), prof = PM.profile(k), st = PM.statusNow(k, iso, hr), lv = id => PM.skillLevel(k, id);
+      const missing = req.filter(id => !lv(id)), ids = [...req.filter(id => lv(id)), ...prof.skills.map(x => x[0]).filter(id => !req.includes(id))].slice(0, mode === 'assign' ? 3 : 2);
+      const away = st.fg === '#B54708' || st.label === 'Off today' || st.fg === '#2456B8';
+      return { pr, st, missing, away, score: (missing.length ? -100 : 0) + (away ? -50 : 0) + req.reduce((a, id) => a + lv(id), 0) * 4 + (sug.includes(k) ? 5 : 0),
+        skills: ids.map(id => { const s = PM.skill(id), on = req.includes(id); return { name: s.name, icon: s.icon, bg: on ? s.bg : '#F2F4F7', fg: on ? s.fg : '#475467', tip: `${s.name} · ${PM.LEVELS[lv(id)]}` }; }) };
+    };
+    const q = this.state.q.trim().toLowerCase();
+    let list = pool.map(k => ({ k, i: info(k) }));
+    if (mode === 'assign' && req.length) list.sort((a, b) => b.i.score - a.i.score);
+    if (q) list = list.filter(({ k, i }) => [i.pr.name, i.pr.role, i.pr.team, ...i.skills.map(x => x.name)].join(' ').toLowerCase().includes(q));
+    const toggle = k => this.set(val.includes(k) ? val.filter(x => x !== k) : [...val, k]);
+    const covered = req.map(id => ({ id, ok: val.some(k => PM.skillLevel(k, id) > 0) }));
+    return {
+      ...base, open: this.state.open, empty: !val.length,
+      toggle: () => this.setState(s => ({ open: !s.open, q: '' }), () => setTimeout(() => this.qRef.current && this.qRef.current.focus(), 30)),
+      close: () => this.setState({ open: false }), clear: () => this.set([]), qRef: this.qRef, q: this.state.q, setQ: e => this.setState({ q: e.target.value }),
+      chips: val.map(k => { const i = info(k); return { key: k, first: k === C.ME ? 'You' : i.pr.name, avBg: i.pr.avBg, avFg: i.pr.avFg, dot: DOT[i.st.fg] || '#98A2B3', remove: e => { e.stopPropagation(); this.set(val.filter(x => x !== k)); } }; }),
+      canSuggest: mode === 'assign' && sug.length > 0 && sug.join() !== val.join(), applySuggest: () => this.set([...new Set(sug)]),
+      hasCoverage: mode === 'assign' && req.length > 0,
+      coverage: covered.map(({ id, ok }) => { const s = PM.skill(id); return { name: s.name, icon: ok ? 'check' : 'close', bg: ok ? '#E6F4EE' : '#FEF3E2', fg: ok ? '#0B6B4A' : '#B54708' }; }),
+      rows: list.map(({ k, i }) => { const on = val.includes(k), dis = ex.includes(k);
+        return { key: k, name: k === C.ME ? i.pr.name + ' (you)' : i.pr.name, sub: dis ? (p.excludeNote || 'Already selected') : `${i.pr.role} · ${(i.pr.team || '').replace(' team', '')}`, avBg: i.pr.avBg, avFg: i.pr.avFg,
+          skills: i.skills, hasMissing: mode === 'assign' && i.missing.length > 0, missing: `Missing ${i.missing.map(id => PM.skill(id).name).join(', ')}`,
+          av: { label: i.st.label, fg: i.st.fg, bg: i.st.bg, icon: i.st.icon }, best: mode === 'assign' && sug.includes(k) && !i.missing.length && !i.away,
+          disabled: dis, cursor: dis ? 'default' : 'pointer', op: dis ? 0.5 : 1, bg: on ? '#FBF7F7' : 'transparent',
+          boxBorder: on ? '#C00018' : '#C4CAD4', boxBg: on ? '#C00018' : '#fff', boxIcon: on ? 'check' : '', toggle: () => !dis && toggle(k) }; }),
+      noRows: !list.length, selLabel: `${val.length} selected`, ctxLabel: `availability on ${MO[+mo - 1]} ${+dd}${d.length > 11 ? ' at ' + d.slice(11, 16) : ''}`,
+    };
+  }
+}
+</script>
+</body>
+</html>

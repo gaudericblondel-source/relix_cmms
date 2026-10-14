@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<style>
+@keyframes relix-analysis-pulse { 0%,100% { transform:scale(.94);opacity:.65 } 50% { transform:scale(1.04);opacity:1 } }
+@keyframes relix-analysis-dot { 0%,80%,100% { opacity:.25;transform:translateY(0) } 40% { opacity:1;transform:translateY(-4px) } }
+.relix-analysis-orb { animation:relix-analysis-pulse 1.8s ease-in-out infinite }
+.relix-analysis-dot { animation:relix-analysis-dot 1.2s ease-in-out infinite }
+@media (prefers-reduced-motion:reduce) { .relix-analysis-orb,.relix-analysis-dot { animation:none } }
+</style>
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+
+  <section style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:20px;background:#FBF8F3;border:1px solid #F1E6D2;border-radius:10px">
+    <div style="flex:1 1 220px;display:flex;flex-direction:column;gap:7px">
+      <span style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#93370D">Feature level</span>
+      <span style="display:flex;align-items:center;gap:12px"><strong data-feature-score style="font-size:30px;line-height:36px;font-weight:600;font-variant-numeric:tabular-nums">{{ flLabel }}</strong><span style="display:flex"><sc-for list="{{ flStars }}" as="x"><span style="font:18px/1 'Material Symbols Outlined';color:{{ x.c }};font-variation-settings:'FILL' {{ x.f }}">{{ x.i }}</span></sc-for></span></span>
+      <span style="font-size:12px;color:#667085">{{ fOn }} of {{ fTotal }} optional features on · {{ modeLabel }}</span>
+    </div>
+    <div style="flex:1 1 220px;display:flex;flex-direction:column;gap:7px">
+      <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:{{ mColor }}">Actual maturity<button aria-label="About actual maturity" aria-describedby="{{ summaryDescribedBy }}" onMouseEnter="{{ summaryInfo }}" onMouseLeave="{{ hideInfo }}" onFocus="{{ summaryInfo }}" onBlur="{{ hideInfo }}" onClick="{{ summaryInfo }}" style="display:flex;padding:0;background:transparent;border:0;color:inherit;cursor:help"><span style="font:17px/1 'Material Symbols Outlined'">info</span></button></span>
+      <span style="display:flex;align-items:center;gap:12px"><strong data-maturity-score style="font-size:30px;line-height:36px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ mColor }}">{{ mLabel }}</strong><span style="display:flex"><sc-for list="{{ mStars }}" as="x"><span style="font:18px/1 'Material Symbols Outlined';color:{{ x.c }};font-variation-settings:'FILL' {{ x.f }}">{{ x.i }}</span></sc-for></span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:{{ mColor }}"><span style="font:15px/1 'Material Symbols Outlined'">{{ mIcon }}</span>{{ mStatus }}</span>
+    </div>
+    <button data-maturity-analyze onClick="{{ analyze }}" style="height:36px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 14px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">insights</span>Analyze</button>
+  </section>
+
+  <div role="tablist" aria-label="Feature configuration mode" style="display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid #E4E7EC">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.select }}" style="position:relative;height:40px;display:flex;align-items:center;gap:6px;padding:0 4px;background:transparent;border:0;font:{{ t.font }};color:{{ t.color }};cursor:pointer;white-space:nowrap"><span style="font:18px/1 'Material Symbols Outlined'">{{ t.icon }}</span>{{ t.label }}<sc-if value="{{ t.hasCount }}"><span style="height:18px;display:inline-flex;align-items:center;padding:0 6px;border-radius:9px;background:#F2F4F7;color:#475467;font-size:11.5px;font-weight:600">{{ t.count }}</span></sc-if><span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;background:{{ t.bar }}"></span></button></sc-for>
+  </div>
+
+  <sc-if value="{{ isLevels }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12.5px;color:#667085">Choose a level for each area. Expert includes its Advanced features.</span>
+        <div style="margin-left:auto;display:flex;padding:2px;background:#EEF0F3;border-radius:7px"><sc-for list="{{ filters }}" as="f" hint-placeholder-count="3"><button onClick="{{ f.select }}" style="height:28px;padding:0 10px;background:{{ f.bg }};border:0;border-radius:5px;box-shadow:{{ f.shadow }};font:{{ f.font }};color:{{ f.color }};cursor:pointer;white-space:nowrap">{{ f.label }}</button></sc-for></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax({{ minCol }},1fr));gap:14px">
+        <sc-for list="{{ cards }}" as="c" hint-placeholder-count="6">
+          <article data-maturity-area="{{ c.key }}" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:#fff;border:1px solid {{ c.border }};border-radius:10px;transition:border-color .2s">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="flex:none;width:38px;height:38px;border-radius:9px;display:grid;place-items:center;background:#F2F4F7;color:#344054;font:20px/1 'Material Symbols Outlined'">{{ c.icon }}</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:14.5px;font-weight:600">{{ c.name }}</span><span style="font-size:12px;color:#667085">{{ c.tagline }}</span></span>
+              <span style="flex:none;display:flex;gap:1px"><sc-for list="{{ c.stars }}" as="s"><span style="font:20px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ s.fill }};color:{{ s.color }}">star</span></sc-for></span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#667085"><span>{{ c.flLabel }}</span><button aria-label="{{ c.infoLabel }}" aria-describedby="{{ c.describedBy }}" onMouseEnter="{{ c.info }}" onMouseLeave="{{ hideInfo }}" onFocus="{{ c.info }}" onBlur="{{ hideInfo }}" onClick="{{ c.info }}" style="display:inline-flex;align-items:center;gap:5px;flex:none;padding:3px 0;background:transparent;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ c.mColor }};cursor:help"><span>{{ c.mLabel }}</span><span style="font:17px/1 'Material Symbols Outlined'">info</span></button></div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+              <sc-for list="{{ c.opts }}" as="o">
+                <button data-level="{{ o.id }}" aria-pressed="{{ o.selected }}" aria-label="{{ o.aria }}" onFocus="{{ o.hover }}" onBlur="{{ o.leave }}" onClick="{{ o.pick }}" onMouseEnter="{{ o.hover }}" onMouseLeave="{{ o.leave }}" title="{{ o.tip }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 10px;background:{{ o.bg }};border:1.5px solid {{ o.border }};border-radius:8px;cursor:pointer;text-align:left;font-family:inherit" style-hover="border-color:#E3A008">
+                  <span style="display:flex;gap:0"><sc-for list="{{ o.stars }}" as="s"><span style="font:15px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ s.fill }};color:{{ s.color }}">star</span></sc-for></span>
+                  <span style="font-size:12.5px;font-weight:600;color:{{ o.color }}">{{ o.name }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;min-height:72px">
+              <p style="margin:0;line-height:1.5;color:#344054;text-wrap:pretty"><b style="font-weight:600">{{ c.showLabel }}</b> — {{ c.desc }}</p>
+              <div style="display:flex;flex-wrap:wrap;gap:5px"><sc-for list="{{ c.can }}" as="k"><span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:{{ k.bg }};color:{{ k.fg }};font-size:11.5px;font-weight:500"><span style="font:13px/1 'Material Symbols Outlined'">{{ k.icon }}</span>{{ k.name }}</span></sc-for></div>
+            </div>
+            <sc-if value="{{ c.hasNext }}"><span style="margin-top:auto;padding-top:10px;border-top:1px solid #F2F4F7;font-size:12px;color:#667085">Next step · <b style="font-weight:600;color:#93370D">{{ c.nextName }}</b> adds {{ c.nextAdds }}</span></sc-if>
+            <sc-if value="{{ c.isTop }}"><span style="margin-top:auto;padding-top:10px;border-top:1px solid #F2F4F7;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#0B6B4A"><span style="font:15px/1 'Material Symbols Outlined'">workspace_premium</span>Full potential reached</span></sc-if>
+          </article>
+        </sc-for>
+      </div>
+      <sc-if value="{{ noCards }}"><div style="padding:24px;text-align:center;color:#667085">No area matches this filter.</div></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isFeatures }}">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="position:relative;display:flex;align-items:center;width:240px"><span style="position:absolute;left:9px;font:18px/1 'Material Symbols Outlined';color:#98A2B3;pointer-events:none">search</span><input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search a feature…" style="width:100%;height:34px;padding:0 10px 0 34px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;background:#fff" style-focus="border-color:#98A2B3" /></span>
+        <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px"><sc-for list="{{ ffilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.select }}" style="height:28px;padding:0 10px;background:{{ f.bg }};border:0;border-radius:5px;box-shadow:{{ f.shadow }};font:{{ f.font }};color:{{ f.color }};cursor:pointer;white-space:nowrap">{{ f.label }}</button></sc-for></div>
+        <span style="font-size:12.5px;color:#667085">Switch any feature on or off. Changes apply to the whole site right away.</span>
+
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax({{ minCol }},1fr));gap:14px;align-items:start">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <section data-maturity-area="{{ g.key }}" style="background:#fff;border:1px solid #E4E7EC;border-radius:10px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EEF0F3">
+              <span style="flex:none;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:#F2F4F7;color:#344054;font:18px/1 'Material Symbols Outlined'">{{ g.icon }}</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:14px;font-weight:600">{{ g.name }}</span><span style="font-size:12px;color:#667085">{{ g.sub }}</span></span>
+              <button aria-label="{{ g.infoLabel }}" aria-describedby="{{ g.describedBy }}" onMouseEnter="{{ g.info }}" onMouseLeave="{{ hideInfo }}" onFocus="{{ g.info }}" onBlur="{{ hideInfo }}" onClick="{{ g.info }}" style="display:inline-flex;align-items:center;gap:5px;flex:none;padding:3px 0;background:transparent;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:{{ g.mColor }};cursor:help"><span>{{ g.mLabel }}</span><span style="font:17px/1 'Material Symbols Outlined'">info</span></button>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r">
+              <div data-feature-row="{{ r.id }}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:{{ r.sep }};background:{{ r.bg }};opacity:{{ r.op }}">
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:600;color:{{ r.nameColor }}">{{ r.name }}</span><span title="{{ r.lvTip }}" style="display:inline-flex"><sc-for list="{{ r.stars }}" as="s"><span style="font:13px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ s.fill }};color:{{ s.color }}">star</span></sc-for></span><sc-if value="{{ r.ai }}"><span title="Advanced feature · included with Expert · in development" style="height:18px;display:inline-flex;align-items:center;padding:0 6px;border-radius:9px;background:#800080;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.03em">Advanced</span></sc-if></span>
+                  <span style="font-size:12px;color:#667085;line-height:1.4;text-wrap:pretty">{{ r.where }}</span>
+                  <sc-if value="{{ r.blocked }}"><span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#B54708"><span style="font:14px/1 'Material Symbols Outlined'">link</span>{{ r.blockedText }}</span></sc-if>
+                </span>
+                <sc-if value="{{ r.core }}"><span title="Part of the Relix foundation — always on" style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#667085"><span style="font:15px/1 'Material Symbols Outlined'">lock</span>Always on</span></sc-if>
+                <sc-if value="{{ r.toggleable }}"><button onClick="{{ r.toggle }}" role="switch" aria-checked="{{ r.aria }}" aria-label="{{ r.name }}" style="flex:none;position:relative;width:40px;height:22px;padding:0;border:0;border-radius:11px;background:{{ r.track }};cursor:pointer;transition:background .15s"><span style="position:absolute;top:2px;left:{{ r.knob }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.2);transition:left .15s"></span></button></sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ g.empty }}"><div style="padding:14px;color:#98A2B3;font-size:12.5px">No matching feature.</div></sc-if>
+          </section>
+        </sc-for>
+      </div>
+      <sc-if value="{{ noGroups }}"><div style="padding:24px;text-align:center;color:#667085">No feature matches.</div></sc-if>
+    </div>
+  </sc-if>
+
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#98A2B3;font-size:12px"><span style="flex:1">Changes apply to {{ siteName }} right away. Each mode keeps its own settings. No data is deleted.</span><button onClick="{{ resetCurrent }}" style="padding:0;background:transparent;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Restore this mode’s defaults</button></div>
+  <sc-if value="{{ analysisOpen }}">
+    <div onClick="{{ backdrop }}" onKeyDown="{{ modalKey }}" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(16,24,40,.42)">
+      <section data-maturity-dialog role="dialog" aria-modal="true" aria-labelledby="maturity-analysis-title" aria-busy="{{ analysisBusy }}" style="display:flex;flex-direction:column;gap:16px;width:880px;max-width:100%;max-height:calc(100dvh - 48px);padding:24px;background:#F9FAFB;border:1px solid #E4E7EC;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.25);overflow:auto;overscroll-behavior:contain">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px"><h2 id="maturity-analysis-title" style="margin:0;font-size:20px;font-weight:600">{{ analysisTitle }}</h2><span style="color:#667085;line-height:1.5">{{ recoSub }}</span></div>
+          <button data-maturity-close aria-label="Close analysis" onClick="{{ closeAnalysis }}" style="display:flex;padding:4px;background:transparent;border:0;color:#667085;cursor:pointer"><span style="font:22px/1 'Material Symbols Outlined'">close</span></button>
+        </div>
+        <sc-if value="{{ analyzing }}">
+          <div data-analysis-loading role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:340px;text-align:center;padding:24px">
+            <span aria-hidden="true" class="relix-analysis-orb" style="width:76px;height:76px;border-radius:24px;display:grid;place-items:center;background:linear-gradient(135deg,#F6EAF6,#FBE7EA);box-shadow:0 0 36px rgba(128,0,128,.12);color:#800080;font:36px/1 'Material Symbols Outlined'">auto_awesome</span>
+            <span style="display:flex;flex-direction:column;gap:7px"><b style="font-size:17px;font-weight:600">{{ analysisStepLabel }}</b><span style="font-size:12.5px;color:#667085">Finding what fits your site</span></span>
+            <span aria-hidden="true" style="display:flex;gap:6px"><span class="relix-analysis-dot" style="width:6px;height:6px;border-radius:50%;background:#800080"></span><span class="relix-analysis-dot" style="width:6px;height:6px;border-radius:50%;background:#800080;animation-delay:.16s"></span><span class="relix-analysis-dot" style="width:6px;height:6px;border-radius:50%;background:#800080;animation-delay:.32s"></span></span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ analysisReady }}">
+        <sc-if value="{{ hasIgnored }}"><button onClick="{{ showIgnored }}" style="align-self:flex-start;padding:0;background:transparent;border:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">{{ ignoredLabel }}</button></sc-if>
+      <sc-if value="{{ noRecos }}"><div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;color:#475467"><span style="font:20px/1 'Material Symbols Outlined';color:#0B6B4A">verified</span>No further suggestions for now.</div></sc-if>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:10px">
+        <sc-for list="{{ recos }}" as="r">
+          <article data-recommendation style="display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.fg }};font:17px/1 'Material Symbols Outlined'">{{ r.icon }}</span>
+              <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;line-height:1.3">{{ r.title }}</span><span style="font-size:11.5px;color:{{ r.fg }};font-weight:600">{{ r.kindLabel }} · {{ r.module }}</span></span>
+            </div>
+            <p style="margin:0;color:#475467;line-height:1.5;text-wrap:pretty">{{ r.why }}</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:auto">
+              <button onClick="{{ r.apply }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 12px 0 8px;background:{{ r.btnBg }};border:0;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ r.btnIcon }}</span>{{ r.btnLabel }}</button>
+              <button onClick="{{ r.ignore }}" style="height:30px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer">Ignore</button>
+              <sc-if value="{{ isFeatures }}"><button onClick="{{ r.see }}" aria-label="{{ r.seeLabel }}" title="Find in features" style="margin-left:auto;padding:4px;background:transparent;border:0;color:#667085;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">arrow_outward</span></button></sc-if>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+        </sc-if>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ infoOpen }}">
+    <div id="maturity-measured-info" role="tooltip" onMouseEnter="{{ keepInfo }}" onMouseLeave="{{ hideInfo }}" style="position:fixed;left:{{ infoLeft }};top:{{ infoTop }};z-index:210;width:360px;max-width:calc(100vw - 24px);padding:14px;background:#fff;border:1px solid #E4E7EC;border-radius:9px;box-shadow:0 12px 32px rgba(16,24,40,.18);display:flex;flex-direction:column;gap:10px">
+      <b style="font-weight:600">{{ infoTitle }}</b>
+      <sc-if value="{{ hasInfoText }}"><span style="font-size:12px;line-height:1.5;color:#475467">{{ infoText }}</span></sc-if>
+      <sc-if value="{{ hasSignals }}"><b style="font-size:12px;font-weight:600;color:#667085">What we measured</b></sc-if>
+      <sc-for list="{{ infoSignals }}" as="g"><span style="display:grid;grid-template-columns:minmax(0,1fr) 54px 32px;align-items:center;gap:8px;font-size:12px;line-height:1.4"><span>{{ g.label }}</span><span style="height:5px;border-radius:3px;background:#E4E7EC;overflow:hidden"><span style="display:block;height:100%;width:{{ g.w }};background:{{ g.c }}"></span></span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ g.pct }}</span></span></sc-for>
+      <span style="font-size:11px;color:#98A2B3">Prototype: sample practice signals, combined with local intervention and plan data.</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{ toast }}">
+    <div role="status" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:220;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font-size:13px">
+      <span style="font:18px/1 'Material Symbols Outlined'">{{ toastIcon }}</span>{{ toast }}
+      <sc-if value="{{ canUndo }}"><button onClick="{{ undo }}" style="padding:0 4px;background:transparent;border:0;font:600 13px 'IBM Plex Sans',sans-serif;color:#F3A3AC;cursor:pointer">Undo</button></sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:900},&quot;Columns&quot;:{&quot;type&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;One&quot;,&quot;Two&quot;],&quot;default&quot;:&quot;Two&quot;}}">
+const stars = (x, color = '#E3A008') => [1, 2, 3, 4, 5].map(i => x >= i ? { i: 'star', f: 1, c: color } : x >= i - 0.5 ? { i: 'star_half', f: 1, c: color } : { i: 'star', f: 0, c: '#D0D5DD' });
+const levelStars = n => [1, 2, 3].map(i => ({ fill: i <= n ? 1 : 0, color: i <= n ? '#E3A008' : '#D0D5DD' }));
+const fmt = x => String(Math.round(x * 10) / 10);
+class Component extends DCLogic {
+  state = { MM: null, IN: null, site: 'THO', siteName: '', q: '', filter: 'all', ff: 'all', hover: {}, toast: null, analysisOpen: false, analyzing: false, analysisStep: 0, info: null };
+  componentDidMount() {
+    this._mounted = true;
+    Promise.all([import('./maturity-model.js'), import('./maturity-insights.js'), import('./sites-model.js')]).then(([MM, IN, SI]) => {
+      if (!this._mounted) return; this.SI = SI; const site = SI.current(); this.setState({ MM, IN, site: site.id, siteName: site.name });
+    });
+    this._ch = () => this.forceUpdate(); window.addEventListener('cmms-maturity', this._ch);
+    this._site = () => { if (!this.SI) return; const site = this.SI.current(); this._undo = null; this.closeAnalysis(false); this.setState({ site: site.id, siteName: site.name, toast: null, info: null, hover: {} }); };
+    window.addEventListener('cmms-site', this._site);
+    this._storage = e => { if (!e.key || e.key === 'cmms.maturity.v1' || e.key === 'cmms.maturity.recos.v1') this.forceUpdate(); };
+    window.addEventListener('storage', this._storage);
+    this._hide = e => {
+      if (!this.state.info || (e && e.target && e.target.closest && e.target.closest('[role="tooltip"]'))) return;
+      // Keyboard focus can scroll the containing panel: keep the focused info bubble attached to its button.
+      if (e && e.type === 'scroll' && this._infoAnchor === document.activeElement) {
+        const r = this._infoAnchor.getBoundingClientRect(), b = e.target.getBoundingClientRect ? e.target.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+        if (r.top >= Math.max(0, b.top) && r.bottom <= Math.min(window.innerHeight, b.bottom)) { this.showInfo({ currentTarget: this._infoAnchor }, this.state.info.key); return; }
+      }
+      this.setState({ info: null });
+    };
+    window.addEventListener('scroll', this._hide, true); window.addEventListener('resize', this._hide);
+    this._key = e => { if (e.key === 'Escape') { this._hide(); if (this.state.analysisOpen) this.closeAnalysis(); } }; window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() {
+    this._mounted = false; window.removeEventListener('cmms-maturity', this._ch); window.removeEventListener('cmms-site', this._site); window.removeEventListener('storage', this._storage);
+    window.removeEventListener('scroll', this._hide, true); window.removeEventListener('resize', this._hide); window.removeEventListener('keydown', this._key);
+    this.cancelAnalysis(); clearTimeout(this._t); clearTimeout(this._infoTimer); clearTimeout(this._focusTimer);
+  }
+  flash(text, undo) { this._undo = undo || null; this.setState({ toast: text }); clearTimeout(this._t); this._t = setTimeout(() => { this._undo = null; this.setState({ toast: null }); }, 6000); }
+  change(fn, text, afterUndo) { const { MM, site } = this.state, snapshot = MM.settings(site); fn(); this.flash(text, () => { MM.restore(site, snapshot); if (afterUndo) afterUndo(); }); }
+  selectMode(next) { const { MM, site } = this.state; if (MM.mode(site) === next) return; this._undo = null; MM.setMode(site, next); this.setState({ toast: null, info: null, hover: {} }); }
+  showInfo(event, key) {
+    clearTimeout(this._infoTimer); this._infoAnchor = event.currentTarget; const rect = this._infoAnchor.getBoundingClientRect(), width = Math.min(360, window.innerWidth - 24);
+    this.setState({ info: { key, left: Math.max(12, Math.min(rect.right - width, window.innerWidth - width - 12)), top: Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - 320)) } });
+  }
+  closeAnalysis(focus = true) { this.cancelAnalysis(); this.setState({ analysisOpen: false, analyzing: false }); clearTimeout(this._focusTimer); if (focus) this._focusTimer = setTimeout(() => { if (this._analysisTrigger && this._analysisTrigger.isConnected) this._analysisTrigger.focus(); }); }
+  cancelAnalysis() { (this._analysisTimers || []).forEach(clearTimeout); this._analysisTimers = []; }
+  startAnalysis(event) {
+    if (this.state.analysisOpen) return;
+    const { IN, site } = this.state;
+    this.cancelAnalysis(); this._analysisTrigger = event.currentTarget;
+    this.setState({ analysisOpen: true, analyzing: true, analysisStep: 0, info: null });
+    clearTimeout(this._focusTimer); this._focusTimer = setTimeout(() => { const btn = document.querySelector('[data-maturity-close]'); if (btn) btn.focus(); }, 30);
+    // Presentation delay for the local prototype, not an external AI request.
+    this._analysisTimers = [
+      setTimeout(() => this.setState({ analysisStep: 1 }), 700),
+      setTimeout(() => this.setState({ analysisStep: 2 }), 1400),
+      setTimeout(() => { if (!this.state.analysisOpen || this.state.site !== site) return; IN.markRun(site); this.setState({ analyzing: false }); this._analysisTimers = []; }, 2100),
+    ];
+  }
+  seeArea(key) { this.closeAnalysis(false); this.setState({ filter: 'all', ff: 'all', q: '' }); clearTimeout(this._focusTimer); this._focusTimer = setTimeout(() => {
+    const el = document.querySelector(`[data-maturity-area="${key}"]`); if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); const btn = el.querySelector('[aria-pressed="true"],button'); if (btn) btn.focus({ preventScroll: true }); }
+  }, 30); }
+  renderVals() {
+    const s = this.state, { MM, IN, site } = s;
+    if (!MM || !IN) return { cards: [], groups: [], tabs: [], filters: [], ffilters: [], flStars: [], mStars: [], recos: [], infoSignals: [], flLabel: '— / 5', mLabel: '— / 5', fOn: '—', fTotal: '—', modeLabel: '', siteName: s.siteName, mColor: '#667085', mIcon: 'hourglass_empty', mStatus: 'Loading' };
+    const O = IN.overview(site), status = IN.alignment(O.fl, O.m), cnt = MM.counts(site), mode = MM.mode(site), isLevels = mode === 'levels', lv = MM.levels(site), q = s.q.trim().toLowerCase();
+    const modOf = key => O.mods.find(m => m.key === key), nameOf = key => MM.CONCEPTS.find(c => c.key === key).name;
+    const detail = c => { const m = modOf(c.key), status = IN.alignment(m.fl, m.m); return { mColor: status.color, mStatus: status.label, flLabel: `Feature level ${fmt(IN.toAreaScale(m.fl))} / 3`, mLabel: `Actual maturity ${fmt(IN.toAreaScale(m.m))} / 3`, infoLabel: `What we measured for ${c.name} · ${status.label}`, describedBy: s.info && s.info.key === c.key ? 'maturity-measured-info' : undefined, info: e => this.showInfo(e, c.key) }; };
+    const filters = (items, selected, field) => items.map(([key, label]) => ({ label, bg: selected === key ? '#fff' : 'transparent', shadow: selected === key ? '0 1px 3px rgba(16,24,40,.1)' : 'none', font: `${selected === key ? 600 : 500} 12.5px 'IBM Plex Sans',sans-serif`, color: key === 'adv' ? '#800080' : selected === key ? '#1E2430' : '#667085', select: () => this.setState({ [field]: key }) }));
+    const cards = MM.CONCEPTS.filter(c => s.filter === 'all' || (s.filter === 'grow' ? lv[c.key] < 3 : lv[c.key] === 3)).map(c => {
+      const n = lv[c.key], shown = s.hover[c.key] || n, L = c.levels[shown - 1], next = c.levels[n];
+      return { ...c, ...detail(c), stars: levelStars(n), border: '#E4E7EC', showLabel: `${L.name}${shown !== n ? ' · preview' : ''}`, desc: L.desc,
+        can: c.features.filter(f => f.level === shown).map(f => ({ name: f.name, bg: f.ai ? '#F6EAF6' : '#FEF7E6', fg: f.ai ? '#800080' : '#93370D', icon: f.ai ? 'auto_awesome' : 'check' })),
+        opts: c.levels.map(l => ({ id: `${c.key}-${l.n}`, selected: String(l.n === n), aria: `${c.name}: ${l.name}`, name: l.name, stars: levelStars(l.n), tip: l.desc, bg: l.n === n ? '#FFFAEB' : '#fff', border: l.n === n ? '#E3A008' : '#E4E7EC', color: l.n === n ? '#93370D' : '#475467',
+          hover: () => this.setState(z => ({ hover: { ...z.hover, [c.key]: l.n } })), leave: () => this.setState(z => ({ hover: { ...z.hover, [c.key]: null } })),
+          pick: () => { if (n !== l.n) this.change(() => MM.setLevel(site, c.key, l.n), `${c.name} set to ${l.name}`); } })),
+        hasNext: !!next, nextName: next ? next.name : '', nextAdds: next ? next.can.join(', ') : '', isTop: n === 3 };
+    });
+    const groups = MM.CONCEPTS.map(c => {
+      const fs = c.features.filter(f => (!q || `${c.name} ${f.name} ${f.where} ${f.ai ? 'advanced AI' : ''}`.toLowerCase().includes(q)) && (s.ff === 'all' || (s.ff === 'on' ? MM.on(f.id, site) : s.ff === 'off' ? !MM.on(f.id, site) : f.ai)));
+      return { ...c, ...detail(c), sub: `${c.features.filter(f => MM.on(f.id, site)).length} of ${c.features.length} on · Feature level ${fmt(IN.toAreaScale(modOf(c.key).fl))} / 3`, rows: fs.map((f, i) => {
+        const own = MM.own(f.id, site), on = MM.on(f.id, site), req = f.req && MM.feature(f.req);
+        return { ...f, stars: levelStars(f.level), lvTip: `${MM.LEVELS[f.level - 1][1]}${f.ai ? ' · Advanced' : ''}`, sep: i ? '1px solid #F2F4F7' : '0', bg: f.ai ? '#FDFAFD' : '#fff', op: 1, nameColor: f.ai ? '#800080' : '#1E2430', toggleable: !f.core,
+          blocked: own && !on, blockedText: req ? `Needs “${req.name}” — switch it on too` : '', aria: String(own), track: own ? (!on ? '#98A2B3' : f.ai ? '#800080' : '#0B6B4A') : '#D0D5DD', knob: own ? '20px' : '2px',
+          toggle: () => this.change(() => MM.setFeature(site, f.id, !own), `${f.name} switched ${own ? 'off' : 'on'}`) };
+      }) };
+    }).filter(g => g.rows.length);
+    const recos = s.analysisOpen && !s.analyzing ? IN.analyze(site) : [], nIgn = IN.ignoredCount(site);
+    const KIND = { activate: ['Activate', 'add_circle', '#E6F4EE', '#0B6B4A', 'Turn on', 'toggle_on'], deactivate: ['Simplify', 'remove_circle', '#FEF3E2', '#B54708', 'Switch off', 'toggle_off'], explore: ['Explore', 'science', '#F6EAF6', '#800080', 'Try it', 'science'] };
+    const infoMod = s.info && modOf(s.info.key), signals = infoMod ? infoMod.signals : [];
+    return {
+      siteName: s.siteName, flLabel: `${fmt(O.fl)} / 5`, mLabel: `${fmt(O.m)} / 5`, flStars: stars(O.fl), mStars: stars(O.m, status.color), mColor: status.color, mStatus: status.label, mIcon: status.icon, fOn: cnt.on, fTotal: cnt.total, modeLabel: isLevels ? 'By level' : 'Feature by feature',
+      summaryDescribedBy: s.info && s.info.key === 'summary' ? 'maturity-measured-info' : undefined, summaryInfo: e => this.showInfo(e, 'summary'),
+      isLevels, isFeatures: !isLevels, minCol: this.props.Columns === 'One' ? '100%' : 'min(100%,420px)',
+      tabs: [['levels', 'By level', 'star'], ['features', 'Feature by feature', 'tune']].map(([key, label, icon]) => ({ label, icon, selected: String(mode === key), font: `${mode === key ? 600 : 500} 13px 'IBM Plex Sans',sans-serif`, color: mode === key ? '#C00018' : '#667085', bar: mode === key ? '#C00018' : 'transparent', select: () => this.selectMode(key) })),
+      filters: filters([['all', 'All areas'], ['grow', 'Room to grow'], ['expert', 'At Expert']], s.filter, 'filter'), ffilters: filters([['all', 'All'], ['on', 'On'], ['off', 'Off'], ['adv', 'Advanced']], s.ff, 'ff'),
+      cards, groups, noCards: !cards.length, noGroups: !groups.length, q: s.q, setQ: e => this.setState({ q: e.target.value }),
+      analyze: e => this.startAnalysis(e), analyzing: s.analyzing, analysisReady: s.analysisOpen && !s.analyzing, analysisBusy: String(s.analyzing),
+      analysisTitle: s.analyzing ? 'Analyzing your site' : 'Relix recommends', analysisStepLabel: ['Reviewing site activity', 'Comparing features and practices', 'Preparing recommendations'][s.analysisStep],
+      analysisOpen: s.analysisOpen, closeAnalysis: () => this.closeAnalysis(), backdrop: e => { if (e.target === e.currentTarget) this.closeAnalysis(); },
+      modalKey: e => { if (e.key !== 'Tab') return; const dialog = e.currentTarget.querySelector('[role="dialog"]'), buttons = dialog.querySelectorAll('button:not([disabled]),[href],input,[tabindex="0"]'), first = buttons[0], last = buttons[buttons.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } },
+      recoSub: s.analyzing ? s.siteName : `${s.siteName} · ${recos.length} suggestion${recos.length === 1 ? '' : 's'}`,
+      noRecos: !recos.length, hasIgnored: nIgn > 0, ignoredLabel: `Show ${nIgn} ignored`, showIgnored: () => { IN.resetIgnored(site); this.forceUpdate(); },
+      recos: recos.map(r => { const K = KIND[r.kind]; return { title: r.feature.name, why: r.why, module: nameOf(r.concept), kindLabel: K[0], icon: K[1], bg: K[2], fg: K[3], btnBg: K[3], btnIcon: isLevels ? 'star' : K[5], btnLabel: isLevels ? 'Review level' : K[4], seeLabel: `Find ${r.feature.name} in features`,
+        apply: () => { if (isLevels) return this.seeArea(r.concept); this.change(() => { MM.setFeature(site, r.feature.id, r.kind !== 'deactivate'); IN.ignore(r.id, site); }, `${r.feature.name} switched ${r.kind === 'deactivate' ? 'off' : 'on'}`, () => IN.unignore(r.id, site)); },
+        ignore: () => { IN.ignore(r.id, site); this.forceUpdate(); }, see: () => this.seeArea(r.concept) }; }),
+      infoOpen: !!s.info, infoLeft: s.info ? `${s.info.left}px` : '0px', infoTop: s.info ? `${s.info.top}px` : '0px', infoTitle: infoMod ? nameOf(infoMod.key) : 'Actual maturity',
+      hasInfoText: !infoMod, infoText: 'Average of practice scores across all areas. Each area’s info icon shows its measurements.',
+      hasSignals: signals.length > 0, infoSignals: signals.map(g => ({ label: g.label, pct: `${Math.round(g.v * 100)}%`, w: `${Math.round(g.v * 100)}%`, c: g.v >= .7 ? '#12A06E' : g.v >= .4 ? '#F79009' : '#D92D20' })),
+      hideInfo: () => { clearTimeout(this._infoTimer); this._infoTimer = setTimeout(() => this.setState({ info: null }), 150); }, keepInfo: () => clearTimeout(this._infoTimer),
+      resetCurrent: () => this.change(() => MM.reset(site, mode), `${isLevels ? 'By level' : 'Feature by feature'} defaults restored`),
+      toast: s.toast, toastIcon: 'check', canUndo: !!this._undo, undo: () => { const undo = this._undo; this._undo = null; if (undo) undo(); this.setState({ toast: null }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

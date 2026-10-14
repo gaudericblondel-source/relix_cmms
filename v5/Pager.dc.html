@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 14px;border-top:1px solid #EEF0F3;background:#fff;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12.5px;color:#667085">
+  <span style="white-space:nowrap">{{ label }}</span>
+  <label style="display:flex;align-items:center;gap:6px;white-space:nowrap">Rows per page
+    <select value="{{ size }}" onChange="{{ setSize }}" style="height:28px;padding:0 6px;border:1px solid #D0D5DD;border-radius:6px;background:#fff;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;cursor:pointer"><sc-for list="{{ sizes }}" as="z"><option value="{{ z }}">{{ z }}</option></sc-for></select>
+  </label>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:2px">
+    <button onClick="{{ prev }}" disabled="{{ atFirst }}" title="Previous page" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:{{ prevColor }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">chevron_left</span></button>
+    <sc-for list="{{ pages }}" as="p" hint-placeholder-count="3">
+      <button onClick="{{ p.go }}" disabled="{{ p.gap }}" style="min-width:30px;height:30px;padding:0 6px;background:{{ p.bg }};border:1px solid {{ p.border }};border-radius:6px;font:{{ p.font }};color:#1E2430;cursor:pointer">{{ p.n }}</button>
+    </sc-for>
+    <button onClick="{{ next }}" disabled="{{ atLast }}" title="Next page" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:{{ nextColor }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">chevron_right</span></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:50},&quot;total&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:137,&quot;tsType&quot;:&quot;number&quot;},&quot;page&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:25,&quot;tsType&quot;:&quot;number&quot;},&quot;noun&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;items&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onPage&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(p:number)=&gt;void&quot;},&quot;onSize&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(n:number)=&gt;void&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const total = +this.props.total || 0, size = +this.props.size || 25, n = Math.max(1, Math.ceil(total / size)), page = Math.min(Math.max(1, +this.props.page || 1), n);
+    const go = p => () => this.props.onPage && this.props.onPage(Math.min(Math.max(1, p), n));
+    const nums = n <= 7 ? Array.from({ length: n }, (_, i) => i + 1) : [...new Set([1, 2, page - 1, page, page + 1, n - 1, n].filter(x => x >= 1 && x <= n))].sort((a, b) => a - b);
+    const pages = []; nums.forEach((x, i) => { if (i && x - nums[i - 1] > 1) pages.push({ n: '…', gap: true, go: () => {}, bg: 'transparent', border: 'transparent', font: "500 12.5px 'IBM Plex Sans',sans-serif" }); const on = x === page; pages.push({ n: String(x), gap: false, go: go(x), bg: on ? '#F2F4F7' : 'transparent', border: on ? '#D0D5DD' : 'transparent', font: on ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif" }); });
+    const a = total ? (page - 1) * size + 1 : 0, b = Math.min(total, page * size), noun = this.props.noun || 'items';
+    return { label: `Showing ${a}–${b} of ${total.toLocaleString('en-US')} ${noun}`, size: String(size), sizes: ['10', '25', '50', '100'], pages,
+      setSize: e => this.props.onSize && this.props.onSize(+e.target.value), prev: go(page - 1), next: go(page + 1), atFirst: page <= 1, atLast: page >= n, prevColor: page <= 1 ? '#D0D5DD' : '#475467', nextColor: page >= n ? '#D0D5DD' : '#475467' };
+  }
+}
+</script>
+</body>
+</html>

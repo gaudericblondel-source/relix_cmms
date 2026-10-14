@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="parts" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:20px 28px 20px;display:flex;flex-direction:column;gap:14px" data-screen-label="Spare parts">
+    <header style="flex:none;display:flex;align-items:center;gap:12px">
+      <dc-import name="BackButton" fallback="Main.dc.html" hint-size="34px,34px"></dc-import>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">Spare parts</h1>
+        <p style="margin:2px 0 0;color:#667085;font-size:13px">{{ subtitle }}</p>
+      </div>
+      <sc-if value="{{ adv }}"><button data-feature="parts.forecast" onClick="{{ advForecast }}" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 10px;background:#800080;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#660066"><span style="font:18px/1 'Material Symbols Outlined'">query_stats</span>Forecast &amp; optimize stock<span style="height:16px;display:inline-flex;align-items:center;padding:0 4px;border-radius:4px;background:#fff;color:#800080;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span></button></sc-if>
+      <a data-feature="parts.suppliers" href="Suppliers.dc.html" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">local_shipping</span>Suppliers</a>
+      <button onClick="{{ doExport }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">download</span>Export CSV</button>
+      <button onClick="{{ openNew }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New item</button>
+    </header>
+
+    <section style="flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+        <button onClick="{{ k.select }}" title="{{ k.tip }}" style="display:flex;align-items:center;gap:12px;min-width:0;padding:11px 14px;background:{{ k.cardBg }};border:1px solid {{ k.cardBorder }};border-radius:8px;text-align:left;font-family:inherit;color:#1E2430;cursor:{{ k.cursor }}" style-hover="border-color:#C4CAD4">
+          <span style="flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:{{ k.tileBg }};color:{{ k.tileFg }};font:19px/1 'Material Symbols Outlined'">{{ k.icon }}</span>
+          <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+            <span style="font-size:12px;font-weight:500;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</span>
+            <span style="display:flex;align-items:baseline;gap:6px;min-width:0"><span style="font-size:21px;line-height:26px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</span><sc-if value="{{ k.hasSub }}"><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.sub }}</span></sc-if></span>
+          </span>
+        </button>
+      </sc-for>
+    </section>
+
+    <section style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+      <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EEF0F3;flex-wrap:wrap">
+        <label style="width:300px;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px">
+          <span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span>
+          <input value="{{ q }}" onInput="{{ setQ }}" placeholder="Name, reference, item code, EAN, supplier…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" />
+        </label>
+        <div data-feature="parts.consumables" style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="3"><button onClick="{{ k.select }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px;background:{{ k.bg }};border:0;border-radius:5px;box-shadow:{{ k.shadow }};font:{{ k.font }};color:{{ k.color }};cursor:pointer;white-space:nowrap"><span style="font:16px/1 'Material Symbols Outlined';color:{{ k.iconColor }}">{{ k.icon }}</span>{{ k.label }}<span style="font-size:11.5px;color:#98A2B3">{{ k.count }}</span></button></sc-for>
+        </div>
+        <sc-for list="{{ selects }}" as="s" hint-placeholder-count="3">
+          <label style="position:relative;height:34px;display:flex;align-items:center;border:1px solid {{ s.border }};background:{{ s.bg }};border-radius:6px">
+            <select value="{{ s.value }}" onChange="{{ s.onChange }}" style="appearance:none;-webkit-appearance:none;max-width:200px;height:32px;padding:0 30px 0 10px;border:0;background:transparent;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer;outline:none">
+              <sc-for list="{{ s.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+            </select>
+            <span style="position:absolute;right:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span>
+          </label>
+        </sc-for>
+        <sc-if value="{{ hasFilters }}"><button onClick="{{ resetFilters }}" style="height:34px;padding:0 8px;background:transparent;border:0;font:600 13px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Reset</button></sc-if>
+        <span style="margin-left:auto;color:#667085;font-size:12.5px">{{ countLabel }}</span>
+        <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+          <sc-for list="{{ views }}" as="v" hint-placeholder-count="2"><button onClick="{{ v.select }}" style="height:30px;display:flex;align-items:center;gap:6px;padding:0 10px;background:{{ v.bg }};border:0;border-radius:5px;box-shadow:{{ v.shadow }};font:{{ v.font }};color:{{ v.color }};cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">{{ v.icon }}</span>{{ v.label }}</button></sc-for>
+        </div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto">
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+          <div style="position:sticky;top:0;z-index:3;display:grid;grid-template-columns:minmax(260px,2fr) 120px 150px 180px 110px 84px minmax(130px,1fr) 76px;align-items:center;min-width:1110px;height:36px;padding-left:16px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:12px;font-weight:600;color:#667085">
+            <span>Item</span><span>Category</span><span>Storage</span><span>Stock</span><span>Status</span><span style="text-align:right;padding-right:14px">Unit cost</span><span>Supplier</span><span></span>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+            <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(260px,2fr) 120px 150px 180px 110px 84px minmax(130px,1fr) 76px;align-items:center;min-width:1110px;min-height:56px;padding-left:16px;border-bottom:1px solid #F2F4F7;cursor:pointer;background:{{ r.bg }}" style-hover="background:#F9FAFB">
+              <span style="display:flex;align-items:center;gap:10px;min-width:0;padding-right:10px">
+                <sc-if value="{{ r.hasImage }}"><img src="{{ r.image }}" alt="" style="flex:none;width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+                <sc-if value="{{ r.noImage }}"><span style="flex:none;width:38px;height:38px;border-radius:6px;background:#F2F4F7;display:grid;place-items:center;color:#98A2B3;font:18px/1 'Material Symbols Outlined'">{{ r.icon }}</span></sc-if>
+                <span style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="display:flex;align-items:center;gap:6px;min-width:0;font:12px 'IBM Plex Mono',monospace;color:#667085;white-space:nowrap;overflow:hidden"><sc-if value="{{ r.isCons }}"><span title="Consumable — usage recorded as the actual amount consumed" style="flex:none;height:18px;display:inline-flex;align-items:center;gap:2px;padding:0 6px 0 4px;border-radius:9px;background:#E3F2F6;color:#0E7490;font:600 10.5px 'IBM Plex Sans',sans-serif"><span style="font:12px/1 'Material Symbols Outlined'">water_drop</span>Consumable</span></sc-if><span style="overflow:hidden;text-overflow:ellipsis">{{ r.ref }}<span style="color:#C4CAD4"> · </span>{{ r.codeLabel }}</span></span></span>
+              </span>
+              <span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">{{ r.cat }}</span>
+              <span title="{{ r.storePath }}" style="display:flex;flex-direction:column;gap:1px;min-width:0;padding-right:8px"><span style="color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.storeName }}</span><span style="font:11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ r.bin }}</span></span>
+              <span style="display:flex;flex-direction:column;gap:4px;padding-right:18px">
+                <span style="display:flex;align-items:baseline;gap:6px;min-width:0"><span style="font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;color:{{ r.qtyColor }}">{{ r.qtyMain }}</span><span title="{{ r.stockFull }}" style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.qtyUnit }}</span><span style="margin-left:auto;flex:none;font-size:11.5px;color:#98A2B3">min {{ r.min }}</span></span>
+                <span style="position:relative;height:4px;border-radius:2px;background:#EEF0F3"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ r.barW }};border-radius:2px;background:{{ r.barColor }}"></span><span style="position:absolute;left:{{ r.minX }};top:-2px;width:1.5px;height:8px;background:#667085"></span></span>
+              </span>
+              <span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span></span>
+              <span style="text-align:right;padding-right:14px;font-variant-numeric:tabular-nums;color:#344054">{{ r.cost }}</span>
+              <span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">{{ r.supplierName }}</span>
+              <span style="display:flex;justify-content:flex-end;gap:2px;padding-right:10px">
+                <button onClick="{{ r.edit }}" title="Edit part" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#EEF0F3;color:#1E2430"><span style="font:18px/1 'Material Symbols Outlined'">edit</span></button>
+                <button onClick="{{ r.del }}" title="Delete part" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+              </span>
+            </div>
+          </sc-for>
+          <dc-import name="Pager" total="{{ pager.total }}" page="{{ pager.page }}" size="{{ pager.size }}" on-page="{{ pager.onPage }}" on-size="{{ pager.onSize }}" noun="items" style="position:sticky;bottom:0;z-index:2" hint-size="100%,46px"></dc-import>
+        </sc-if>
+        <sc-if value="{{ isCatalog }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:16px">
+            <sc-for list="{{ rows }}" as="r">
+              <div onClick="{{ r.open }}" style="display:flex;flex-direction:column;background:#fff;border:1px solid {{ r.cardBorder }};border-radius:10px;overflow:hidden;cursor:pointer" style-hover="border-color:#C4CAD4;box-shadow:0 8px 24px rgba(16,24,40,.08)">
+                <div style="position:relative;height:150px;background:#F6F7F9;display:grid;place-items:center">
+                  <sc-if value="{{ r.hasImage }}"><img src="{{ r.image }}" alt="" style="width:100%;height:100%;object-fit:cover" /></sc-if>
+                  <sc-if value="{{ r.noImage }}"><span style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#C4CAD4"><span style="font:40px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="font:10.5px 'IBM Plex Mono',monospace;color:#98A2B3">no photo</span></span></sc-if>
+                  <span style="position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:11.5px;font-weight:600;background:{{ r.sbg }};color:{{ r.sfg }};box-shadow:0 0 0 2px #fff"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.status }}</span>
+                  <sc-if value="{{ r.isCons }}"><span title="Consumable" style="position:absolute;right:10px;top:10px;width:24px;height:24px;border-radius:12px;display:grid;place-items:center;background:#E3F2F6;color:#0E7490;box-shadow:0 0 0 2px #fff;font:15px/1 'Material Symbols Outlined'">water_drop</span></sc-if>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px;padding:12px 14px 14px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#98A2B3">{{ r.cat }}</span>
+                  <span style="font-weight:600;font-size:14px;line-height:1.35;text-wrap:pretty;min-height:38px">{{ r.name }}</span>
+                  <span style="font:11.5px 'IBM Plex Mono',monospace;color:#667085">{{ r.ref }} · {{ r.codeLabel }}</span>
+                  <div style="display:flex;align-items:baseline;gap:6px;margin-top:auto"><span style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.qtyColor }}">{{ r.availMain }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.availUnit }}</span><span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums">{{ r.cost }}</span></div>
+                  <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#667085"><span style="font:14px/1 'Material Symbols Outlined'">location_on</span>{{ r.storeName }} · <span style="font-family:'IBM Plex Mono',monospace">{{ r.bin }}</span></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ empty }}"><div style="padding:48px;text-align:center;color:#667085">No items match these filters.</div></sc-if>
+      </div>
+    </section>
+  </main>
+</div>
+
+<sc-if value="{{ detailOpen }}">
+  <div onClick="{{ closeDrawer }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:540px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid #EEF0F3">
+      <sc-if value="{{ d.hasImage }}"><img src="{{ d.image }}" alt="" style="flex:none;width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+      <sc-if value="{{ d.noImage }}"><span style="flex:none;width:72px;height:72px;border-radius:8px;background:#F2F4F7;display:grid;place-items:center;color:#98A2B3;font:28px/1 'Material Symbols Outlined'">{{ d.icon }}</span></sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+        <h2 style="margin:0;font-size:17px;font-weight:600">{{ d.name }}</h2>
+        <span style="display:flex;align-items:center;gap:8px;color:#667085;font-size:12.5px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px 0 5px;border-radius:10px;font-size:11.5px;font-weight:600;background:{{ d.kBg }};color:{{ d.kFg }}"><span style="font:13px/1 'Material Symbols Outlined'">{{ d.kIcon }}</span>{{ d.kindLabel }}</span><span>{{ d.cat }}</span><span style="display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border-radius:10px;font-size:11.5px;font-weight:600;background:{{ d.sbg }};color:{{ d.sfg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ d.status }}</span></span>
+      </div>
+      <button onClick="{{ closeDrawer }}" title="Close" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:16px 20px 20px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+        <sc-for list="{{ d.codes }}" as="c"><div style="display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-right:1px solid #EEF0F3;min-width:0"><span style="font-size:11.5px;color:#667085">{{ c.k }}</span><span style="font:600 13px 'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.v }}</span><sc-if value="{{ c.hasNote }}"><span style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:{{ c.noteColor }}"><span style="font:13px/1 'Material Symbols Outlined'">{{ c.noteIcon }}</span>{{ c.note }}</span></sc-if></div></sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #E4E7EC;border-radius:8px">
+        <sc-for list="{{ d.stats }}" as="s"><div style="padding:10px 12px;border-right:1px solid #EEF0F3;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#667085">{{ s.k }}</span><span style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.v }}</span></div></sc-for>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #E4E7EC;border-radius:8px">
+        <span style="flex:none;width:28px;height:28px;border-radius:6px;display:grid;place-items:center;background:{{ d.kBg }};color:{{ d.kFg }};font:16px/1 'Material Symbols Outlined'">{{ d.kIcon }}</span>
+        <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600">{{ d.ruleTitle }}</span><span style="font-size:12.5px;color:#667085;line-height:1.45;text-wrap:pretty">{{ d.ruleText }}</span></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:#F9FAFB;border:1px solid #EEF0F3;border-radius:8px">
+        <span style="font-weight:600">Adjust stock</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px">
+            <sc-for list="{{ adjModes }}" as="m" hint-placeholder-count="2"><button onClick="{{ m.select }}" style="height:30px;display:flex;align-items:center;gap:4px;padding:0 10px;background:{{ m.bg }};border:0;border-radius:5px;box-shadow:{{ m.shadow }};font:{{ m.font }};color:{{ m.color }};cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ m.icon }}</span>{{ m.label }}</button></sc-for>
+          </div>
+          <span style="display:flex;align-items:center;height:34px;border:1px solid #D0D5DD;border-radius:6px;background:#fff"><input type="number" min="0" step="{{ adjStep }}" value="{{ adjQty }}" onInput="{{ setAdjQty }}" style="width:64px;height:32px;padding:0 4px 0 10px;border:0;background:transparent;font:13px 'IBM Plex Sans',sans-serif;outline:none" /><span style="padding-right:8px;font-size:12px;color:#667085">{{ adjUnit }}</span></span>
+          <span style="position:relative;display:flex;flex:1;min-width:0"><select value="{{ adjReason }}" onChange="{{ setAdjReason }}" style="appearance:none;-webkit-appearance:none;width:100%;height:34px;padding:0 28px 0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ reasons }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select><span style="position:absolute;right:6px;top:8px;pointer-events:none;font:18px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span>
+          <button onClick="{{ applyAdj }}" style="height:34px;padding:0 14px;background:#1E2430;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Apply</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-weight:600;font-size:14px">Supplier &amp; cost</span>
+        <sc-if value="{{ d.hasSupplier }}">
+          <a href="{{ d.supHref }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #E4E7EC;border-radius:8px;color:#1E2430" style-hover="border-color:#98A2B3">
+            <sc-if value="{{ d.supImg }}"><img src="{{ d.supImage }}" alt="" style="flex:none;width:34px;height:34px;border-radius:7px;object-fit:cover" /></sc-if>
+            <sc-if value="{{ d.supNoImg }}"><span style="flex:none;width:34px;height:34px;border-radius:7px;display:grid;place-items:center;background:{{ d.supColor }};color:#fff;font:700 11px 'IBM Plex Sans',sans-serif">{{ d.supInitials }}</span></sc-if>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">{{ d.supName }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.supSub }}</span></span>
+            <span style="font:16px/1 'Material Symbols Outlined';color:#98A2B3">chevron_right</span>
+          </a>
+        </sc-if>
+        <dl style="margin:0;display:grid;grid-template-columns:140px 1fr;row-gap:8px">
+          <sc-for list="{{ d.details }}" as="x"><dt style="color:#667085">{{ x.k }}</dt><dd style="margin:0;font-weight:500">{{ x.v }}</dd></sc-for>
+        </dl>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-size:14px">Linked equipment</span><span style="font-size:12px;color:#98A2B3">{{ d.assetCount }}</span></span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ d.assets }}" as="u"><a href="{{ u.href }}" title="{{ u.path }}" style="height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 8px;border:1px solid #E4E7EC;border-radius:15px;color:#344054;font-weight:500" style-hover="border-color:#98A2B3"><span style="font:15px/1 'Material Symbols Outlined';color:{{ u.fg }}">{{ u.icon }}</span>{{ u.name }}</a></sc-for>
+          <sc-if value="{{ d.noAssets }}"><span style="color:#98A2B3">Not linked to any equipment yet.</span></sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ d.hasCustom }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-weight:600;font-size:14px">Additional information</span>
+          <dl style="margin:0;display:grid;grid-template-columns:140px 1fr;row-gap:8px"><sc-for list="{{ d.custom }}" as="x"><dt style="color:#667085">{{ x.k }}</dt><dd style="margin:0;font-weight:500">{{ x.v }}</dd></sc-for></dl>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column">
+        <span style="font-weight:600;font-size:14px;margin-bottom:6px">Recent movements</span>
+        <sc-for list="{{ d.moves }}" as="m">
+          <div style="display:grid;grid-template-columns:24px minmax(0,1fr) auto 64px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #F2F4F7">
+            <span style="font:18px/1 'Material Symbols Outlined';color:{{ m.color }}">{{ m.icon }}</span>
+            <span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500">{{ m.label }}</span><span style="font-size:12px;color:#667085">{{ m.sub }}</span></span>
+            <span style="font-weight:600;font-variant-numeric:tabular-nums;color:{{ m.color }}">{{ m.qty }}</span>
+            <span style="text-align:right;font-size:12px;color:#98A2B3">{{ m.when }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;gap:8px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <button onClick="{{ d.del }}" title="Delete part" style="height:36px;width:36px;display:grid;place-items:center;background:#fff;border:1px solid #FDA29B;border-radius:6px;color:#B42318;cursor:pointer" style-hover="background:#FEF3F2"><span style="font:18px/1 'Material Symbols Outlined'">delete</span></button>
+      <button onClick="{{ d.reorder }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">shopping_cart</span>Request reorder</button>
+      <span style="flex:1"></span>
+      <button onClick="{{ d.edit }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">edit</span>Edit item</button>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ formOpen }}">
+  <div onClick="{{ closeDrawer }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:560px;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;background:#F2F4F7;color:#344054;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">inventory_2</span>
+      <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:16px;font-weight:600">{{ formTitle }}</h2><p style="margin:2px 0 0;font-size:12.5px;color:#667085">Fields marked * are required</p></div>
+      <button onClick="{{ closeDrawer }}" title="Close" style="width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#475467;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <sc-if value="{{ fImg.has }}"><img src="{{ fImg.src }}" alt="" style="flex:none;width:84px;height:84px;border-radius:8px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+        <sc-if value="{{ fImg.none }}"><span style="flex:none;width:84px;height:84px;border-radius:8px;background:#F2F4F7;border:1px dashed #C4CAD4;display:grid;place-items:center;color:#98A2B3;font:30px/1 'Material Symbols Outlined'">add_photo_alternate</span></sc-if>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;font-weight:600;color:#344054">Photo</span>
+          <div style="display:flex;gap:6px"><button onClick="{{ pickImage }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:18px/1 'Material Symbols Outlined'">upload</span>{{ fImg.btn }}</button><sc-if value="{{ fImg.has }}"><button onClick="{{ clearImage }}" style="height:34px;padding:0 10px;background:transparent;border:0;font:500 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer">Remove</button></sc-if></div>
+          <span style="font-size:11.5px;color:#98A2B3">Helps technicians recognize the item in the store</span>
+          <input ref="{{ fileRef }}" type="file" accept="image/*" onChange="{{ onFile }}" style="display:none" />
+        </div>
+      </div>
+      <sc-if value="{{ showKind }}"><div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">Item type</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <sc-for list="{{ kindOpts }}" as="o" hint-placeholder-count="2">
+            <button onClick="{{ o.select }}" style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:{{ o.border }};background:{{ o.bg }};border-radius:8px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430">
+              <span style="flex:none;width:32px;height:32px;border-radius:7px;display:grid;place-items:center;background:{{ o.iBg }};color:{{ o.iFg }};font:18px/1 'Material Symbols Outlined'">{{ o.icon }}</span>
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600">{{ o.label }}</span><span style="font-size:12px;color:#667085;line-height:1.4">{{ o.sub }}</span></span>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ isConsForm }}">
+          <div style="display:flex;flex-direction:column;gap:12px;padding:12px;background:#F6FAFB;border:1px solid #CFE6EC;border-radius:8px">
+            <span style="font-size:13px;font-weight:600;color:#344054">How is usage recorded?</span>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ usageOpts }}" as="o"><button onClick="{{ o.select }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid {{ o.border }};background:#fff;border-radius:7px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430"><span style="flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid {{ o.ring }};display:grid;place-items:center"><span style="width:8px;height:8px;border-radius:50%;background:{{ o.dot }}"></span></span><span style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600">{{ o.label }}</span><span style="font-size:12px;color:#667085">{{ o.sub }}</span></span></button></sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">Stock unit</span><span style="position:relative;display:flex"><select value="{{ fUnit }}" onChange="{{ setFUnit }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 32px 0 12px;border:1px solid #D0D5DD;border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ consUnits }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:10px;pointer-events:none;font:20px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label>
+              <sc-if value="{{ showUseUnit }}"><label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#344054">Technician enters in</span><span style="position:relative;display:flex"><select value="{{ fUseUnit }}" onChange="{{ setFUseUnit }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 32px 0 12px;border:1px solid #D0D5DD;border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ useUnits }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:10px;pointer-events:none;font:20px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></label></sc-if>
+            </div>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#0E7490"><span style="font:15px/1 'Material Symbols Outlined'">info</span>{{ usageExample }}</span>
+          </div>
+        </sc-if>
+      </div></sc-if>
+      <sc-for list="{{ groups }}" as="g">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">{{ g.title }}</span><span style="font-size:11.5px;color:#98A2B3">{{ g.hint }}</span></span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <sc-for list="{{ g.fields }}" as="f">
+              <div style="grid-column:{{ f.span }};display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13px;font-weight:600;color:#344054">{{ f.label }}<sc-if value="{{ f.req }}"><span style="color:#C00018"> *</span></sc-if></span>
+                <sc-if value="{{ f.isInput }}"><span style="position:relative;display:flex"><input type="{{ f.type }}" value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" style="width:100%;height:40px;padding:0 {{ f.padR }} 0 12px;border:1px solid {{ f.border }};border-radius:8px;font:{{ f.font }};color:#1E2430;outline:none" style-focus="border-color:#98A2B3" /><sc-if value="{{ f.hasSuffix }}"><span style="position:absolute;right:12px;top:11px;font-weight:600;color:#667085;pointer-events:none">{{ f.suffix }}</span></sc-if></span></sc-if>
+                <sc-if value="{{ f.isSelect }}"><span style="position:relative;display:flex"><select value="{{ f.value }}" onChange="{{ f.onInput }}" style="appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 32px 0 12px;border:1px solid {{ f.border }};border-radius:8px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff;outline:none"><sc-for list="{{ f.options }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><span style="position:absolute;right:10px;top:10px;pointer-events:none;font:20px/1 'Material Symbols Outlined';color:#98A2B3">expand_more</span></span></sc-if>
+                <sc-if value="{{ f.isTextarea }}"><textarea value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.ph }}" rows="2" style="padding:10px 12px;border:1px solid #D0D5DD;border-radius:8px;font:13px/1.5 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none;resize:vertical"></textarea></sc-if>
+                <sc-if value="{{ f.isBool }}"><div style="display:flex;gap:6px"><sc-for list="{{ f.options }}" as="o"><button onClick="{{ o.select }}" style="height:36px;padding:0 14px;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:8px;font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.l }}</button></sc-for></div></sc-if>
+                <sc-if value="{{ f.hasNote }}"><span style="display:flex;align-items:center;gap:4px;font-size:12px;color:{{ f.noteColor }}"><span style="font:14px/1 'Material Symbols Outlined'">{{ f.noteIcon }}</span>{{ f.note }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="display:flex;align-items:baseline;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#667085">Linked equipment</span><span style="font-size:11.5px;color:#98A2B3">{{ linkedHint }}</span></span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ linked }}" as="a"><span style="height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 8px;background:#F2F4F7;border-radius:15px;font-weight:500;color:#344054"><span style="font:15px/1 'Material Symbols Outlined';color:{{ a.fg }}">{{ a.icon }}</span>{{ a.name }}<button onClick="{{ a.remove }}" title="Unlink" style="width:22px;height:22px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:50%;color:#667085;cursor:pointer" style-hover="background:#E4E7EC;color:#B42318"><span style="font:14px/1 'Material Symbols Outlined'">close</span></button></span></sc-for>
+          <sc-if value="{{ noLinked }}"><span style="color:#98A2B3;font-size:12.5px">No equipment linked yet</span></sc-if>
+        </div>
+        <div style="border:1px solid #D0D5DD;border-radius:8px;overflow:hidden">
+          <label style="height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid #EEF0F3"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ aq }}" onInput="{{ setAq }}" placeholder="Search equipment to link…" style="flex:1;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif" /></label>
+          <div style="max-height:170px;overflow:auto;padding:4px">
+            <sc-for list="{{ assetOpts }}" as="o"><button onClick="{{ o.add }}" style="width:100%;display:flex;align-items:center;gap:8px;padding:6px 8px;background:transparent;border:0;border-radius:6px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430" style-hover="background:#F6F7F9"><span style="flex:none;font:16px/1 'Material Symbols Outlined';color:{{ o.fg }}">{{ o.icon }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:500">{{ o.name }} <span style="font:11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ o.id }}</span></span><span style="font-size:11.5px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.path }}</span></span><span style="flex:none;font:17px/1 'Material Symbols Outlined';color:#98A2B3">add</span></button></sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid #EEF0F3">
+      <span style="flex:1;min-width:0;font-size:12.5px;color:#B42318">{{ formError }}</span>
+      <button onClick="{{ closeDrawer }}" style="height:40px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Cancel</button>
+      <button onClick="{{ savePart }}" style="height:40px;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:18px/1 'Material Symbols Outlined'">check</span>{{ saveLabel }}</button>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ confirmOpen }}">
+  <div onClick="{{ closeConfirm }}" style="position:fixed;inset:0;z-index:80;background:rgba(16,24,40,.4)"></div>
+  <div style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:81;width:420px;display:flex;flex-direction:column;gap:14px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="display:flex;gap:12px;align-items:flex-start"><span style="flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#FEF3F2;color:#B42318;font:22px/1 'Material Symbols Outlined'">delete</span><div style="flex:1;min-width:0"><h3 style="margin:0;font-size:16px;font-weight:600">{{ confirm.title }}</h3><p style="margin:6px 0 0;color:#475467;line-height:1.5">{{ confirm.text }}</p></div></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px"><button onClick="{{ closeConfirm }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button><button onClick="{{ confirm.ok }}" style="height:38px;padding:0 14px;background:#B42318;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Delete part</button></div>
+  </div>
+</sc-if>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.24);font:500 13px 'IBM Plex Sans',sans-serif"><span style="font:18px/1 'Material Symbols Outlined';color:#6CE9A6">check_circle</span>{{ toast }}</div>
+</sc-if>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;filter&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;low&quot;,&quot;out&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;catalog&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const FIN = () => !!(window.RelixAccess && window.RelixAccess.canFinance());
+const QS = new URLSearchParams(location.search);
+const bold = "600 13px 'IBM Plex Sans',sans-serif", reg = "500 13px 'IBM Plex Sans',sans-serif";
+const SEED_MOVES = [['remove', 'Consumed', 'Conveyor Line 3 — Sensor check · S. Martin', '−2', 'Today', '#B42318'], ['add', 'Received', 'Purchase order PO-44821', '+20', 'Sep 18', '#0B6B4A'], ['tune', 'Inventory adjustment', 'Cycle count · P. Leroy', '+1', 'Sep 2', '#475467']];
+const FON = id => !window.RelixMaturity || window.RelixMaturity.on(id);
+
+// KPI look: icon + tone per KPI label (shared visual language across pages)
+const KTONE = { crit: ['#FDECEC', '#B42318'], warn: ['#FEF3E2', '#B54708'], ok: ['#E6F4EE', '#0B6B4A'], info: ['#EAF1FD', '#2456B8'], neutral: ['#EEF1F4', '#475467'] };
+const KMAP = [[/overdue|late/i, 'schedule', 'crit'], [/stopped/i, 'block', 'crit'], [/out of stock/i, 'remove_shopping_cart', 'crit'], [/critical/i, 'bolt', 'crit'], [/low stock/i, 'trending_down', 'warn'], [/waiting/i, 'hourglass_top', 'warn'],
+  [/out of service/i, 'do_not_disturb_on', 'neutral'], [/in service/i, 'check_circle', 'ok'], [/in progress/i, 'play_circle', 'ok'], [/completed|done|on time/i, 'task_alt', 'ok'], [/not scheduled/i, 'event_busy', 'neutral'],
+  [/load rate/i, 'speed', 'info'], [/load/i, 'timer', 'info'], [/planned|scheduled/i, 'event', 'info'], [/open/i, 'assignment', 'info'], [/request/i, 'campaign', 'warn'], [/stock value/i, 'euro', 'neutral'], [/reserved/i, 'bookmark', 'info'],
+  [/references/i, 'inventory_2', 'neutral'], [/equipment/i, 'precision_manufacturing', 'neutral'], [/plans/i, 'architecture', 'info'], [/procedures/i, 'checklist', 'info'], [/manuals/i, 'menu_book', 'info'], [/document/i, 'description', 'neutral']];
+const KDECO = k => { const m = KMAP.find(([r]) => r.test(k.label || '')) || [null, 'monitoring', 'info'], t = KTONE[m[2]], on = !!k.bar && k.bar !== 'transparent';
+  const zero = k.value === 0 || k.value === '0'; return { ...k, icon: m[1], tileBg: zero && m[2] !== 'ok' ? '#F2F4F7' : t[0], tileFg: zero && m[2] !== 'ok' ? '#98A2B3' : t[1], cardBorder: on ? '#C00018' : '#E4E7EC', cardBg: on ? '#FBF7F7' : '#fff', sub: k.sub ?? '', hasSub: !!(k.sub ?? '') }; };
+class Component extends DCLogic {
+  state = { M: null, v: 0, q: QS.get('q') || '', view: this.props.view ?? 'list', cat: QS.get('cat') || '', store: '', cc: QS.get('cc') || '', kind: QS.get('kind') || '', kpi: this.props.filter ?? '', detail: null, form: null, aq: '', confirm: null, adj: 'out', adjQty: '1', adjReason: 'Consumed on intervention', toast: null };
+  fileRef = React.createRef();
+  componentDidMount() { import('./maturity-model.js').then(() => this.forceUpdate()); this._matU = () => this.forceUpdate(); window.addEventListener('cmms-maturity', this._matU); 
+    Promise.all(['./parts-model.js', './config-model.js', './plant-model.js'].map(p => import(p))).then(([PA, CFG, PL]) => { const st = QS.get('store'); const sn = st && PL.storages().find(n => n.name === st || n.id === st); this.setState({ M: { PA, CFG, PL }, store: sn ? sn.id : '' }, () => { const q = QS.get('q'); if (q) { const p = PA.part(q); if (p) this.setState({ detail: p.ref }); } }); });
+    this._r = () => this.setState(s => ({ v: s.v + 1 })); ['cmms-parts', 'cmms-suppliers', 'cmms-config'].forEach(e => window.addEventListener(e, this._r));
+    this._k = e => { if (e.key === 'Escape') this.setState({ form: null, detail: null, confirm: null }); }; window.addEventListener('keydown', this._k);
+  }
+  componentWillUnmount() { ['cmms-parts', 'cmms-suppliers', 'cmms-config'].forEach(e => window.removeEventListener(e, this._r)); window.removeEventListener('keydown', this._k); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  edit(p) { const { CFG, PL } = this.state.M; const cat0 = CFG.itemCats(this.state.kind === 'consumable' ? 'consumable' : 'part')[0];
+    this.setState({ detail: null, aq: '', form: { ref: p ? p.ref : null, errors: {}, f: p ? { ...p, kind: this.state.M.PA.kindOf(p), usage: p.usage && p.usage !== 'count' ? p.usage : 'amount', useUnit: p.useUnit || '', min: String(p.min), max: String(p.max), cost: String(p.cost), custom: { ...(p.custom || {}) }, assets: [...(p.assets || [])] }
+      : { kind: this.state.kind === 'consumable' ? 'consumable' : 'part', usage: 'amount', useUnit: '', cat: cat0 ? cat0.name : '', unit: cat0 ? cat0.unit : 'pcs', store: (PL.storages()[0] || {}).id, min: '', max: '', qty: '0', cost: '', assets: [], custom: {}, image: '', supplier: '', costCenter: '' } } }); }
+  askDelete(p) { this.setState({ confirm: { title: `Delete ${p.name}?`, text: `${p.ref} will be removed from the catalog${p.qty ? ` with ${this.state.M.PA.fmtStock(p)} still in stock` : ''}. Intervention history keeps its references. This cannot be undone.`,
+    ok: () => { this.state.M.PA.deletePart(p.ref); this.setState({ confirm: null, detail: null, form: null }); this.flash(`${p.ref} deleted`); } } }); }
+  savePart() {
+    const { PA, CFG } = this.state.M, fm = this.state.form, f = fm.f, errors = {};
+    ['ref', 'name', 'cat', 'store', 'min'].forEach(k => { if (f[k] === undefined || String(f[k]).trim() === '') errors[k] = 'Required'; });
+    const ref = (f.ref || '').trim().toUpperCase();
+    if (ref && PA.parts().some(p => p.ref === ref && p.ref !== fm.ref)) errors.ref = 'This reference already exists';
+    if (f.gtin && !PA.gtinValid(f.gtin)) errors.gtin = 'Invalid GTIN / EAN check digit';
+    if (f.min !== '' && f.max !== '' && +f.max < +f.min) errors.max = 'Must be ≥ minimum';
+    if (f.cost !== '' && +f.cost < 0) errors.cost = 'Cannot be negative';
+    CFG.fieldsFor('Spare part').forEach(cf => { const e = CFG.validate(cf, f.custom[cf.code]); if (e) errors['cf_' + cf.code] = e; });
+    if (Object.keys(errors).length) return this.setState({ form: { ...fm, errors, error: 'Check the highlighted fields' } });
+    const row = { ref, code: (f.code || '').trim().toUpperCase(), gtin: (f.gtin || '').replace(/\s/g, ''), name: f.name.trim(), cat: f.cat, desc: f.desc || '', store: f.store, bin: (f.bin || '').trim() || '—', min: +f.min, max: f.max === '' ? +f.min * 3 : +f.max, unit: f.unit || 'pcs', cost: +f.cost || 0, kind: f.kind === 'consumable' ? 'consumable' : 'part', usage: f.kind === 'consumable' ? (f.usage || 'amount') : 'count', useUnit: f.kind === 'consumable' && f.usage !== 'percent' && f.useUnit && f.useUnit !== f.unit ? f.useUnit : '',
+      supplier: f.supplier || '', supplierRef: f.supplierRef || '', costCenter: f.costCenter || '', assets: f.assets, image: f.image || '', custom: f.custom, ...(fm.ref ? {} : { qty: +f.qty || 0, reserved: 0, moves: +f.qty ? [['add', 'Initial stock', 'Part created · G. Durand', '+' + (+f.qty), 'Just now', '#0B6B4A']] : [] }) };
+    if (fm.ref && fm.ref !== ref) { const old = PA.part(fm.ref); PA.deletePart(fm.ref); if (!PA.savePart(null, { ...old, ...row })) return this.setState({ form: { ...fm, error: 'Storage is full — use a smaller photo' } }); }
+    else if (!PA.savePart(fm.ref, row)) return this.setState({ form: { ...fm, error: 'Storage is full — use a smaller photo' } });
+    this.setState({ form: null, detail: ref }); this.flash(`${ref} ${fm.ref ? 'updated' : 'added to catalog'}`);
+  }
+  advVals() {
+    if (!this._advL) { this._advL = () => this.forceUpdate(); window.addEventListener('cmms-advanced', this._advL); }
+    let adv = true; try { adv = localStorage.getItem('cmms.advanced') !== '0'; } catch (e) {}
+    const open = k => () => window.RelixAdvanced && window.RelixAdvanced(k);
+    return { adv, advOptimize: open('optimize'), advForecast: open('forecast'), advChecklist: open('checklist'), advPlan: open('plan'), advFleet: open('fleet'),
+      toggleAdv: () => { try { localStorage.setItem('cmms.advanced', adv ? '0' : '1'); } catch (e) {} window.dispatchEvent(new CustomEvent('cmms-advanced', { detail: { on: !adv } })); },
+      advSub: adv ? 'Shown in purple across the app' : 'Hidden on all pages', advTrack: adv ? '#800080' : '#D0D5DD', advKnob: adv ? '18px' : '2px', advBorder: adv ? '#E2C4E2' : '#D0D5DD' };
+  }
+  renderVals() {
+    const s = this.state, M = s.M;
+    if (!M) return { kinds: [], kindOpts: [], usageOpts: [], kpis: [], rows: [], selects: [], views: [], subtitle: 'Stock levels, storerooms and consumption', isList: true, groups: [], linked: [], assetOpts: [] };
+    const { PA, CFG, PL } = M, site = CFG.currentSite(), q = s.q.trim().toLowerCase();
+    const all = PA.parts(), sups = PA.suppliers(), cats = CFG.allItemCats(), ccs = CFG.list('costCenters'), stores = PL.storages();
+    const catIcon = n => (cats.find(c => c.name === n) || {}).icon || 'inventory_2', supName = id => (sups.find(x => x.id === id) || {}).name || '—', storeName = id => (PL.node(id) || { name: id }).name;
+    const low = all.filter(p => p.qty > 0 && p.qty < p.min).length, out = all.filter(p => p.qty <= 0).length;
+    const kpis = [['', 'References', all.length, 'in catalog', '#1E2430'], ['', 'Stock value', PA.eur(all.reduce((a, p) => a + p.cost * p.qty, 0)).replace(/\.\d\d$/, ''), `${stores.length} storage areas`, '#1E2430'], ['low', 'Low stock', low, 'below minimum', '#B54708'], ['out', 'Out of stock', out, 'reorder now', '#B42318'], ['', 'Reserved', all.reduce((a, p) => a + (p.reserved || 0), 0), 'for open interventions', '#1E2430']]
+      .map(([k, label, value, sub, color]) => ({ label, value, sub, color, cursor: k ? 'pointer' : 'default', bg: k && s.kpi === k ? '#FBF7F7' : '#fff', bar: k && s.kpi === k ? '#C00018' : 'transparent', select: () => k && this.setState({ kpi: s.kpi === k ? '' : k }) }));
+    const nCons = all.filter(PA.isConsumable).length;
+    const splitQty = (p, qty) => { if (PA.isConsumable(p) && p.usage === 'percent') { const r3 = Math.round(qty * 1000) / 1000, full = Math.floor(r3 + 1e-9), rest = Math.round((r3 - full) * 100); return [String(full), `${p.unit}${full === 1 ? '' : 's'}${rest ? ` + 1 opened (${rest}%)` : ''}`]; } return [PA.fmtQty(qty), p.unit]; };
+    const KV = p => { const c = PA.isConsumable(p); return { isCons: c, kIcon: c ? 'water_drop' : 'settings', kBg: c ? '#E3F2F6' : '#EEF1F4', kFg: c ? '#0E7490' : '#475467', kindLabel: c ? 'Consumable' : 'Replacement part' }; };
+    const list = all.filter(p => (!s.kind || PA.kindOf(p) === s.kind) && (!q || [p.ref, p.code, p.gtin, p.name, supName(p.supplier), p.supplierRef].join(' ').toLowerCase().includes(q)) && (!s.cat || p.cat === s.cat) && (!s.store || p.store === s.store) && (!s.cc || p.costCenter === s.cc)
+      && (!s.kpi || (s.kpi === 'low' ? p.qty > 0 && p.qty < p.min : p.qty <= 0)));
+    const rows = (s.view === 'catalog' ? list : list.slice((Math.min(s.pg || 1, Math.max(1, Math.ceil(list.length / (s.ps || 25)))) - 1) * (s.ps || 25), Math.min(s.pg || 1, Math.max(1, Math.ceil(list.length / (s.ps || 25)))) * (s.ps || 25))).map(p => { const [status, sbg, sfg, dot] = PA.status(p), scale = Math.max(p.max, p.min, 1) * 1.1;
+      return { ...p, hasImage: !!p.image, noImage: !p.image, icon: catIcon(p.cat), codeLabel: p.code || 'no item code', storeName: storeName(p.store), storePath: PL.node(p.store) ? PL.pathOf(p.store) : '', status, sbg, sfg, cost: PA.eur(p.cost), supplierName: supName(p.supplier),
+        ...KV(p), ...(() => { const [qtyMain, qtyUnit] = splitQty(p, p.qty), [availMain, au] = splitQty(p, Math.max(0, p.qty - (p.reserved || 0))); return { qtyMain, qtyUnit, availMain, availUnit: au + ' available', stockFull: PA.fmtStock(p) }; })(),
+        avail: Math.max(0, p.qty - (p.reserved || 0)), qtyColor: p.qty <= 0 ? '#B42318' : p.qty < p.min ? '#B54708' : '#1E2430', barW: Math.min(100, p.qty / scale * 100) + '%', minX: (p.min / scale * 100) + '%', barColor: dot,
+        bg: s.detail === p.ref ? '#FBF7F7' : '#fff', cardBorder: s.detail === p.ref ? '#C00018' : '#E4E7EC',
+        open: () => this.setState({ detail: p.ref, adjQty: '1' }), edit: e => { e.stopPropagation(); this.edit(p); }, del: e => { e.stopPropagation(); this.askDelete(p); } }; });
+    const sel = (k, ph, opts) => ({ value: s[k], border: s[k] ? '#C00018' : '#D0D5DD', bg: s[k] ? '#FBF7F7' : '#fff', options: [{ v: '', l: ph }, ...opts], onChange: e => this.setState({ [k]: e.target.value }) });
+    const dp = s.detail && all.find(p => p.ref === s.detail);
+    let d = {};
+    if (dp) { const [status, sbg, sfg] = PA.status(dp), sp = sups.find(x => x.id === dp.supplier), cc = ccs.find(c => c.code === dp.costCenter), gv = dp.gtin ? PA.gtinValid(dp.gtin) : null;
+      const cons = PA.isConsumable(dp), u = PA.usageOf(dp);
+      d = { ...dp, ...KV(dp), ruleTitle: cons ? (u.mode === 'percent' ? `Consumable · usage recorded as % of one ${dp.unit}` : `Consumable · usage recorded in ${u.unit}`) : 'Replacement part · usage recorded in whole units',
+        ruleText: cons ? (u.mode === 'percent' ? `Technicians move a slider (e.g. 35% of a ${dp.unit}). Stock goes down by that fraction — opened ${dp.unit}s are shown as “+ 1 opened (65%)”.` : `Technicians enter the actual amount (e.g. ${PA.fmtUse(dp, u.def)}). Stock goes down by exactly that amount${u.unit !== dp.unit ? `, converted to ${dp.unit}` : ''}. Cost = amount × ${PA.eur(dp.cost)} / ${dp.unit}.`) : `Technicians record how many were installed or replaced (e.g. ×1). Stock goes down by that number. Cost = quantity × ${PA.eur(dp.cost)}.`,
+        hasImage: !!dp.image, noImage: !dp.image, icon: catIcon(dp.cat), status, sbg, sfg,
+        codes: [['Reference', dp.ref], ['Item code', dp.code || '—'], [dp.gtin ? PA.gtinKind(dp.gtin) : 'GTIN / EAN', dp.gtin || '—']].map(([k, v], i) => ({ k, v, hasNote: i === 2 && gv !== null, note: gv ? 'Valid check digit' : 'Invalid check digit', noteIcon: gv ? 'verified' : 'error', noteColor: gv ? '#0B6B4A' : '#B42318' })),
+        stats: [['On hand', splitQty(dp, dp.qty).join(' '), dp.qty <= 0 ? '#B42318' : '#1E2430'], ['Reserved', PA.fmtQty(dp.reserved || 0), '#1E2430'], ['Available', PA.fmtQty(Math.max(0, dp.qty - (dp.reserved || 0))), '#1E2430'], ['Min / max', `${dp.min} / ${dp.max} ${dp.unit}`, '#475467']].map(([k, v, color]) => ({ k, v, color })),
+        hasSupplier: !!sp, supHref: sp ? 'Suppliers.dc.html?id=' + sp.id : '#', supName: sp ? sp.name : '', supImg: !!(sp && sp.image), supNoImg: !(sp && sp.image), supImage: sp && sp.image, supColor: sp ? sp.color : '#475467', supInitials: sp ? PA.initials(sp.name) : '',
+        supSub: sp ? [dp.supplierRef && `Supplier ref ${dp.supplierRef}`, sp.contact, sp.phone, sp.leadDays !== '' && sp.leadDays != null ? `${sp.leadDays} days lead time` : ''].filter(Boolean).join(' · ') : '',
+        details: [['Unit cost', PA.eur(dp.cost) + ' / ' + dp.unit], ['Stock value', PA.eur(dp.cost * dp.qty)], ['Cost center', cc ? `${cc.code} · ${cc.name}` : 'Not allocated'], ['Storage area', `${PL.node(dp.store) ? PL.pathOf(dp.store) : dp.store} · bin ${dp.bin}`], ...(sp ? [] : [['Supplier', 'No supplier']]), ...(dp.desc ? [['Description', dp.desc]] : [])].map(([k, v]) => ({ k, v })),
+        assets: (dp.assets || []).map(id => { const a = PL.asset(id); if (!a) return null; const z = PL.zoneOf(a.loc); return { name: a.name, path: PL.pathOf(a.loc), icon: PL.typeIcon(a.type), fg: (PL.ZONE_LOOK[z.id] || [])[1], href: 'AssetDetail.dc.html?id=' + encodeURIComponent(a.id) }; }).filter(Boolean),
+        assetCount: (dp.assets || []).length || '', noAssets: !(dp.assets || []).length,
+        custom: CFG.fieldsFor('Spare part').map(cf => ({ k: cf.name, v: CFG.fmt(cf, (dp.custom || {})[cf.code], site) })), hasCustom: CFG.fieldsFor('Spare part').length > 0,
+        moves: [...(dp.moves || []), ...SEED_MOVES].slice(0, 6).map(([icon, label, sub, qty, when, color]) => ({ icon, label, sub, qty, when, color })),
+        edit: () => this.edit(dp), del: () => this.askDelete(dp), reorder: () => this.flash(`Reorder requested · ${Math.max(1, dp.max - dp.qty)} × ${dp.ref}${sp ? ' from ' + sp.name : ''}`) }; }
+    const fm = s.form, f = fm ? fm.f : {};
+    const setF = (k, v) => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, [k]: v }, errors: { ...z.form.errors, [k]: '' }, error: '' } }));
+    const has = k => { const v = f[k]; return v !== '' && v != null; };
+    const OFF = { supplier: !FON('parts.suppliers'), supplierRef: !FON('parts.suppliers'), costCenter: !FON('wo.costs'), store: !FON('parts.stores') && stores.length <= 1, bin: !FON('parts.stores') };
+    const fld = (key, ...rest) => OFF[key] && !(has(key) && key !== 'store') ? null : fld0(key, ...rest);
+    const fld0 = (key, label, kind, x = {}) => { const err = fm && fm.errors[key], val = f[key] ?? '';
+      let note = x.note || '', noteColor = '#98A2B3', noteIcon = 'info';
+      if (key === 'gtin' && val) { const ok = PA.gtinValid(val), len = String(val).replace(/\s/g, '').length; note = ok ? `Valid ${PA.gtinKind(val)}` : [7, 11, 12, 13].includes(len) && /^\d+$/.test(String(val).replace(/\s/g, '')) ? `Check digit should be ${PA.gtinCheckDigit(String(val).replace(/\s/g, '').slice(0, -1))}` : 'EAN-8, UPC-A, EAN-13 or GTIN-14'; noteColor = ok ? '#0B6B4A' : '#B54708'; noteIcon = ok ? 'verified' : 'barcode'; }
+      if (err) { note = err; noteColor = '#B42318'; noteIcon = 'error'; }
+      return { label, req: !!x.req, span: x.full ? '1 / -1' : 'auto', isInput: kind === 'text' || kind === 'number' || kind === 'code' || kind === 'date', isSelect: kind === 'select', isTextarea: kind === 'textarea', isBool: false,
+        type: kind === 'number' ? 'number' : kind === 'date' ? 'date' : 'text', font: kind === 'code' ? "13px 'IBM Plex Mono',monospace" : "14px 'IBM Plex Sans',sans-serif", value: val, ph: x.ph || '', border: err ? '#F04438' : '#D0D5DD',
+        hasSuffix: !!x.suffix, suffix: x.suffix || '', padR: x.suffix ? '48px' : '12px', hasNote: !!note, note, noteColor, noteIcon,
+        options: (x.options || []).map(o => typeof o === 'string' ? { v: o, l: o } : o),
+        onInput: e => { const v = e.target.value; if (key === 'cat') { const c = cats.find(c0 => c0.name === v); this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, cat: v, unit: z.form.ref ? z.form.f.unit : (c ? c.unit : z.form.f.unit) }, errors: { ...z.form.errors, cat: '' } } })); } else setF(key, v); } }; };
+    const cfField = cf => { const key = 'cf_' + cf.code, err = fm && fm.errors[key], val = (f.custom || {})[cf.code] ?? '', unit = CFG.fieldUnit(cf, site);
+      const setC = v => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, custom: { ...z.form.f.custom, [cf.code]: v } }, errors: { ...z.form.errors, [key]: '' } } }));
+      const base = { label: cf.name, req: !!cf.required, span: 'auto', isInput: ['decimal', 'integer', 'text', 'date'].includes(cf.type), isSelect: cf.type === 'choice', isTextarea: false, isBool: cf.type === 'boolean',
+        type: cf.type === 'date' ? 'date' : cf.type === 'text' ? 'text' : 'number', font: "14px 'IBM Plex Sans',sans-serif", value: val, ph: cf.type === 'decimal' ? (0).toFixed(cf.decimals || 0) : '', border: err ? '#F04438' : '#D0D5DD',
+        hasSuffix: !!unit && (cf.type === 'decimal' || cf.type === 'integer'), suffix: unit, padR: unit ? '60px' : '12px', hasNote: !!err, note: err || '', noteColor: '#B42318', noteIcon: 'error', onInput: e => setC(e.target.value),
+        options: cf.type === 'choice' ? [{ v: '', l: 'Select…' }, ...cf.options.filter(Boolean).map(o => ({ v: o, l: o }))] : cf.type === 'boolean' ? [['yes', 'Yes'], ['no', 'No']].map(([v, l]) => ({ l, bg: val === v ? '#FBF1F2' : '#fff', border: val === v ? '#C00018' : '#D0D5DD', color: val === v ? '#A30014' : '#344054', font: val === v ? bold : reg, select: () => setC(val === v ? '' : v) })) : [] };
+      return base; };
+    const cfs = CFG.fieldsFor('Spare part');
+    const aq = s.aq.trim().toLowerCase();
+    return {
+      ...this.advVals(),
+      subtitle: `Replacement parts and consumables · ${all.length - nCons} parts · ${nCons} consumables`,
+      kinds: [['', 'All', 'apps', all.length], ['part', 'Replacement parts', 'settings', all.length - nCons], ['consumable', 'Consumables', 'water_drop', nCons]].map(([k, label, icon, count]) => { const on = s.kind === k; return { label, icon, count, iconColor: k === 'consumable' ? '#0E7490' : '#667085', bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => this.setState({ kind: k }) }; }),
+      kpis, rows, empty: !rows.length, isList: s.view !== 'catalog' || !FON('parts.catalog'), isCatalog: s.view === 'catalog' && FON('parts.catalog'),
+      views: [['list', 'List', 'table_rows'], ['catalog', 'Catalog', 'grid_view']].filter(([k]) => k !== 'catalog' || FON('parts.catalog')).map(([k, label, icon]) => { const on = (s.view === 'catalog') === (k === 'catalog'); return { label, icon, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: on ? bold : reg, color: on ? '#1E2430' : '#667085', select: () => this.setState({ view: k }) }; }),
+      selects: [sel('cat', 'All categories', cats.filter(c => !s.kind || c.kind === s.kind).map(c => ({ v: c.name, l: c.name }))), ...(FON('parts.stores') ? [sel('store', 'All storage areas', stores.map(n => ({ v: n.id, l: `${n.name} · ${PL.zoneOf(n.id).name}` })))] : []), sel('cc', 'All cost centers', ccs.map(c => ({ v: c.code, l: `${c.code} · ${c.name}` })))],
+      q: s.q, setQ: e => this.setState({ q: e.target.value }), hasFilters: !!(q || s.cat || s.store || s.kpi || s.cc || s.kind), resetFilters: () => this.setState({ q: '', cat: '', store: '', kpi: '', cc: '', kind: '' }),
+      countLabel: `${list.length} of ${all.length} items`, pager: { total: list.length, page: Math.min(s.pg || 1, Math.max(1, Math.ceil(list.length / (s.ps || 25)))), size: s.ps || 25, onPage: p => this.setState({ pg: p }), onSize: n => this.setState({ ps: n, pg: 1 }) },
+      doExport: () => { const head = ['Reference', 'Item type', 'Usage recorded as', 'Item code', 'GTIN', 'Name', 'Category', 'Storage', 'Bin', 'Qty', 'Min', 'Max', 'Unit', 'Unit cost', 'Supplier', 'Cost center', 'Linked equipment'];
+        const csv = [head, ...list.map(p => [p.ref, PA.isConsumable(p) ? 'Consumable' : 'Replacement part', PA.usageOf(p).mode === 'percent' ? '% of one ' + p.unit : PA.usageOf(p).unit, p.code, p.gtin, p.name, p.cat, storeName(p.store), p.bin, p.qty, p.min, p.max, p.unit, FIN() ? p.cost : '', supName(p.supplier), p.costCenter, (p.assets || []).join(' ')])].map(r => r.map(x => `"${String(x ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'spare-parts.csv'; a.click(); this.flash(`${list.length} items exported`); },
+      detailOpen: !!dp && !fm, d, closeDrawer: () => this.setState({ detail: null, form: null }),
+      adjModes: [['out', 'Remove', 'remove'], ['in', 'Add', 'add']].map(([k, label, icon]) => ({ label, icon, bg: s.adj === k ? '#fff' : 'transparent', shadow: s.adj === k ? '0 1px 2px rgba(16,24,40,.1)' : 'none', font: s.adj === k ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif", color: s.adj === k ? '#1E2430' : '#667085', select: () => this.setState({ adj: k, adjReason: k === 'out' ? 'Consumed on intervention' : 'Goods received' }) })),
+      reasons: s.adj === 'out' ? ['Consumed on intervention', 'Scrapped / damaged', 'Transfer to another store', 'Inventory correction'] : ['Goods received', 'Returned from intervention', 'Transfer from another store', 'Inventory correction'],
+      adjQty: s.adjQty, setAdjQty: e => this.setState({ adjQty: e.target.value }), adjReason: s.adjReason, setAdjReason: e => this.setState({ adjReason: e.target.value }),
+      adjStep: dp && PA.isConsumable(dp) ? (dp.usage === 'percent' ? 0.05 : 0.1) : 1, adjUnit: dp ? dp.unit : '',
+      applyAdj: () => { const c = dp && PA.isConsumable(dp), raw = +String(s.adjQty).replace(',', '.'), n = c ? Math.round(raw * 1000) / 1000 : Math.round(raw), sign = s.adj === 'out' ? -1 : 1; if (!(n > 0)) return this.flash('Enter a quantity'); if (sign < 0 && dp && n > dp.qty + 1e-9) return this.flash(`Only ${PA.fmtStock(dp)} on hand`); PA.adjust(s.detail, sign * n, s.adjReason); this.flash(`Stock ${sign < 0 ? 'decreased' : 'increased'} by ${PA.fmtQty(n)} ${dp.unit}`); },
+      openNew: () => this.edit(null), formOpen: !!fm, formTitle: fm && fm.ref ? `Edit ${f.name || fm.ref}` : 'New item', saveLabel: fm && fm.ref ? 'Save changes' : 'Create item',
+      linkedHint: f.kind === 'consumable' ? 'where this consumable is typically used' : 'where this part is fitted',
+      ...(() => { const cons = f.kind === 'consumable', CONV = { L: 'mL', kg: 'g', m: 'cm' };
+        const siteU = ['volume', 'mass', 'length'].map(q0 => CFG.unitFor(q0, site)).filter(Boolean);
+        const unitList = [...new Set([...(f.usage === 'percent' ? ['roll', 'cartridge', 'tube', 'can', 'pack', 'pcs'] : [...PA.CONSUMABLE_UNITS, ...siteU]), ...(f.unit ? [f.unit] : [])])];
+        const sub = CONV[f.unit], useU = f.useUnit && f.useUnit !== f.unit ? f.useUnit : f.unit;
+        const fake = { kind: 'consumable', usage: f.usage, unit: f.unit || 'pcs', useUnit: f.useUnit, cost: +f.cost || 0 }, uu = PA.usageOf(fake);
+        return { isConsForm: !!fm && cons,
+          kindOpts: [['part', 'Replacement part', 'settings', 'Installed or replaced — usage counted in whole units (bearing ×1)'], ['consumable', 'Consumable', 'water_drop', 'Partially consumed — usage is the actual amount (0.5 L, 35% of a roll)']].map(([k, label, icon, subT]) => { const on = (f.kind || 'part') === k;
+            return { label, icon, sub: subT, border: on ? `2px solid ${k === 'consumable' ? '#0E7490' : '#475467'}` : '1px solid #E4E7EC', bg: on ? (k === 'consumable' ? '#F6FAFB' : '#F9FAFB') : '#fff', iBg: k === 'consumable' ? '#E3F2F6' : '#EEF1F4', iFg: k === 'consumable' ? '#0E7490' : '#475467',
+              select: () => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, kind: k, cat: cats.some(c => c.kind === k && c.name === z.form.f.cat) ? z.form.f.cat : ((cats.find(c => c.kind === k && c.active !== false) || {}).name || ''), unit: k === 'part' ? (PA.CONSUMABLE_UNITS.includes(z.form.f.unit) && !['pcs', 'pair'].includes(z.form.f.unit) ? 'pcs' : z.form.f.unit) : z.form.f.unit } } })) }; }),
+          usageOpts: [['amount', 'Amount used', 'Quantity, volume, weight or length — e.g. 0.5 L, 250 g, 3 m'], ['percent', 'Percentage of one unit', 'For items opened and used up progressively — e.g. 35% of a roll']].map(([k, label, subT]) => { const on = (f.usage || 'amount') === k;
+            return { label, sub: subT, border: on ? '#0E7490' : '#E4E7EC', ring: on ? '#0E7490' : '#D0D5DD', dot: on ? '#0E7490' : 'transparent', select: () => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, usage: k, useUnit: '', unit: k === 'percent' && !['roll', 'cartridge', 'tube', 'can', 'pack', 'pcs'].includes(z.form.f.unit) ? 'roll' : z.form.f.unit } } })) }; }),
+          consUnits: unitList.map(v => ({ v, l: v })), fUnit: f.unit || 'pcs', setFUnit: e => this.setState(z => ({ form: { ...z.form, f: { ...z.form.f, unit: e.target.value, useUnit: '' } } })),
+          showUseUnit: f.usage !== 'percent' && !!sub, useUnits: sub ? [{ v: f.unit, l: f.unit }, { v: sub, l: sub }] : [], fUseUnit: useU, setFUseUnit: e => setF('useUnit', e.target.value),
+          usageExample: f.usage === 'percent' ? `Technician moves a slider — e.g. 35% of a ${f.unit || 'roll'}. Stock and cost go down by 0.35 ${f.unit || 'roll'}.` : `Technician enters e.g. ${PA.fmtUse(fake, uu.def)} → stock −${PA.fmtQty(PA.toStock(fake, uu.def))} ${f.unit || ''}${+f.cost ? ', cost ' + PA.eur(PA.costOfUse(fake, uu.def)) : ''}.` }; })(), formError: fm ? fm.error || '' : '',
+      fileRef: this.fileRef, pickImage: () => this.fileRef.current && this.fileRef.current.click(),
+      onFile: e => { const file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return; PA.readImage(file, 360).then(src => setF('image', src)).catch(() => this.flash('This file is not an image')); },
+      clearImage: () => setF('image', ''), fImg: { has: !!f.image, none: !f.image, src: f.image, btn: f.image ? 'Replace photo' : 'Upload photo' },
+      groups: fm ? [
+        { title: 'Identification', hint: '', fields: [fld('name', 'Name', 'text', { req: 1, full: 1, ph: 'e.g. Ball bearing 6206-2RS' }), fld('ref', 'Reference', 'code', { req: 1, ph: 'e.g. BRG-6206' }), fld('code', 'Item / article code', 'code', { ph: 'e.g. ART-100246', note: 'ERP article number' }),
+          fld('gtin', 'GTIN / EAN code', 'code', { ph: '13 digits from the barcode' }), fld('cat', 'Category', 'select', { req: 1, options: [{ v: '', l: 'Select a category' }, ...cats.filter(c => c.kind === (f.kind === 'consumable' ? 'consumable' : 'part') && (c.active !== false || c.name === f.cat)).map(c => c.name)] }), fld('desc', 'Description', 'textarea', { full: 1, ph: 'Dimensions, material, compatible models…' })] },
+        { title: 'Supplier & cost', hint: 'suppliers and cost centers are managed centrally', fields: [fld('supplier', 'Supplier', 'select', { options: [{ v: '', l: 'No supplier' }, ...sups.filter(x => x.status !== 'Inactive' || x.id === f.supplier).map(x => ({ v: x.id, l: x.name + (x.status === 'On hold' ? ' (on hold)' : '') }))] }), fld('supplierRef', 'Supplier reference', 'code', { ph: 'Manufacturer / supplier part no.' }),
+          ...(FIN() ? [fld('cost', f.kind === 'consumable' ? `Cost per ${f.unit || 'unit'}` : 'Unit cost', 'number', { ph: '0.00', suffix: '€' })] : []), fld('costCenter', 'Cost center', 'select', { options: [{ v: '', l: 'Not allocated' }, ...ccs.filter(c => c.active !== false || c.code === f.costCenter).map(c => ({ v: c.code, l: `${c.code} · ${c.name}` }))] })] },
+        { title: 'Storage', hint: 'storage areas come from the plant hierarchy', fields: [fld('store', 'Storage area', 'select', { req: 1, options: stores.map(n => ({ v: n.id, l: `${n.name} · ${PL.zoneOf(n.id).name}` })) }), fld('bin', 'Bin location', 'code', { ph: 'e.g. A-03-2' }),
+          fld('min', 'Minimum stock', 'number', { req: 1, ph: '0', suffix: f.kind === 'consumable' ? f.unit : '' }), fld('max', 'Maximum stock', 'number', { ph: '0', suffix: f.kind === 'consumable' ? f.unit : '' }), ...(f.kind === 'consumable' ? [] : [fld('unit', 'Unit', 'select', { options: CFG.PART_UNITS })]), ...(fm.ref ? [] : [fld('qty', 'Initial stock', 'number', { ph: '0', suffix: f.kind === 'consumable' ? f.unit : '' })])] },
+        ...(cfs.length ? [{ title: 'Additional information', hint: 'custom fields · Site configuration', fields: cfs.map(cfField) }] : []),
+      ].map(g => ({ ...g, fields: g.fields.filter(Boolean) })).filter(g => g.fields.length).map(g => g.title === 'Supplier & cost' && !FON('parts.suppliers') ? { ...g, title: 'Cost', hint: '' } : g) : [],
+      showKind: !!fm && (FON('parts.consumables') || f.kind === 'consumable'),
+      linked: (f.assets || []).map(id => { const a = PL.asset(id) || { name: id, type: '', loc: '' }; const z = a.loc && PL.zoneOf(a.loc); return { name: a.name, icon: PL.typeIcon(a.type), fg: z ? (PL.ZONE_LOOK[z.id] || [])[1] : '#475467', remove: () => setF('assets', f.assets.filter(x => x !== id)) }; }), noLinked: !(f.assets || []).length,
+      aq: s.aq, setAq: e => this.setState({ aq: e.target.value }),
+      assetOpts: fm ? PL.assets().filter(a => !(f.assets || []).includes(a.id) && (!aq || [a.name, a.id, a.type, PL.pathOf(a.loc)].join(' ').toLowerCase().includes(aq))).slice(0, 30).map(a => { const z = PL.zoneOf(a.loc); return { id: a.id, name: a.name, path: PL.pathOf(a.loc), icon: PL.typeIcon(a.type), fg: (PL.ZONE_LOOK[z.id] || [])[1], add: () => setF('assets', [...(f.assets || []), a.id]) }; }) : [],
+      savePart: () => this.savePart(),
+      confirmOpen: !!s.confirm, confirm: s.confirm || {}, closeConfirm: () => this.setState({ confirm: null }), toast: s.toast,
+    };
+  }
+}
+
+{ const _rv = Component.prototype.renderVals; Component.prototype.renderVals = function () { const v = _rv.call(this); if (v && Array.isArray(v.kpis)) v.kpis = v.kpis.map(KDECO); return v; }; }
+</script>
+</body>
+</html>

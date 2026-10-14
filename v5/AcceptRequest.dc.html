@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:0;background:rgba(16,24,40,.32);z-index:120"></div>
+  <div role="dialog" aria-label="{{ heading }}" style="position:fixed;top:110px;left:50%;transform:translateX(-50%);z-index:121;width:500px;background:#fff;border-radius:10px;box-shadow:0 24px 64px rgba(16,24,40,.3);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;overflow:hidden">
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:18px 20px 14px">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:{{ tileBg }};color:{{ tileFg }};font:20px/1 'Material Symbols Outlined'">{{ tileIcon }}</span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:16px;font-weight:600">{{ heading }}</span>
+        <span style="font-weight:500;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ title }}</span>
+        <sc-if value="{{ hasText }}"><span style="font-size:12.5px;color:#667085;line-height:1.45;text-wrap:pretty">{{ text }}</span></sc-if>
+        <span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ ref }}</span>
+      </div>
+      <button onClick="{{ close }}" aria-label="Close" style="flex:none;width:30px;height:30px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:6px;color:#667085;cursor:pointer" style-hover="background:#F2F4F7"><span style="font:20px/1 'Material Symbols Outlined'">close</span></button>
+    </div>
+
+    <sc-if value="{{ isAccept }}">
+      <div style="display:flex;flex-direction:column;gap:14px;padding:4px 20px 18px">
+        <sc-if value="{{ showChoice }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <sc-for list="{{ choices }}" as="c">
+              <button onClick="{{ c.pick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;background:{{ c.bg }};border:{{ c.border }};border-radius:8px;cursor:pointer;text-align:left;font-family:inherit">
+                <span style="display:flex;align-items:center;gap:6px;font-weight:600;color:#1E2430"><span style="font:18px/1 'Material Symbols Outlined';color:{{ c.iconColor }}">{{ c.icon }}</span>{{ c.label }}</span>
+                <span style="font-size:12px;color:#667085;line-height:1.4">{{ c.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ withDate }}">
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:8px">
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:600;color:#344054">Date</span><input type="date" value="{{ date }}" onChange="{{ setDate }}" style="height:38px;padding:0 10px;border:1px solid {{ dateBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" /></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:600;color:#344054">Time</span><input type="time" value="{{ time }}" onChange="{{ setTime }}" style="height:38px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" /></label>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ quickDates }}" as="d"><button onClick="{{ d.pick }}" style="height:28px;padding:0 10px;background:{{ d.bg }};border:1px solid {{ d.border }};border-radius:14px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer">{{ d.label }}</button></sc-for></div>
+        </sc-if>
+        <sc-if value="{{ showPrio }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:600;color:#344054">Priority</span>
+            <div style="display:flex;gap:6px"><sc-for list="{{ prios }}" as="p"><button onClick="{{ p.pick }}" style="flex:1;height:32px;background:{{ p.bg }};border:1px solid {{ p.border }};border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:{{ p.color }};cursor:pointer">{{ p.label }}</button></sc-for></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReject }}">
+      <div style="display:flex;flex-direction:column;gap:6px;padding:4px 20px 18px">
+        <span style="font-size:12px;font-weight:600;color:#344054">Reason <span style="font-weight:400;color:#98A2B3">— shared with the person who reported it</span></span>
+        <textarea value="{{ note }}" onInput="{{ setNote }}" rows="3" placeholder="e.g. Already fixed, duplicate of another request…" style="padding:8px 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;resize:vertical;outline:none"></textarea>
+      </div>
+    </sc-if>
+
+    <div style="display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid #EEF0F3;background:#FCFCFD">
+      <sc-if value="{{ canSwitchReject }}"><button onClick="{{ toReject }}" style="height:34px;display:flex;align-items:center;gap:5px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#B42318;cursor:pointer" style-hover="background:#FDECEC"><span style="font:18px/1 'Material Symbols Outlined'">block</span>Reject request</button></sc-if>
+      <sc-if value="{{ isReject }}"><button onClick="{{ toAccept }}" style="height:34px;padding:0 10px;background:transparent;border:0;font:600 13px 'IBM Plex Sans',sans-serif;color:#667085;cursor:pointer">Back</button></sc-if>
+      <button onClick="{{ close }}" style="margin-left:auto;height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Cancel</button>
+      <button onClick="{{ confirm }}" disabled="{{ disabled }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 14px;background:{{ okBg }};border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:{{ okCursor }}"><span style="font:18px/1 'Material Symbols Outlined'">{{ okIcon }}</span>{{ okLabel }}</button>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:600,&quot;height&quot;:560}}">
+// window.RelixAccept({ id, title, text, prio, mode: 'later' | 'schedule' | 'reschedule' | 'reject', onDone(result) })
+// id = R-xxxx (intervention request) or an intervention key in Requested / Not scheduled. Writes through collab-model.
+const PRIOS = [['Critical', '#C00018', '#fff'], ['High', '#FDECEC', '#B42318'], ['Medium', '#FEF3E2', '#B54708'], ['Low', '#EEF1F4', '#475467']];
+const TODAY = '2026-09-29';
+const addDays = n => { const d = new Date(TODAY + 'T12:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+class Component extends DCLogic {
+  state = { o: null, mode: 'later', date: '', time: '08:00', prio: 'Medium', note: '', tried: false };
+  componentDidMount() {
+    import('./collab-model.js').then(C => { this.C = C; });
+    window.RelixAccept = o => this.setState({ o, mode: o.mode || 'later', date: o.date || (o.mode === 'schedule' || o.mode === 'reschedule' ? addDays(1) : ''), time: o.time || '08:00', prio: o.prio || 'Medium', note: '', tried: false });
+    this._ev = e => window.RelixAccept(e.detail || {}); window.addEventListener('cmms-accept', this._ev);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-accept', this._ev); if (window.RelixAccept) delete window.RelixAccept; }
+  close() { this.setState({ o: null }); }
+  confirm() {
+    const s = this.state, o = s.o, C = this.C || window.RelixCollab; if (!o || !C) return;
+    const needDate = s.mode === 'schedule' || s.mode === 'reschedule';
+    if (needDate && !s.date) return this.setState({ tried: true });
+    const dt = needDate ? `${s.date}T${s.time || '08:00'}` : '';
+    let res;
+    if (s.mode === 'reject') { C.rejectRequest(o.id, s.note.trim()); res = { rejected: true, note: s.note.trim(), status: 'Rejected' }; }
+    else if (s.mode === 'reschedule') { C.scheduleWo(o.id, dt); res = { key: o.id, status: 'Scheduled', date: dt }; }
+    else { const r = C.acceptRequest(o.id, { date: dt, prio: s.prio }) || {}; res = { ...r, date: dt, prio: s.prio }; }
+    try { window.dispatchEvent(new CustomEvent('cmms-request-decided', { detail: { id: o.id, ...res } })); } catch (e) {}
+    if (o.onDone) o.onDone(res);
+    this.close();
+  }
+  renderVals() {
+    const s = this.state, o = s.o; if (!o) return { open: false };
+    const isReq = /^R-/.test(o.id), C = this.C, ref = C ? (isReq ? o.id : C.displayId(o.id)) : o.id;
+    const isReject = s.mode === 'reject', resched = s.mode === 'reschedule', withDate = s.mode === 'schedule' || resched;
+    const fmt = d => new Date(d + 'T12:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return { open: true, ref, title: o.title || '', text: o.text || '', hasText: !!o.text,
+      heading: isReject ? 'Reject this request?' : resched ? 'Schedule intervention' : 'Accept request',
+      tileIcon: isReject ? 'block' : resched ? 'event' : 'check_circle', tileBg: isReject ? '#FDECEC' : resched ? '#EAF1FD' : '#E6F4EE', tileFg: isReject ? '#B42318' : resched ? '#2456B8' : '#0B6B4A',
+      isAccept: !isReject, isReject, showChoice: !resched, showPrio: !resched, withDate,
+      choices: [['later', 'Accept, schedule later', 'event_busy', 'Goes to Not scheduled — a planner picks the date'], ['schedule', 'Accept and schedule', 'event_available', 'Pick the date now — goes to Scheduled']].map(([k, label, icon, sub]) => { const on = s.mode === k;
+        return { label, icon, sub, bg: on ? '#F6FBF8' : '#fff', border: on ? '2px solid #0B6B4A' : '1px solid #E4E7EC', iconColor: on ? '#0B6B4A' : '#667085', pick: () => this.setState({ mode: k, date: k === 'schedule' && !s.date ? addDays(1) : s.date }) }; }),
+      date: s.date, time: s.time, dateBorder: s.tried && !s.date ? '#B42318' : '#D0D5DD', setDate: e => this.setState({ date: e.target.value }), setTime: e => this.setState({ time: e.target.value }),
+      quickDates: [[0, 'Today'], [1, 'Tomorrow'], [2, null], [3, null], [7, 'In a week']].map(([n, l]) => { const d = addDays(n), on = s.date === d; return { label: l || fmt(d), bg: on ? '#EAF1FD' : '#fff', border: on ? '#2456B8' : '#D0D5DD', pick: () => this.setState({ date: d }) }; }),
+      prios: PRIOS.map(([p, bg, fg]) => { const on = s.prio === p; return { label: p, bg: on ? bg : '#fff', border: on ? (p === 'Critical' ? '#C00018' : fg) : '#D0D5DD', color: on ? fg : '#344054', pick: () => this.setState({ prio: p }) }; }),
+      note: s.note, setNote: e => this.setState({ note: e.target.value }),
+      canSwitchReject: !isReject && !resched && o.canReject !== false, toReject: () => this.setState({ mode: 'reject' }), toAccept: () => this.setState({ mode: 'later' }),
+      okLabel: isReject ? 'Reject' : resched ? 'Schedule' : s.mode === 'schedule' ? 'Accept & schedule' : 'Accept', okIcon: isReject ? 'block' : 'check',
+      okBg: isReject ? '#B42318' : '#C00018', disabled: false, okCursor: 'pointer',
+      close: () => this.close(), confirm: () => this.confirm() };
+  }
+}
+</script>
+</body>
+</html>

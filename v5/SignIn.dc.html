@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div data-screen-label="Sign in" style="min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,520px);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px">
+  <section style="background:#34050D;color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 56px">
+    <div style="display:flex;align-items:center;gap:10px"><img src="relix-logo-white.svg" alt="" style="height:30px" /><span style="font-size:23px;font-weight:700;letter-spacing:-.01em">Relix</span></div>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:520px">
+      <h1 style="margin:0;font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-.02em;text-wrap:pretty">Maintenance for the whole plant, in one place.</h1>
+      <p style="margin:0;font-size:15px;line-height:1.55;color:rgba(255,255,255,.72);text-wrap:pretty">Interventions, preventive plans, spare parts and the team's planning — from the office or on the shop floor.</p>
+    </div>
+    <span style="font-size:12px;color:rgba(255,255,255,.5)">Thourotte Plant · FR-THO</span>
+  </section>
+  <section style="display:flex;align-items:center;justify-content:center;padding:40px">
+    <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:4px"><h2 style="margin:0;font-size:22px;font-weight:600">Sign in</h2><p style="margin:0;color:#667085">Use your company account</p></div>
+      <button onClick="{{ sso }}" style="height:42px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 13.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="border-color:#98A2B3"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">domain</span>Continue with company SSO</button>
+      <div style="display:flex;align-items:center;gap:10px;color:#98A2B3;font-size:12px"><span style="flex:1;height:1px;background:#E4E7EC"></span>or<span style="flex:1;height:1px;background:#E4E7EC"></span></div>
+      <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12.5px;font-weight:600;color:#344054">Email<span style="color:#C00018"> *</span></span><input type="email" value="{{ email }}" onInput="{{ setEmail }}" placeholder="name@company.com" style="height:42px;padding:0 12px;border:1px solid {{ emailBorder }};border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+      <label style="display:flex;flex-direction:column;gap:5px"><span style="display:flex;font-size:12.5px;font-weight:600;color:#344054">Password<span style="color:#C00018">&nbsp;*</span><a href="#" onClick="{{ forgot }}" style="margin-left:auto;font-weight:600">Forgot password?</a></span><input type="password" value="{{ pw }}" onInput="{{ setPw }}" onKeyDown="{{ onKey }}" placeholder="••••••••" style="height:42px;padding:0 12px;border:1px solid {{ pwBorder }};border-radius:6px;font:14px 'IBM Plex Sans',sans-serif;outline:none" /></label>
+      <button onClick="{{ toggleRemember }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;padding:0;background:transparent;border:0;font:500 13px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ remBorder }};background:{{ remBg }};display:grid;place-items:center;color:#fff;font:13px/1 'Material Symbols Outlined'">{{ remIcon }}</span>Keep me signed in on this device</button>
+      <sc-if value="{{ info }}"><span style="display:flex;align-items:center;gap:6px;color:#0B6B4A;font-size:12.5px"><span style="font:16px/1 'Material Symbols Outlined'">mark_email_read</span>{{ info }}</span></sc-if>
+      <sc-if value="{{ err }}"><span style="display:flex;align-items:center;gap:6px;color:#B42318;font-size:12.5px"><span style="font:16px/1 'Material Symbols Outlined'">error</span>{{ err }}</span></sc-if>
+      <button onClick="{{ submit }}" style="height:42px;background:#C00018;border:0;border-radius:6px;font:600 14px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#A30014">Sign in</button>
+      <span style="font-size:12px;color:#98A2B3;text-align:center">Access is managed by your maintenance manager in Teams &amp; users.</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { email: 'g.durand@thourotte-plant.com', pw: '', remember: true, tried: false, err: '' };
+  submit() { const s = this.state, ok = /.+@.+\..+/.test(s.email) && s.pw.length >= 4; if (!ok) return this.setState({ tried: true, err: !/.+@.+\..+/.test(s.email) ? 'Enter a valid email address' : 'Enter your password (4 characters minimum)' }); try { sessionStorage.setItem('cmms.signedIn', '1'); } catch (e) {} location.href = 'Main.dc.html'; }
+  renderVals() {
+    const s = this.state, bad = k => s.tried && (k === 'email' ? !/.+@.+\..+/.test(s.email) : s.pw.length < 4);
+    return { email: s.email, pw: s.pw, setEmail: e => this.setState({ email: e.target.value, err: '' }), setPw: e => this.setState({ pw: e.target.value, err: '' }), onKey: e => { if (e.key === 'Enter') this.submit(); },
+      emailBorder: bad('email') ? '#F04438' : '#D0D5DD', pwBorder: bad('pw') ? '#F04438' : '#D0D5DD', err: s.err,
+      toggleRemember: () => this.setState({ remember: !s.remember }), remBorder: s.remember ? '#C00018' : '#C4CAD4', remBg: s.remember ? '#C00018' : '#fff', remIcon: s.remember ? 'check' : '',
+      submit: () => this.submit(), sso: () => { try { sessionStorage.setItem('cmms.signedIn', '1'); } catch (e) {} location.href = 'Main.dc.html'; }, forgot: e => { e.preventDefault(); this.setState({ err: '', info: 'A reset link has been sent to ' + s.email }); }, info: s.info || '' };
+  }
+}
+</script>
+</body>
+</html>

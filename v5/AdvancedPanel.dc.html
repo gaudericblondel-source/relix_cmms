@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ open }}">
+  <div onClick="{{ close }}" style="position:fixed;inset:56px 0 0 0;background:rgba(16,24,40,.28);z-index:50"></div>
+  <aside style="position:fixed;top:56px;right:0;bottom:0;width:{{ w }};max-width:100vw;z-index:51;background:#fff;box-shadow:-12px 0 32px rgba(16,24,40,.14);display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid #EEF0F3">
+      <span style="flex:none;width:36px;height:36px;border-radius:8px;background:#F6EAF6;color:#800080;display:grid;place-items:center;font:20px/1 'Material Symbols Outlined'">{{ f.icon }}</span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:600">{{ f.title }}</span><sc-if value="{{ f.ai }}"><span style="height:18px;display:inline-flex;align-items:center;padding:0 5px;border-radius:4px;background:#800080;color:#fff;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span></sc-if></div>
+        <span style="font-size:12.5px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sub }}</span>
+      </div>
+      <span style="flex:none;height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;border:1px solid #E2C4E2;color:#800080;font-size:11.5px;font-weight:600"><span style="font:14px/1 'Material Symbols Outlined'">science</span>Advanced</span>
+      <button onClick="{{ close }}" style="flex:none;width:34px;height:34px;display:grid;place-items:center;background:none;border:0;border-radius:6px;color:#667085;font:20px/1 'Material Symbols Outlined';cursor:pointer" style-hover="background:#F2F4F7">close</button>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto">
+    <div style="padding:18px 20px 24px;display:flex;flex-direction:column;gap:18px">
+
+      <sc-if value="{{ isRun }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding:28px 8px">
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:#F6EAF6;color:#800080;font:22px/1 'Material Symbols Outlined'">auto_awesome</span><span style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">{{ f.run }}</span><span style="font-size:12.5px;color:#667085">{{ runSub }}</span></span></div>
+          <div style="height:6px;border-radius:3px;background:#F2F4F7;overflow:hidden"><span style="display:block;height:100%;width:{{ runPct }};background:#800080;border-radius:3px;transition:width .5s ease"></span></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ runSteps }}" as="r"><div style="display:flex;align-items:center;gap:10px;color:{{ r.color }};font-weight:{{ r.weight }}"><span style="font:18px/1 'Material Symbols Outlined';color:{{ r.iconColor }}">{{ r.icon }}</span>{{ r.label }}</div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSetup }}">
+        <sc-if value="{{ fOpt }}">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Horizon</span>
+            <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px;align-self:flex-start"><sc-for list="{{ optHorizon }}" as="o"><button onClick="{{ o.select }}" style="height:30px;padding:0 12px;background:{{ o.bg }};border:0;border-radius:5px;box-shadow:{{ o.shadow }};font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.label }}</button></sc-for></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">What to optimize</span>
+            <sc-for list="{{ optScope }}" as="c"><button onClick="{{ c.toggle }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid {{ c.border }};background:{{ c.bg }};border-radius:8px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430"><span style="flex:none;width:18px;height:18px;margin-top:1px;border-radius:4px;border:1.5px solid {{ c.boxBorder }};background:{{ c.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ c.check }}</span><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">{{ c.label }}</span><span style="font-size:12px;color:#667085;line-height:1.4">{{ c.sub }}</span></span></button></sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Constraints to respect</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ optCons }}" as="c"><button onClick="{{ c.toggle }}" style="height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:15px;font:500 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ c.icon }}</span>{{ c.label }}</button></sc-for></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Priority</span>
+            <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px;align-self:flex-start"><sc-for list="{{ optGoal }}" as="o"><button onClick="{{ o.select }}" style="height:30px;padding:0 12px;background:{{ o.bg }};border:0;border-radius:5px;box-shadow:{{ o.shadow }};font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.label }}</button></sc-for></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ fFc }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Forecast horizon</span>
+              <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px;align-self:flex-start"><sc-for list="{{ fcHorizon }}" as="o"><button onClick="{{ o.select }}" style="height:30px;padding:0 12px;background:{{ o.bg }};border:0;border-radius:5px;box-shadow:{{ o.shadow }};font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.label }}</button></sc-for></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Target service level</span>
+              <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px;align-self:flex-start"><sc-for list="{{ fcLevel }}" as="o"><button onClick="{{ o.select }}" style="height:30px;padding:0 12px;background:{{ o.bg }};border:0;border-radius:5px;box-shadow:{{ o.shadow }};font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.label }}</button></sc-for></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Data used</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ fcInputs }}" as="c"><button onClick="{{ c.toggle }}" style="height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:15px;font:500 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer"><span style="font:16px/1 'Material Symbols Outlined'">{{ c.icon }}</span>{{ c.label }}</button></sc-for></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Scope</span>
+            <sc-for list="{{ fcScope }}" as="c"><button onClick="{{ c.toggle }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid {{ c.border }};background:{{ c.bg }};border-radius:8px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430"><span style="flex:none;width:18px;height:18px;margin-top:1px;border-radius:4px;border:1.5px solid {{ c.boxBorder }};background:{{ c.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ c.check }}</span><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">{{ c.label }}</span><span style="font-size:12px;color:#667085;line-height:1.4">{{ c.sub }}</span></span></button></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ fDocPick }}">
+          <sc-if value="{{ fPlan }}">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#344054">Equipment *</span>
+              <select value="{{ assetVal }}" onChange="{{ setAsset }}" style="height:40px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;background:#fff"><sc-for list="{{ assetOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select>
+            </label>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:12.5px;font-weight:600;color:#344054">{{ docLabel }}</span>
+            <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden;max-height:300px;overflow-y:auto">
+              <sc-for list="{{ docs }}" as="d" hint-placeholder-count="4">
+                <button onClick="{{ d.select }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-bottom:1px solid #F2F4F7;background:{{ d.bg }};text-align:left;cursor:pointer;font-family:inherit;color:#1E2430">
+                  <span style="flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid {{ d.ring }};display:grid;place-items:center"><span style="width:8px;height:8px;border-radius:50%;background:{{ d.dot }}"></span></span>
+                  <span style="flex:none;width:34px;height:20px;border-radius:4px;display:grid;place-items:center;background:{{ d.ftBg }};color:{{ d.ftFg }};font:600 10px 'IBM Plex Mono',monospace">{{ d.ft }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.sub }}</span></span>
+                  <sc-if value="{{ d.match }}"><span style="flex:none;height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:#F6EAF6;color:#800080;font-size:11px;font-weight:600">Linked to this asset</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+            <label style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border:1.5px dashed #D0D5DD;border-radius:8px;color:#475467;cursor:pointer" style-hover="border-color:#800080;color:#800080"><span style="font:20px/1 'Material Symbols Outlined'">upload_file</span><span style="font-weight:500">{{ uploadLabel }}</span><input type="file" accept=".pdf,.doc,.docx" onChange="{{ upload }}" style="display:none" /></label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">{{ ctxLabel }}</span>
+            <div style="display:flex;padding:2px;background:#EEF0F3;border-radius:7px;align-self:flex-start"><sc-for list="{{ genSeg }}" as="o"><button onClick="{{ o.select }}" style="height:30px;padding:0 12px;background:{{ o.bg }};border:0;border-radius:5px;box-shadow:{{ o.shadow }};font:{{ o.font }};color:{{ o.color }};cursor:pointer">{{ o.label }}</button></sc-for></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12.5px;font-weight:600;color:#344054">Include</span>
+            <sc-for list="{{ genOpts }}" as="c"><button onClick="{{ c.toggle }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid {{ c.border }};background:{{ c.bg }};border-radius:8px;text-align:left;cursor:pointer;font-family:inherit;color:#1E2430"><span style="flex:none;width:18px;height:18px;margin-top:1px;border-radius:4px;border:1.5px solid {{ c.boxBorder }};background:{{ c.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined'">{{ c.check }}</span><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600">{{ c.label }}</span><span style="font-size:12px;color:#667085;line-height:1.4">{{ c.sub }}</span></span></button></sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isResult }}">
+        <sc-if value="{{ hasKpis }}">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #E4E7EC;border-radius:8px">
+            <sc-for list="{{ kpis }}" as="k"><div style="display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-left:1px solid {{ k.sep }}"><span style="font-size:12px;color:#667085">{{ k.label }}</span><span style="font-size:18px;font-weight:600;color:{{ k.color }}">{{ k.val }}</span><span style="font-size:11.5px;color:{{ k.subColor }}">{{ k.sub }}</span></div></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ fOpt }}">
+          <sc-for list="{{ optGroups }}" as="g">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:{{ g.bg }};color:{{ g.fg }};font:15px/1 'Material Symbols Outlined'">{{ g.icon }}</span><span style="font-size:13.5px;font-weight:600">{{ g.title }}</span><span style="font-size:12px;color:#98A2B3">{{ g.count }}</span></div>
+              <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+                <sc-for list="{{ g.rows }}" as="r">
+                  <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid #F2F4F7;opacity:{{ r.op }}">
+                    <button onClick="{{ r.toggle }}" style="flex:none;width:18px;height:18px;margin-top:2px;padding:0;border-radius:4px;border:1.5px solid {{ r.boxBorder }};background:{{ r.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined';cursor:pointer">{{ r.check }}</button>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                      <span style="display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span><span style="flex:none;font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ r.id }}</span></span>
+                      <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px"><sc-if value="{{ r.hasFrom }}"><span style="color:#98A2B3;text-decoration:line-through">{{ r.from }}</span><span style="font:15px/1 'Material Symbols Outlined';color:#98A2B3">arrow_forward</span></sc-if><span style="font-weight:600;color:#800080">{{ r.to }}</span><sc-if value="{{ r.hasWho }}"><span style="color:#475467">· {{ r.who }}</span></sc-if></span>
+                      <span style="font-size:12px;color:#667085;line-height:1.4;text-wrap:pretty">{{ r.why }}</span>
+                    </span>
+                    <sc-if value="{{ r.hasSave }}"><span style="flex:none;font-size:12px;font-weight:600;color:#0B6B4A;white-space:nowrap">{{ r.save }}</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ fFc }}">
+          <section style="border:1px solid #E4E7EC;border-radius:8px;padding:12px 14px 10px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13.5px;font-weight:600">{{ chart.name }}</span><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ chart.ref }}</span><span style="margin-left:auto;display:flex;gap:12px;font-size:11.5px;color:#667085"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#D0D5DD"></span>Consumed</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#800080"></span>Forecast</span></span></div>
+            <div style="height:96px;display:flex;align-items:flex-end;gap:4px"><sc-for list="{{ chart.bars }}" as="b"><span title="{{ b.tip }}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%"><span style="font:500 10px 'IBM Plex Mono',monospace;color:#98A2B3">{{ b.v }}</span><span style="width:100%;height:{{ b.h }};background:{{ b.color }};border-radius:3px 3px 0 0;opacity:{{ b.op }}"></span></span></sc-for></div>
+            <div style="display:flex;gap:4px;font:500 10px 'IBM Plex Mono',monospace;color:#98A2B3"><sc-for list="{{ chart.bars }}" as="b"><span style="flex:1;text-align:center">{{ b.m }}</span></sc-for></div>
+            <span style="font-size:12px;color:#475467;text-wrap:pretty">{{ chart.why }}</span>
+          </section>
+          <div style="border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:26px minmax(0,1fr) 56px 76px 64px 92px 104px;gap:8px;align-items:center;height:34px;padding:0 12px;background:#F9FAFB;border-bottom:1px solid #EEF0F3;font-size:11.5px;font-weight:600;color:#667085"><span></span><span>Part</span><span>Stock</span><span>{{ fcCol }}</span><span>Lead time</span><span>Min / max</span><span>Recommendation</span></div>
+            <sc-for list="{{ fcRows }}" as="r">
+              <div onClick="{{ r.select }}" style="display:grid;grid-template-columns:26px minmax(0,1fr) 56px 76px 64px 92px 104px;gap:8px;align-items:center;min-height:48px;padding:6px 12px;border-bottom:1px solid #F2F4F7;background:{{ r.bg }};cursor:pointer">
+                <button onClick="{{ r.toggle }}" style="width:18px;height:18px;padding:0;border-radius:4px;border:1.5px solid {{ r.boxBorder }};background:{{ r.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined';cursor:pointer">{{ r.check }}</button>
+                <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:11.5px;color:{{ r.riskColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.risk }}</span></span>
+                <span style="font-weight:600;color:{{ r.stockColor }}">{{ r.qty }}</span>
+                <span>{{ r.fc }}</span>
+                <span style="color:#475467">{{ r.lead }}</span>
+                <span style="display:flex;flex-direction:column;font-size:12px"><span style="color:#98A2B3;text-decoration:{{ r.strike }}">{{ r.cur }}</span><span style="font-weight:600;color:#800080">{{ r.rec }}</span></span>
+                <span><span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:{{ r.aBg }};color:{{ r.aFg }};font-size:12px;font-weight:600;white-space:nowrap">{{ r.action }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ fCl }}">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#344054">Checklist name</span><input value="{{ clName }}" onInput="{{ setClName }}" style="height:40px;padding:0 12px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430;outline:none" /></label>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:#475467"><span style="font:16px/1 'Material Symbols Outlined';color:#800080">description</span>From <b style="color:#1E2430">{{ docName }}</b><span style="color:#C4CAD4">·</span>{{ clSummary }}</div>
+          <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ clSteps }}" as="st">
+              <div style="display:grid;grid-template-columns:22px 30px minmax(0,1fr) auto 28px;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #F2F4F7">
+                <span style="font:500 12px 'IBM Plex Mono',monospace;color:#98A2B3;text-align:right">{{ st.n }}</span>
+                <span title="{{ st.tLabel }}" style="width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:{{ st.tBg }};color:{{ st.tFg }};font:17px/1 'Material Symbols Outlined'">{{ st.tIcon }}</span>
+                <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">{{ st.title }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.tLabel }}{{ st.meta }}</span></span>
+                <span style="display:flex;align-items:center;gap:6px"><span style="font:500 11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ st.page }}</span><span title="{{ st.confTip }}" style="height:20px;display:inline-flex;align-items:center;padding:0 7px;border-radius:10px;background:{{ st.cBg }};color:{{ st.cFg }};font-size:11px;font-weight:600">{{ st.conf }}</span></span>
+                <button onClick="{{ st.remove }}" title="Remove step" style="width:28px;height:28px;display:grid;place-items:center;background:none;border:0;border-radius:6px;color:#98A2B3;font:18px/1 'Material Symbols Outlined';cursor:pointer" style-hover="background:#F2F4F7;color:#B42318">close</button>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:12px;color:#667085;line-height:1.5">Created as a draft — review it in the checklist editor before publishing. Steps marked “Check” come from tables or images and should be verified.</p>
+        </sc-if>
+
+        <sc-if value="{{ fPlan }}">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:#475467"><span style="font:16px/1 'Material Symbols Outlined';color:#800080">description</span>{{ docName }}<span style="color:#C4CAD4">·</span><b style="color:#1E2430">{{ assetName }}</b></div>
+          <div style="display:flex;flex-direction:column;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ plans }}" as="p">
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid #F2F4F7;opacity:{{ p.op }}">
+                <button onClick="{{ p.toggle }}" style="flex:none;width:18px;height:18px;margin-top:2px;padding:0;border-radius:4px;border:1.5px solid {{ p.boxBorder }};background:{{ p.boxBg }};color:#fff;display:grid;place-items:center;font:14px/1 'Material Symbols Outlined';cursor:pointer">{{ p.check }}</button>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="display:flex;align-items:baseline;gap:8px"><span style="font-weight:600">{{ p.task }}</span><span style="margin-left:auto;font:500 11px 'IBM Plex Mono',monospace;color:#98A2B3">{{ p.page }}</span></span>
+                  <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#F6EAF6;color:#800080;font-size:12px;font-weight:600"><span style="font:14px/1 'Material Symbols Outlined'">{{ p.trigIcon }}</span>{{ p.trig }}</span>
+                    <span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#F2F4F7;color:#344054;font-size:12px"><span style="font:14px/1 'Material Symbols Outlined';color:#667085">schedule</span>{{ p.dur }}</span>
+                    <span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#F2F4F7;color:#344054;font-size:12px"><span style="font:14px/1 'Material Symbols Outlined';color:#667085">engineering</span>{{ p.who }}</span>
+                    <sc-if value="{{ p.hasCl }}"><span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#F2F4F7;color:#344054;font-size:12px"><span style="font:14px/1 'Material Symbols Outlined';color:#667085">checklist</span>{{ p.cl }}</span></sc-if>
+                  </span>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:8px;background:#F9FAFB;font-size:12.5px;color:#475467;line-height:1.5"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">info</span><span>2 recommendations are already covered by the existing plan “Monthly inspection” and were not duplicated. Plans are created inactive — activate them once reviewed.</span></div>
+        </sc-if>
+
+        <sc-if value="{{ fDiag }}">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13.5px;font-weight:600">Probable causes</span>
+            <sc-for list="{{ causes }}" as="c">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid {{ c.border }};border-radius:8px;background:{{ c.bg }}">
+                <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;flex:1">{{ c.label }}</span><span style="font-size:15px;font-weight:600;color:#800080">{{ c.pct }}</span></div>
+                <div style="height:6px;border-radius:3px;background:#F2F4F7;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pct }};background:#800080;border-radius:3px"></span></div>
+                <span style="font-size:12px;color:#667085;line-height:1.45;text-wrap:pretty">{{ c.why }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13.5px;font-weight:600">Evidence</span>
+            <sc-for list="{{ evidence }}" as="e"><div style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:#344054"><span style="flex:none;width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:#F2F4F7;color:#475467;font:16px/1 'Material Symbols Outlined'">{{ e.icon }}</span>{{ e.text }}</div></sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13.5px;font-weight:600">Recommended actions</span>
+            <sc-for list="{{ actions }}" as="x"><div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:#344054;line-height:1.45"><span style="flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#F6EAF6;color:#800080;font:600 11px 'IBM Plex Sans',sans-serif">{{ x.n }}</span>{{ x.text }}</div></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ fFleet }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:600">Highest obsolescence risk</span><span style="font-size:12px;color:#98A2B3">Score 0–100 · manufacturer status, parts, controls, failures, criticality</span></div>
+            <div style="border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+              <sc-for list="{{ riskRows }}" as="r">
+                <a href="{{ r.href }}" style="display:grid;grid-template-columns:minmax(0,1fr) 120px 110px 100px;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #F2F4F7;color:#1E2430" style-hover="background:#F9FAFB">
+                  <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span></span>
+                  <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:6px;border-radius:3px;background:#F2F4F7;overflow:hidden"><span style="display:block;height:100%;width:{{ r.w }};background:{{ r.dot }};border-radius:3px"></span></span><span style="font-weight:600;width:24px;text-align:right">{{ r.score }}</span></span>
+                  <span style="font-size:12px;color:{{ r.eosColor }}">{{ r.eos }}</span>
+                  <span><span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:{{ r.bg }};color:{{ r.fg }};font-size:12px;font-weight:600;white-space:nowrap">{{ r.level }}</span></span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13.5px;font-weight:600">Warranties &amp; contracts to renew</span>
+            <div style="border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+              <sc-for list="{{ ctRows }}" as="c">
+                <a href="{{ c.href }}" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 130px;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #F2F4F7;color:#1E2430" style-hover="background:#F9FAFB">
+                  <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.asset }}</span><span style="font-size:12px;color:#667085">{{ c.kind }}</span></span>
+                  <span style="font-size:12.5px;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.provider }} · {{ c.cost }}</span>
+                  <span><span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:{{ c.bg }};color:{{ c.fg }};font-size:12px;font-weight:600;white-space:nowrap">{{ c.st }}</span></span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+    </div>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid #EEF0F3">
+      <span style="flex:1;min-width:0;font-size:12px;color:#667085">{{ footNote }}</span>
+      <sc-if value="{{ hasSecondary }}"><button onClick="{{ secondary }}" style="height:34px;padding:0 14px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB">{{ secondaryLabel }}</button></sc-if>
+      <sc-if value="{{ hasPrimary }}"><button onClick="{{ primary }}" disabled="{{ primaryDisabled }}" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 14px;background:{{ primaryBg }};border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:{{ primaryCursor }}"><span style="font:18px/1 'Material Symbols Outlined'">{{ primaryIcon }}</span>{{ primaryLabel }}<sc-if value="{{ primaryAI }}"><span style="height:16px;display:inline-flex;align-items:center;padding:0 4px;border-radius:4px;background:#fff;color:#800080;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span></sc-if></button></sc-if>
+    </div>
+  </aside>
+</sc-if>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#E3A6E3">auto_awesome</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const FINV = v => window.RelixAccess && !window.RelixAccess.canFinance() ? '•••' : v;
+const P = '#800080';
+const F = {
+  optimize: { title: 'Optimize planning', sub: 'Schedule unscheduled work and rebalance the week', icon: 'auto_fix_high', ai: true, w: '720px', run: 'Optimizing the planning', cta: 'Run optimization',
+    steps: ['Reading backlog and schedule — 9 unscheduled, 23 scheduled', 'Checking skills, shifts and absences', 'Matching spare parts stock and expected deliveries', 'Aligning with production stops and machine availability', 'Grouping rental equipment and external contractors', 'Building the proposal'] },
+  forecast: { title: 'Demand forecast & stock optimization', sub: 'Predict spare-part demand and right-size critical stock', icon: 'query_stats', ai: true, w: '780px', run: 'Forecasting spare-part demand', cta: 'Run forecast',
+    steps: ['Reading 24 months of consumption', 'Adding planned preventive interventions', 'Adding failure predictions from live monitoring', 'Applying supplier lead times', 'Computing safety stock and reorder points'] },
+  checklist: { title: 'Generate checklist from a document', sub: 'Extract a step-by-step checklist from a manual or procedure', icon: 'playlist_add_check', ai: true, w: '660px', run: 'Generating the checklist', cta: 'Generate checklist',
+    steps: ['Reading the document', 'Finding maintenance procedures', 'Extracting steps, values and tolerances', 'Matching spare parts with the catalogue', 'Estimating durations and skills'] },
+  plan: { title: 'Generate maintenance plans', sub: "From the manufacturer's maintenance recommendations", icon: 'event_repeat', ai: true, w: '680px', run: 'Generating maintenance plans', cta: 'Generate plans',
+    steps: ['Reading the manufacturer document', 'Finding the maintenance schedule tables', 'Converting intervals to calendar and meter triggers', 'Comparing with existing plans', 'Drafting checklists for each plan'] },
+  diagnose: { title: 'AI diagnostic', sub: '', icon: 'troubleshoot', ai: true, w: '600px', run: 'Running diagnostic',
+    steps: ['Collecting the last 30 days of process, energy and vibration data', 'Comparing with 12 similar events in the failure history', 'Ranking probable causes'] },
+  fleet: { title: 'Lifecycle & obsolescence', sub: 'Renewal, end-of-support risk and contracts across the plant', icon: 'timeline', ai: false, w: '760px' },
+};
+const DEF = {
+  optimize: { h: 'week', unsched: true, resched: true, locked: true, skills: true, parts: true, prod: true, tools: true, rental: true, ext: true, goal: 'downtime' },
+  forecast: { h: 3, lvl: 98, hist: true, prev: true, pred: true, lead: true, crit: true, onlyCrit: false, po: true },
+  checklist: { detail: 'standard', safety: true, meas: true, photo: true, parts: true },
+  plan: { ctx: '2sh', meter: true, gencl: true },
+  diagnose: {}, fleet: {},
+};
+const seg = (opts, cur, set) => opts.map(([v, l]) => { const on = cur === v; return { label: l, bg: on ? '#fff' : 'transparent', shadow: on ? '0 1px 2px rgba(16,24,40,.12)' : 'none', font: on ? "600 12.5px 'IBM Plex Sans',sans-serif" : "500 12.5px 'IBM Plex Sans',sans-serif", color: on ? '#1E2430' : '#667085', select: () => set(v) }; });
+const chk = on => ({ boxBg: on ? P : '#fff', boxBorder: on ? P : '#D0D5DD', check: on ? 'check' : '', border: on ? '#E2C4E2' : '#E4E7EC', bg: on ? '#FDF8FD' : '#fff', op: on ? 1 : 0.55 });
+const chip = on => ({ bg: on ? '#F6EAF6' : '#fff', border: on ? '#E2C4E2' : '#D0D5DD', color: on ? P : '#475467' });
+const rnd = (s, i) => { let x = 2166136261; for (const c of s + ':' + i) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return ((x >>> 0) % 1000) / 1000; };
+const OPT = [
+  ['sched', 'Scheduled', 'event_available', '#E6F4EE', '#0B6B4A', [
+    ['o1', 'Fan V-08 — Noisy bearing', 'WO-1339862', '', 'Tue 29 · 08:00–10:00', 'Sophie Martin', 'Bearing 6205 in stock · Float Line slow-down 08:00–10:00'],
+    ['o2', 'Compressor C-02 — Filter replacement', 'WO-1339866', '', 'Tue 29 · 13:30–14:30', 'Marc Dupont', 'C-01 takes over the load · filter kit reserved'],
+    ['o3', 'Conveyor Line 2 — Belt tension check', 'WO-1339868', '', 'Wed 30 · 06:00–06:45', 'Lucas Bernard', 'Done during the shift change stop'],
+    ['o4', 'Batch scale W-01 — Calibration', 'WO-1339871', '', 'Thu 1 · 10:00–11:00', 'Julie Moreau', 'Calibration weights available Thu'],
+  ]],
+  ['moved', 'Moved', 'swap_horiz', '#EAF1FD', '#2456B8', [
+    ['o5', 'Conveyor Line 3 — Belt alignment', 'WO-1339846', 'Wed 30 · 14:00', 'Thu 1 · 06:00', 'Pierre Leroy', 'Aligned with the planned Float Line stop — avoids 2 h of production loss', '−2 h downtime'],
+    ['o6', 'Mixer 02 — Gearbox oil change', 'WO-1339848', 'Mon 28 · 09:00', 'Fri 2 · 07:00', 'Marc Dupont', 'Mon had Marc at 112% load · oil delivery confirmed Thu'],
+  ]],
+  ['rent', 'Rental grouped', 'construction', '#FEF3E2', '#B54708', [
+    ['o7', 'Mobile crane 50 t — 1 day instead of 3', 'RENT-0412', 'Tue · Wed · Fri', 'Thu 1 · 07:00–17:00', '', 'Groups Furnace 2 roof inspection, Fan V-12 motor lift and Press PH-030 cylinder removal on the same day', FINV('−€1,860')],
+  ]],
+  ['ext', 'External contractor', 'handshake', '#F6EAF6', P, [
+    ['o8', 'Transformer TR-2 — Thermography survey', 'WO-1339870', '', 'Fri 2 · 09:00–12:00', 'Élec Picardie', 'No certified thermographer available internally this week' + (FINV('x') === 'x' ? ' · rate €95/h' : '')],
+  ]],
+  ['hold', 'Not scheduled', 'hourglass_top', '#FEF3E2', '#B54708', [
+    ['o9', 'Hydraulic Press PH-030 — Oil leak', 'WO-1339840', '', 'Proposed Oct 9 · 14:00', '', 'Waiting for hydraulic filter HX-10 (delivery Oct 9) — kept in the backlog with the slot pre-booked'],
+  ]],
+];
+const CL_STEPS = [
+  ['safety', 'Lock out the equipment', 'confirm', '', 'p. 12', 1, { options: ['Equipment stopped', 'Lockout / tagout applied', 'Zero energy verified'], minutes: 10, skills: ['ELE'] }],
+  ['', 'Check the general condition', 'yesno', ' · If No → photo + comment', 'p. 30', 1, { minutes: 5, flagWhen: 'no', skills: ['MEC'] }],
+  ['meas', 'Measure motor current', 'number', ' · Normal 18–24 A', 'p. 33', 1, { unit: 'A', min: '18', max: '24', minutes: 5, skills: ['ELE'] }],
+  ['meas', 'Measure bearing vibration (DE)', 'number', ' · Normal < 4.5 mm/s', 'p. 34', 0, { unit: 'mm/s', min: '0', max: '4.5', minutes: 10, skills: ['MEC'] }],
+  ['', 'Inspect drive belt wear', 'single', ' · Good / Worn / Replace', 'p. 36', 1, { options: ['Good', 'Worn', 'Replace'], flagWhen: 'Replace', minutes: 5, skills: ['MEC'] }],
+  ['parts', 'Replace the drive belt if worn', 'parts', ' · BLT-BPU280 ×1', 'p. 37', 1, { parts: [{ ref: 'BLT-BPU280', qty: 1 }], minutes: 20, skills: ['MEC'] }],
+  ['', 'Grease the bearings (2 points)', 'instruction', ' · Lithium grease LT2, 2 strokes per point', 'p. 38', 1, { desc: 'Clean the grease nipples\nApply 2 strokes of LT2 grease on each bearing\nWipe off excess grease', minutes: 10, skills: ['MEC'] }],
+  ['detail', 'Check alignment with the laser tool', 'number', ' · Offset < 0.05 mm', 'p. 39', 0, { unit: 'mm', min: '0', max: '0.05', minutes: 20, skills: ['MEC'] }],
+  ['', 'Tighten fixings to 45 N·m', 'confirm', '', 'p. 40', 1, { options: ['Motor base', 'Bearing housings', 'Guard'], minutes: 10, skills: ['MEC'] }],
+  ['photo', 'Photo after maintenance', 'photo', '', '', 1, { minutes: 2, skills: ['MEC'] }],
+  ['', 'Functional test — runs normally?', 'yesno', ' · If No → comment', 'p. 42', 1, { flagWhen: 'no', minutes: 10, skills: ['MEC'] }],
+  ['detail', 'Record running hours', 'number', ' · h', 'p. 42', 1, { unit: 'h', minutes: 2, skills: ['MEC'] }],
+  ['safety', 'Clean up and hand over', 'confirm', '', 'p. 43', 1, { options: ['Tools removed', 'Area cleaned', 'Operator informed'], minutes: 5, skills: ['MEC'] }],
+];
+const TMETA = { yesno: ['rule', 'Yes / No', '#EAF1FD', '#2456B8'], single: ['radio_button_checked', 'Single choice', '#EAF1FD', '#2456B8'], number: ['speed', 'Number', '#EAF1FD', '#2456B8'], instruction: ['menu_book', 'Instruction', '#E6F4EE', '#0B6B4A'], confirm: ['check_box', 'Checkbox', '#E6F4EE', '#0B6B4A'], photo: ['photo_camera', 'Take photo', '#E6F4EE', '#0B6B4A'], parts: ['settings', 'Spare parts', '#E6F4EE', '#0B6B4A'] };
+const PLANS = [
+  ['p1', 'Daily visual inspection & leak check', 'Every day', 'today', '10 min', 'Operator (autonomous)', 4, 'p. 28'],
+  ['p2', 'Lubricate the bearings', 'Every 500 operating hours', 'speed', '20 min', 'Mechanical', 5, 'p. 38', true],
+  ['p3', 'Check belt tension and wear', 'Every month', 'calendar_month', '30 min', 'Mechanical', 6, 'p. 36'],
+  ['p4', 'Vibration & thermography check', 'Every 3 months', 'calendar_month', '45 min', 'Condition monitoring', 5, 'p. 34'],
+  ['p5', 'Replace oil and filters', 'Every 4,000 h or 12 months', 'speed', '1 h 30', 'Mechanical', 9, 'p. 44', true],
+  ['p6', 'Electrical inspection & tightening', 'Every 12 months', 'calendar_month', '1 h', 'Electrical', 7, 'p. 47'],
+  ['p7', 'Major overhaul — bearings and seals', 'Every 5 years', 'calendar_month', '8 h', 'External · manufacturer', 0, 'p. 52'],
+];
+class Component extends DCLogic {
+  state = { open: false, k: 'optimize', ctx: {}, phase: 'setup', step: 0, o: {}, off: {}, removed: {}, doc: null, upload: null, asset: null, sel: null, clName: '', toast: null, M: {} };
+  componentDidMount() {
+    window.RelixAdvanced = (k, ctx) => this.openF(k, ctx);
+    this._ev = e => this.openF(e.detail && e.detail.k, e.detail || {}); window.addEventListener('cmms-advanced-open', this._ev);
+    Promise.all(['./plant-model.js', './docs-model.js', './parts-model.js', './advanced-model.js', './checklist-model.js'].map(u => import(u))).then(([PM, D, PA, AM, CL]) => this.setState({ M: { PM, D, PA, AM, CL } }));
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-advanced-open', this._ev); clearInterval(this._iv); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 3000); }
+  openF(k, ctx = {}) {
+    if (!F[k]) return; clearInterval(this._iv);
+    this.setState({ open: true, k, ctx, o: { ...DEF[k] }, off: {}, removed: {}, doc: null, upload: null, asset: ctx.id || null, sel: null, clName: '', phase: k === 'fleet' ? 'result' : 'setup', step: 0 }, () => { if (k === 'diagnose') this.run(); });
+  }
+  run() {
+    clearInterval(this._iv); this.setState({ phase: 'run', step: 0 });
+    this._iv = setInterval(() => this.setState(s => { const n = s.step + 1; if (n >= F[s.k].steps.length) { clearInterval(this._iv); return { step: n, phase: 'result', clName: s.clName || this.defaultClName() }; } return { step: n }; }), 650);
+  }
+  defaultClName() { const d = this.curDoc(); return d ? d.name.replace(/ (operating )?manual.*$/i, '').replace(/ procedure$/i, '') + ' — preventive checklist' : 'Generated checklist'; }
+  docsList() { const { D } = this.state.M; if (!D) return []; return D.all().filter(d => !d.archived && /Manual|Procedure|Datasheet/.test(d.cat)); }
+  curDoc() { const s = this.state; if (s.upload) return s.upload; const all = this.docsList(); return all.find(d => d.id === s.doc) || null; }
+  close() { clearInterval(this._iv); this.setState({ open: false }); }
+  renderVals() {
+    const s = this.state, f = F[s.k] || F.optimize, M = s.M, o = s.o;
+    const set = (key, v) => this.setState(st => ({ o: { ...st.o, [key]: v } })), tg = key => () => set(key, !o[key]);
+    const tgOff = id => () => this.setState(st => ({ off: { ...st.off, [id]: !st.off[id] } }));
+    const isSetup = s.phase === 'setup', isRun = s.phase === 'run', isResult = s.phase === 'result';
+    const v = {
+      open: s.open, f, w: f.w, sub: s.k === 'diagnose' ? `${s.ctx.asset || 'Asset'} · live signals and failure history` : f.sub, toast: s.toast,
+      isSetup, isRun, isResult, fOpt: s.k === 'optimize', fFc: s.k === 'forecast', fCl: s.k === 'checklist', fPlan: s.k === 'plan', fDiag: s.k === 'diagnose', fFleet: s.k === 'fleet', fDocPick: s.k === 'checklist' || s.k === 'plan',
+      close: () => this.close(), hasKpis: false, kpis: [],
+      runPct: Math.round(Math.min(s.step + 1, (f.steps || [1]).length) / (f.steps || [1]).length * 100) + '%', runSub: 'This usually takes a few seconds',
+      runSteps: (f.steps || []).map((label, i) => { const done = i < s.step, cur = i === s.step; return { label, icon: done ? 'check_circle' : cur ? 'progress_activity' : 'radio_button_unchecked', iconColor: done || cur ? P : '#D0D5DD', color: done ? '#344054' : cur ? '#1E2430' : '#98A2B3', weight: cur ? 600 : 400 }; }),
+      footNote: '', hasSecondary: true, secondaryLabel: 'Cancel', secondary: () => this.close(), hasPrimary: true, primaryLabel: f.cta || 'Done', primaryIcon: 'auto_awesome', primaryAI: f.ai && isSetup, primaryDisabled: false, primaryBg: P, primaryCursor: 'pointer', primary: () => this.run(),
+      docs: [], assetOpts: [], optGroups: [], fcRows: [], chart: { bars: [] }, clSteps: [], plans: [], causes: [], evidence: [], actions: [], riskRows: [], ctRows: [], genSeg: [], genOpts: [],
+    };
+    const kp = rows => { v.hasKpis = true; v.kpis = rows.map(([label, val, sub, color, subColor], i) => ({ label, val, sub, color: color || '#1E2430', subColor: subColor || '#98A2B3', sep: i ? '#EEF0F3' : 'transparent' })); };
+    if (isRun) { v.hasPrimary = false; v.footNote = 'You can keep working — nothing changes until you apply.'; }
+
+    if (s.k === 'optimize') {
+      v.optHorizon = seg([['week', 'This week'], ['2w', 'Next 2 weeks'], ['month', 'Next month']], o.h, x => set('h', x));
+      v.optScope = [['unsched', 'Schedule unscheduled interventions', '9 interventions in Not scheduled — urgent ones first'], ['resched', 'Re-optimize already scheduled work', 'Can move scheduled interventions to reduce downtime and overload'], ['locked', 'Keep confirmed slots', 'Interventions confirmed with production stay where they are']].map(([k, label, sub]) => ({ label, sub, ...chk(o[k]), toggle: tg(k) }));
+      v.optCons = [['skills', 'Skills & shifts', 'engineering'], ['parts', 'Spare parts availability', 'inventory_2'], ['prod', 'Machine availability', 'precision_manufacturing'], ['tools', 'Mobile equipment reservations', 'forklift'], ['rental', 'One rental day for grouped work', 'construction'], ['ext', 'External contractor if no capacity', 'handshake']].map(([k, label, icon]) => ({ label, icon, ...chip(o[k]), toggle: tg(k) }));
+      v.optGoal = seg([['downtime', 'Minimize downtime'], ['balance', 'Balance workload'], ['cost', 'Minimize cost']], o.goal, x => set('goal', x));
+      if (isResult) {
+        kp([['Interventions scheduled', '8 of 9', '1 waiting for parts', P], ['Technician load', '71% → 86%', 'No one above 100%', '#0B6B4A'], ['Rental days', '3 → 1', FINV('−€1,860'), '#0B6B4A', '#0B6B4A'], ['Planned downtime', '−3.5 h', 'Work moved to line stops', '#0B6B4A']]);
+        let n = 0;
+        v.optGroups = OPT.map(([gk, title, icon, bg, fg, rows]) => ({ title, icon, bg, fg, count: rows.length, rows: rows.map(([id, t, wo, from, to, who, why, save]) => { const on = !s.off[id]; if (on && gk !== 'hold') n++; return { title: t, id: wo, from, to, who, why, save, hasFrom: !!from, hasWho: !!who, hasSave: !!save, ...chk(on), toggle: tgOff(id) }; }) }));
+        Object.assign(v, { footNote: 'Assignments respect skills, shifts and reservations.', secondaryLabel: 'Back', secondary: () => this.setState({ phase: 'setup' }), primaryLabel: `Apply ${n} change${n === 1 ? '' : 's'}`, primaryIcon: 'check', primaryDisabled: !n, primaryBg: n ? P : '#D0D5DD', primaryCursor: n ? 'pointer' : 'default', primary: () => { this.close(); this.flash(`${n} planning changes applied`); try { window.dispatchEvent(new CustomEvent('cmms-planning-optimized', { detail: { n } })); } catch (e) {} } });
+      } else if (isSetup) v.footNote = 'Nothing changes until you review and apply the proposal.';
+    }
+
+    if (s.k === 'forecast') {
+      v.fcHorizon = seg([[3, '3 months'], [6, '6 months'], [12, '12 months']], o.h, x => set('h', x));
+      v.fcLevel = seg([[95, '95%'], [98, '98%'], [99.5, '99.5%']], o.lvl, x => set('lvl', x));
+      v.fcInputs = [['hist', 'Consumption history · 24 months', 'history'], ['prev', 'Planned preventive work', 'event_repeat'], ['pred', 'Failure predictions', 'monitor_heart'], ['lead', 'Supplier lead times', 'local_shipping'], ['crit', 'Asset criticality', 'priority_high']].map(([k, label, icon]) => ({ label, icon, ...chip(o[k]), toggle: tg(k) }));
+      v.fcScope = [['onlyCrit', 'Critical spare parts only', 'Parts linked to Critical or High criticality assets'], ['po', 'Prepare purchase requests', 'For parts below the recommended reorder point']].map(([k, label, sub]) => ({ label, sub, ...chk(o[k]), toggle: tg(k) }));
+      if (isSetup) v.footNote = 'Current stock levels are not changed until you apply.';
+      if (isResult && M.PA) {
+        const PA = M.PA, z = o.lvl >= 99.5 ? 2.58 : o.lvl >= 98 ? 2.05 : 1.65, H = o.h;
+        const rows = PA.parts().map(p => {
+          const sp = PA.supplier(p.supplier), lead = +(sp && sp.leadDays) || 10, d = Math.max(1, Math.round((p.max || 10) * 0.22 + rnd(p.ref, 'd') * 3) + (/BRG|BLT/.test(p.ref) ? 2 : 0));
+          const fc = Math.round(d * H * (1.05 + rnd(p.ref, 'f') * 0.35)), daily = fc / (H * 30), safety = z * Math.sqrt(lead) * daily * 0.9;
+          const rMin = Math.max(1, Math.ceil(daily * lead + safety)), rMax = rMin + Math.max(2, Math.ceil(d * 1.5)), cover = daily ? Math.round(p.qty / daily) : 999;
+          const act = p.qty < rMin ? ['Order ' + (rMax - p.qty), '#FDECEC', '#B42318', 'order'] : (p.max || 0) > rMax * 1.5 ? ['Lower max', '#EAF1FD', '#2456B8', 'reduce'] : rMin !== p.min ? ['Adjust min', '#F6EAF6', P, 'adjust'] : ['OK', '#E6F4EE', '#0B6B4A', 'ok'];
+          const hist = Array.from({ length: 12 }, (_, i) => Math.max(0, Math.round(d * (0.6 + rnd(p.ref, 'h' + i) * 0.9)))), fut = Array.from({ length: 6 }, (_, i) => Math.round(fc / H * (0.9 + rnd(p.ref, 'p' + i) * 0.3)));
+          return { p, lead, fc, rMin, rMax, cover, act, hist, fut, crit: (p.assets || []).length > 1 };
+        }).filter(r => !o.onlyCrit || r.crit).sort((a, b) => ({ order: 0, adjust: 1, reduce: 2, ok: 3 })[a.act[3]] - ({ order: 0, adjust: 1, reduce: 2, ok: 3 })[b.act[3]]);
+        const cur = rows.find(r => r.p.ref === s.sel) || rows[0], orders = rows.filter(r => r.act[3] === 'order' && !s.off[r.p.ref]), applied = rows.filter(r => r.act[3] !== 'ok' && !s.off[r.p.ref]);
+        const valNow = rows.reduce((a, r) => a + (r.p.min + r.p.max) / 2 * (r.p.cost || 0), 0), valNew = rows.reduce((a, r) => a + (r.rMin + r.rMax) / 2 * (r.p.cost || 0), 0);
+        kp([['Stock-out risk', `${rows.filter(r => r.act[3] === 'order').length} parts`, `within ${H} months · 0 after`, '#B42318'], ['Service level', `93% → ${o.lvl}%`, 'Expected part availability', '#0B6B4A'], ['Avg. stock value', FINV('€' + Math.round(valNew).toLocaleString('en-US')), FINV(`${valNew <= valNow ? '−' : '+'}€${Math.abs(Math.round(valNew - valNow)).toLocaleString('en-US')} vs. today`), '#1E2430'], ['Purchase requests', String(orders.length), o.po ? 'Ready to send' : 'Not prepared', P]]);
+        v.fcCol = `Next ${H} mo`;
+        v.fcRows = rows.map(r => { const on = !s.off[r.p.ref] && r.act[3] !== 'ok'; const out = r.p.qty === 0;
+          return { name: r.p.name, qty: r.p.qty + ' ' + r.p.unit, stockColor: out ? '#B42318' : r.p.qty < r.rMin ? '#B54708' : '#1E2430', fc: r.fc + ' ' + r.p.unit, lead: r.lead + ' d', cur: `${r.p.min} / ${r.p.max}`, rec: `${r.rMin} / ${r.rMax}`, strike: r.act[3] === 'ok' ? 'none' : 'line-through',
+            risk: out ? 'Out of stock — blocks interventions' : r.p.qty < r.rMin ? `Stock-out in ~${Math.max(1, r.cover)} days · lead time ${r.lead} d` : `${Math.min(r.cover, 365)} days of cover`, riskColor: r.p.qty < r.rMin ? '#B42318' : '#667085',
+            action: r.act[0], aBg: r.act[1], aFg: r.act[2], bg: cur === r ? '#FDF8FD' : '#fff', ...chk(on), toggle: e => { e.stopPropagation(); if (r.act[3] !== 'ok') tgOff(r.p.ref)(); }, select: () => this.setState({ sel: r.p.ref }) }; });
+        if (cur) { const all = [...cur.hist, ...cur.fut], mx = Math.max(1, ...all), MO = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+          v.chart = { name: cur.p.name, ref: cur.p.ref, why: `Forecast ${cur.fc} ${cur.p.unit} over ${H} months — includes ${/BRG|BLT/.test(cur.p.ref) ? '2 predicted bearing failures (Fan V-12, Conveyor Line 3) and ' : ''}${Math.max(1, Math.round(cur.fc / 4))} uses in planned preventive work. Lead time ${cur.lead} days → reorder at ${cur.rMin}.`,
+            bars: all.map((x, i) => ({ v: x, h: Math.round(x / mx * 78) + '%', color: i < 12 ? '#D0D5DD' : P, op: i < 12 ? 1 : 0.85, m: MO[i].slice(0, 1), tip: `${MO[i]} ${i < 12 ? 'consumed' : 'forecast'}: ${x}` })) }; }
+        Object.assign(v, { footNote: `${applied.length} part${applied.length === 1 ? '' : 's'} selected · ${orders.length} purchase request${orders.length === 1 ? '' : 's'}`, secondaryLabel: 'Back', secondary: () => this.setState({ phase: 'setup' }), primaryLabel: 'Apply recommended levels', primaryIcon: 'check', primaryDisabled: !applied.length, primaryBg: applied.length ? P : '#D0D5DD', primaryCursor: applied.length ? 'pointer' : 'default',
+          primary: () => { this.close(); this.flash(`Min / max updated for ${applied.length} parts${o.po && orders.length ? ` · ${orders.length} purchase requests drafted` : ''}`); } });
+      }
+    }
+
+    if (s.k === 'checklist' || s.k === 'plan') {
+      const PM = M.PM, D = M.D, all = this.docsList();
+      const assets = PM ? PM.assets().filter(a => a.cls !== 'mobile') : [], aId = s.asset || (all.find(d => d.cat === 'Manual' && d.links.assets.length) || { links: { assets: ['C-01'] } }).links.assets[0];
+      const asset = PM ? PM.asset(aId) : null;
+      const list = s.k === 'plan' ? [...all.filter(d => d.cat !== 'Procedure' && d.links.assets.includes(aId)), ...all.filter(d => d.cat === 'Manual' && !d.links.assets.includes(aId))] : all;
+      const docId = s.doc || (s.upload ? null : (list[0] || {}).id), cur = s.upload || all.find(d => d.id === docId);
+      if (isSetup && !s.doc && !s.upload && list[0]) setTimeout(() => this.state.open && !this.state.doc && this.setState({ doc: list[0].id }), 0);
+      v.docLabel = s.k === 'plan' ? 'Manufacturer recommendations *' : 'Source document *';
+      v.uploadLabel = s.upload ? `Uploaded: ${s.upload.name}` : 'Upload a document (PDF, Word)';
+      v.docs = list.map(d => { const on = !s.upload && d.id === docId, ft = (D && D.FT[d.ft]) || ['#EEF1F4', '#475467'];
+        return { name: d.name, sub: `${d.cat} · ${d.pages} pages · ${d.size}${d.links.assets.length ? ' · ' + d.links.assets.map(id => (PM && PM.asset(id) || { name: id }).name).slice(0, 2).join(', ') : ''}`, ft: d.ft, ftBg: ft[0], ftFg: ft[1], ring: on ? P : '#D0D5DD', dot: on ? P : 'transparent', bg: on ? '#FDF8FD' : '#fff', match: s.k === 'plan' && d.links.assets.includes(aId), select: () => this.setState({ doc: d.id, upload: null }) }; });
+      v.upload = e => { const x = (e.target.files || [])[0]; if (x) this.setState({ upload: { id: 'up', name: x.name.replace(/\.[^.]+$/, ''), cat: 'Manual', pages: 24, size: Math.max(1, Math.round(x.size / 1e5) / 10) + ' MB', ft: (x.name.split('.').pop() || 'PDF').toUpperCase(), links: { assets: [] } } }); e.target.value = ''; };
+      v.assetOpts = assets.map(a => ({ v: a.id, l: `${a.name} · ${a.manufacturer || ''} ${a.model || ''}`.trim() }));
+      v.assetVal = aId; v.setAsset = e => this.setState({ asset: e.target.value, doc: null, upload: null });
+      v.docName = cur ? cur.name : ''; v.assetName = asset ? asset.name : '';
+      if (s.k === 'checklist') {
+        v.ctxLabel = 'Level of detail';
+        v.genSeg = seg([['essential', 'Essential'], ['standard', 'Standard'], ['detailed', 'Detailed']], o.detail, x => set('detail', x));
+        v.genOpts = [['safety', 'Safety & lockout steps', 'Isolation at the start, hand-over at the end'], ['meas', 'Measurements with normal ranges', 'Values and tolerances read from the document'], ['photo', 'Photos at key steps', 'Before / after evidence'], ['parts', 'Spare parts from the document', 'Matched with your spare parts catalogue']].map(([k, label, sub]) => ({ label, sub, ...chk(o[k]), toggle: tg(k) }));
+        v.primaryDisabled = !cur; v.primaryBg = cur ? P : '#D0D5DD';
+        if (isSetup) v.footNote = 'The checklist is created as a draft for review.';
+        if (isResult) {
+          const steps = CL_STEPS.filter(([g]) => (!g || o[g] || (g === 'detail' && o.detail === 'detailed')) && !(g === 'detail' && o.detail !== 'detailed')).filter((x, i) => o.detail !== 'essential' || x[5]).filter(x => !s.removed[x[1]]);
+          const mins = steps.reduce((a, x) => a + (x[6].minutes || 0), 0);
+          v.clName = s.clName; v.setClName = e => this.setState({ clName: e.target.value });
+          v.clSummary = `${steps.length} steps · about ${Math.floor(mins / 60) ? Math.floor(mins / 60) + ' h ' : ''}${mins % 60} min · Mechanical, Electrical`;
+          v.clSteps = steps.map((x, i) => { const [icon, label, bg, fg] = TMETA[x[2]]; return { n: i + 1, title: x[1], tIcon: icon, tLabel: label, tBg: bg, tFg: fg, meta: x[3], page: x[4], conf: x[5] ? 'High' : 'Check', confTip: x[5] ? 'Read directly from the text' : 'Read from a table or image — verify', cBg: x[5] ? '#E6F4EE' : '#FEF3E2', cFg: x[5] ? '#0B6B4A' : '#B54708', remove: () => this.setState(st => ({ removed: { ...st.removed, [x[1]]: true } })) }; });
+          Object.assign(v, { secondaryLabel: 'Back', secondary: () => this.setState({ phase: 'setup' }), primaryLabel: 'Create checklist', primaryIcon: 'check', primaryDisabled: !steps.length, primaryBg: steps.length ? P : '#D0D5DD',
+            primary: () => { const CL = M.CL; if (!CL) return; const id = 'gen-' + Date.now().toString(36);
+              CL.save({ id, name: s.clName || 'Generated checklist', desc: `Generated from ${cur ? cur.name : 'document'} — review before publishing.`, status: 'draft', est: mins, updated: new Date().toISOString().slice(0, 16), updatedBy: 'G. Durand', steps: steps.map(x => CL.newStep(x[1], x[2], { ...x[6], desc: x[6].desc || '', required: true })) });
+              this.close(); window.location.href = 'ChecklistEditor.dc.html?id=' + id + '&name=' + encodeURIComponent(s.clName || 'Generated checklist'); } });
+        }
+      } else {
+        v.ctxLabel = 'Operating context';
+        v.genSeg = seg([['1sh', '1 shift'], ['2sh', '2 shifts'], ['247', '24/7']], o.ctx, x => set('ctx', x));
+        v.genOpts = [['meter', 'Use meter-based triggers', 'Running hours when the manufacturer gives them, calendar otherwise'], ['gencl', 'Draft a checklist for each plan', 'Steps extracted from the matching manual section']].map(([k, label, sub]) => ({ label, sub, ...chk(o[k]), toggle: tg(k) }));
+        v.primaryDisabled = !cur; v.primaryBg = cur ? P : '#D0D5DD';
+        if (isSetup) v.footNote = 'Plans are created inactive until you review them.';
+        if (isResult) {
+          const hpd = { '1sh': 8, '2sh': 16, '247': 24 }[o.ctx];
+          let n = 0;
+          v.plans = PLANS.map(([id, task, trig, icon, dur, who, cl, page, meter]) => { const on = !s.off[id]; if (on) n++; const t = meter && !o.meter ? `Every ${Math.max(1, Math.round(parseInt(trig.replace(/\D/g, ''), 10) / hpd / 30))} months (≈ ${trig.replace('Every ', '')})` : meter ? `${trig} · ≈ ${Math.max(1, Math.round(parseInt(trig.replace(/\D/g, ''), 10) / hpd))} days` : trig;
+            return { task, trig: t, trigIcon: meter && o.meter ? 'speed' : 'calendar_month', dur, who, cl: `New checklist · ${cl} steps`, hasCl: o.gencl && cl > 0, page, ...chk(on), toggle: tgOff(id) }; });
+          Object.assign(v, { footNote: `${n} plan${n === 1 ? '' : 's'} selected for ${asset ? asset.name : ''}`, secondaryLabel: 'Back', secondary: () => this.setState({ phase: 'setup' }), primaryLabel: `Create ${n} plan${n === 1 ? '' : 's'}`, primaryIcon: 'check', primaryDisabled: !n, primaryBg: n ? P : '#D0D5DD', primaryCursor: n ? 'pointer' : 'default',
+            primary: () => { this.close(); this.flash(`${n} maintenance plans created (inactive)${o.gencl ? ' with draft checklists' : ''}`); try { window.dispatchEvent(new CustomEvent('cmms-plans-generated', { detail: { n, asset: aId } })); } catch (e) {} } });
+        }
+      }
+    }
+
+    if (s.k === 'diagnose' && isResult) {
+      kp([['Health score', '62 / 100', '−14 in 7 days', '#B54708'], ['Remaining useful life', '~46 days', 'Drive-end bearing', P], ['Similar past events', '12', '9 bearing · 3 alignment', '#1E2430'], ['Confidence', '82%', 'Enough data', '#0B6B4A']]);
+      v.causes = [['Drive-end bearing wear (outer race)', '68%', 'Vibration at the bearing outer-race frequency grew +38% in 10 days, with a slow temperature rise of 6 °C — matches 9 past bearing failures.'], ['Misalignment after the coupling replacement', '21%', '2× running-speed component appeared after WO-1339843 (Sep 12).'], ['Lubrication deficiency', '11%', 'Last greasing 640 operating hours ago — interval is 500 h.']]
+        .map(([label, pct, why], i) => ({ label, pct, why, border: i ? '#E4E7EC' : '#E2C4E2', bg: i ? '#fff' : '#FDF8FD' }));
+      v.evidence = [['vibration', 'Vibration RMS DE 5.1 mm/s — ISO zone C (alert)'], ['device_thermostat', 'Bearing temperature 64 °C, +6 °C above the learned model'], ['bolt', 'Motor current stable — electrical cause unlikely'], ['history', 'Last bearing replacement 26 months ago (expected life 30 months)']].map(([icon, text]) => ({ icon, text }));
+      v.actions = ['Grease the drive-end bearing now and re-check vibration within 48 h', 'Check alignment with the laser tool (offset < 0.05 mm)', 'Plan the bearing replacement before Nov 15 — bearing 6205-2RS in stock (42)'].map((text, i) => ({ n: i + 1, text }));
+      Object.assign(v, { footNote: 'Diagnostic saved to the asset history.', secondaryLabel: 'Close', primaryLabel: 'Create intervention', primaryIcon: 'add', primaryBg: '#C00018', primary: () => { this.close(); window.CMMSCreateWO && window.CMMSCreateWO({ asset: s.ctx.asset }); } });
+    }
+
+    if (s.k === 'fleet' && M.PM && M.AM) {
+      const PM = M.PM, AM = M.AM, fixed = PM.assets().filter(a => a.cls !== 'mobile');
+      const scored = fixed.map(a => ({ a, ob: AM.obsolescenceOf(a), lc: AM.lifecycleOf(a) })).sort((x, y) => y.ob.score - x.ob.score);
+      const cts = fixed.flatMap(a => AM.contractsOf(a).filter(c => c.days >= -30 && c.days <= 120).map(c => ({ a, c }))).sort((x, y) => x.c.days - y.c.days);
+      kp([['Assets tracked', String(fixed.length), 'Fixed equipment', '#1E2430'], ['High obsolescence risk', String(scored.filter(x => x.ob.score >= 60).length), 'Score ≥ 60', '#B42318'], ['End of support ≤ 2027', String(scored.filter(x => x.ob.eos <= 2027).length), 'Plan replacement or last-time buy', '#B54708'], ['Contracts to renew', String(cts.filter(x => x.c.days >= 0).length), 'Within 120 days', P]]);
+      v.riskRows = scored.slice(0, 8).map(({ a, ob, lc }) => ({ name: a.name, sub: `${a.type} · ${a.manufacturer || ''} ${a.model || ''} · ${lc.age} y`, score: ob.score, w: ob.score + '%', dot: ob.level[3], level: ob.level[0], bg: ob.level[1], fg: ob.level[2], eos: ob.eos < 2026 ? `Unsupported since ${ob.eos}` : `Support ends ${ob.eos}`, eosColor: ob.eos <= 2027 ? '#B42318' : '#667085', href: 'AssetDetail.dc.html?id=' + encodeURIComponent(a.id) + '&tab=lifecycle' }));
+      v.ctRows = cts.slice(0, 6).map(({ a, c }) => ({ asset: a.name, kind: c.kind, provider: c.provider, cost: c.cost, st: c.status[0], bg: c.status[1], fg: c.status[2], href: 'AssetDetail.dc.html?id=' + encodeURIComponent(a.id) + '&tab=lifecycle' }));
+      Object.assign(v, { footNote: 'Risk score is recalculated weekly.', hasSecondary: false, primaryLabel: 'Export renewal plan', primaryIcon: 'download', primary: () => this.flash('Renewal plan exported (CSV)') });
+    }
+    return v;
+  }
+}
+</script>
+</body>
+</html>

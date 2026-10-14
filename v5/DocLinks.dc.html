@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;display:flex;flex-direction:column;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:{{ frameBg }};border:{{ frameBorder }};border-radius:8px">
+  <div style="display:flex;align-items:center;gap:8px;padding:{{ headPad }}">
+    <h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">{{ title }}</h2>
+    <span style="font-size:12px;color:#98A2B3;white-space:nowrap">{{ countLabel }}</span>
+    <sc-if value="{{ editable }}">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+        <button onClick="{{ togglePick }}" style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">add_link</span>Link from library</button>
+        <label style="height:30px;display:flex;align-items:center;gap:5px;padding:0 10px 0 8px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#344054;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:17px/1 'Material Symbols Outlined';color:#667085">upload_file</span>Upload<input type="file" multiple="{{ true }}" onChange="{{ upload }}" style="display:none" /></label>
+      </div>
+    </sc-if>
+    <sc-if value="{{ readonlyLink }}"><a href="Documents.dc.html" style="margin-left:auto;font-weight:600;font-size:12.5px">Library</a></sc-if>
+  </div>
+  <div style="display:flex;flex-direction:column;padding:{{ bodyPad }}">
+    <sc-for list="{{ docs }}" as="d" hint-placeholder-count="2">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:6px" style-hover="background:#F9FAFB">
+        <a href="{{ d.href }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;color:#1E2430">
+          <span style="flex:none;width:30px;height:30px;border-radius:6px;display:grid;place-items:center;background:{{ d.ftBg }};color:{{ d.ftFg }};font:600 9.5px 'IBM Plex Mono',monospace">{{ d.ft }}</span>
+          <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+            <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span>
+            <span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.meta }}</span>
+          </span>
+        </a>
+        <sc-if value="{{ d.shared }}"><span title="{{ d.sharedTip }}" style="flex:none;height:20px;display:inline-flex;align-items:center;gap:3px;padding:0 6px;border-radius:4px;background:#F2F4F7;color:#475467;font-size:11px;font-weight:600"><span style="font:13px/1 'Material Symbols Outlined'">link</span>{{ d.sharedN }}</span></sc-if>
+        <sc-if value="{{ editable }}"><button onClick="{{ d.unlink }}" title="Unlink (the document stays in the library)" style="flex:none;width:28px;height:28px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">link_off</span></button></sc-if>
+      </div>
+    </sc-for>
+    <sc-if value="{{ empty }}"><div style="padding:10px 8px 12px;color:#98A2B3;line-height:1.45">{{ emptyText }}</div></sc-if>
+  </div>
+  <sc-if value="{{ pickOpen }}">
+    <div onClick="{{ togglePick }}" style="position:fixed;inset:0;z-index:60"></div>
+    <div style="position:absolute;right:12px;top:44px;z-index:61;width:360px;max-height:380px;display:flex;flex-direction:column;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.16)">
+      <label style="flex:none;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-bottom:1px solid #EEF0F3"><span style="font:18px/1 'Material Symbols Outlined';color:#98A2B3">search</span><input value="{{ q }}" onInput="{{ setQ }}" placeholder="Search the document library…" style="flex:1;min-width:0;border:0;outline:none;font:13px 'IBM Plex Sans',sans-serif;background:transparent" /></label>
+      <div style="flex:1;overflow:auto;padding:4px">
+        <sc-for list="{{ pick }}" as="p">
+          <button onClick="{{ p.add }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:7px 8px;background:transparent;border:0;border-radius:6px;text-align:left;cursor:pointer;font:13px 'IBM Plex Sans',sans-serif;color:#1E2430" style-hover="background:#F2F4F7">
+            <span style="flex:none;width:26px;height:26px;border-radius:5px;display:grid;place-items:center;background:{{ p.ftBg }};color:{{ p.ftFg }};font:600 9px 'IBM Plex Mono',monospace">{{ p.ft }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span><span style="font-size:11.5px;color:#98A2B3">{{ p.meta }}</span></span>
+            <span style="font:18px/1 'Material Symbols Outlined';color:#C00018">add</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ pickEmpty }}"><div style="padding:16px;text-align:center;color:#98A2B3">No other documents match.</div></sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:300},&quot;kind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;asset&quot;,&quot;wo&quot;,&quot;step&quot;],&quot;default&quot;:&quot;asset&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;target&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;P-101&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Documents&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;readonly&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;bare&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;max&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:99,&quot;tsType&quot;:&quot;number&quot;},&quot;emptyText&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;No documents linked yet.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;hideLibrary&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { D: null, pick: false, q: '', v: 0 };
+  componentDidMount() { import('./docs-model.js').then(D => this.setState({ D })); this._h = () => this.setState(s => ({ v: s.v + 1 })); window.addEventListener('cmms-docs', this._h); }
+  componentWillUnmount() { window.removeEventListener('cmms-docs', this._h); }
+  renderVals() {
+    const s = this.state, D = s.D, p = this.props, kind = p.kind || 'asset', ref = p.target || '', ro = !!p.readonly, bare = !!p.bare;
+    const base = { title: p.title || 'Documents', editable: !ro, readonlyLink: ro && !p.hideLibrary, frameBg: bare ? 'transparent' : '#fff', frameBorder: bare ? '0' : '1px solid #E4E7EC', headPad: bare ? '0 0 6px' : '12px 12px 6px 16px', bodyPad: bare ? '0' : '0 8px 8px', emptyText: p.emptyText || 'No documents linked yet.' };
+    if (!D) return { ...base, docs: [], pick: [], empty: false, countLabel: '' };
+    const linked = D.linkedTo(kind, ref);
+    const max = p.max || 99;
+    const docs = linked.slice(0, max).map(d => { const [ftBg, ftFg] = D.FT[d.ft] || D.FT.PDF, others = D.linkCount(d) - 1;
+      return { name: d.name, ft: d.ft, ftBg, ftFg, meta: `${d.cat} · ${d.ver} · ${d.size}`, href: D.href(d.id), shared: others > 0, sharedN: others, sharedTip: `Also linked to ${others} other item${others > 1 ? 's' : ''}`,
+        unlink: () => { D.unlink(d.id, kind, ref); p.onChange && p.onChange(); } }; });
+    const q = s.q.toLowerCase();
+    const pick = s.pick ? D.all().filter(d => !d.archived && !linked.includes(d) && !linked.some(x => x.id === d.id) && (!q || (d.name + d.cat + d.disc).toLowerCase().includes(q))).slice(0, 30).map(d => { const [ftBg, ftFg] = D.FT[d.ft] || D.FT.PDF; return { name: d.name, ft: d.ft, ftBg, ftFg, meta: `${d.cat} · ${d.ver} · linked to ${D.linkCount(d)}`, add: () => { D.link(d.id, kind, ref); this.setState({ pick: false, q: '' }); p.onChange && p.onChange(); } }; }) : [];
+    const links = { asset: { assets: [ref] }, wo: { wos: [ref] }, step: { steps: [ref] } }[kind];
+    return { ...base, docs, empty: !linked.length, countLabel: linked.length ? (linked.length > max ? `${max} of ${linked.length}` : String(linked.length)) : '',
+      pickOpen: s.pick, togglePick: () => this.setState({ pick: !s.pick, q: '' }), q: s.q, setQ: e => this.setState({ q: e.target.value }), pick, pickEmpty: !pick.length,
+      upload: e => { const fs = [...(e.target.files || [])]; fs.forEach(f => D.create(D.fileInfo(f), links)); e.target.value = ''; p.onChange && p.onChange(); } };
+  }
+}
+</script>
+</body>
+</html>

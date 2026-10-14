@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./doc-page.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{margin:0;-webkit-font-smoothing:antialiased}
+a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}
+doc-page{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:10pt;line-height:1.55;color:#1E2430}
+doc-page h1{font-size:24pt;line-height:1.15;margin:0 0 6pt;font-weight:700;letter-spacing:-.01em}
+doc-page h2{font-size:16pt;line-height:1.25;margin:26pt 0 8pt;padding-top:10pt;border-top:2px solid #1E2430;font-weight:700}
+doc-page h3{font-size:12.5pt;margin:18pt 0 6pt;font-weight:600}
+doc-page h4{font-size:10.5pt;margin:12pt 0 4pt;font-weight:600;color:#344054}
+doc-page p{margin:0 0 7pt}
+doc-page ul,doc-page ol{margin:0 0 8pt;padding-left:16pt}
+doc-page li{margin:0 0 3pt}
+doc-page table{width:100%;border-collapse:collapse;margin:4pt 0 12pt;font-size:8.6pt;line-height:1.4}
+doc-page th{text-align:left;font-weight:600;background:#F2F4F7;border:1px solid #D0D5DD;padding:4pt 6pt;vertical-align:bottom}
+doc-page td{border:1px solid #E4E7EC;padding:3.5pt 6pt;vertical-align:top}
+doc-page code{font-family:'IBM Plex Mono',monospace;font-size:.92em;background:#F2F4F7;padding:0 2pt;border-radius:2pt}
+doc-page blockquote{margin:6pt 0 10pt;padding:6pt 10pt;border-left:3px solid #C00018;background:#FBF7F7;break-inside:avoid}
+</style>
+</helmet>
+<doc-page margin="0.7in">
+<div style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:#34050D;border-radius:4px;margin-bottom:18pt">
+  <img src="relix-logo-white.svg" alt="Relix" style="height:30px" />
+  <span style="color:#fff;font-size:20px;font-weight:700">Relix</span>
+  <span style="margin-left:auto;color:rgba(255,255,255,.75);font-size:9pt">Functional &amp; technical specification · v2.0</span>
+</div>
+<h1>Relix — Functional &amp; Technical Specification</h1>
+<p style="font-size:11.5pt;color:#475467">Maintenance management (CMMS) web application · version 2.0 · October 7, 2026 · supersedes “CMMS MVP” (v1, French)</p>
+
+<table>
+<thead><tr><th style="width:26%">Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Product</td><td>Relix — web CMMS for industrial production sites, target desktop 1440×900.</td></tr>
+<tr><td>Status</td><td>End of visual design phase. Reference for functional scope, data model, business rules, permissions and default configuration.</td></tr>
+<tr><td>Language</td><td>Application UI in English; interface language selector stored per user (UI only, no content translation in this version).</td></tr>
+<tr><td>Out of scope of this document</td><td>Visual design (colors, fonts, sizes, icons, spacing, component styling). Only the product name <b>Relix</b> and the <b>Relix logo</b> are binding visual identity elements.</td></tr>
+<tr><td>Prototype</td><td>Interactive prototype pages (<code>*.dc.html</code>) and shared models (<code>*-model.js</code>) are the executable reference of the rules below. Appendix B maps prototype storage keys to tables.</td></tr>
+</tbody>
+</table>
+
+<h2>1. Introduction</h2>
+<h3>1.1 Purpose</h3>
+<p>This document is the main functional and technical reference for Relix. It describes business rules, entities and data model, statuses and workflows, permissions, default configuration and the consistency rules between modules. It extends the v1 specification (“CMMS MVP”) and keeps its concepts, terminology and structure wherever the current Relix design does not change them. When the current design conflicts with v1, the Relix behavior described here prevails.</p>
+<h3>1.2 Changes compared to v1</h3>
+<table>
+<thead><tr><th style="width:24%">Area</th><th>v1 (CMMS MVP)</th><th>v2 (Relix)</th></tr></thead>
+<tbody>
+<tr><td>Organization</td><td>Site selector only, “gestion des sites/usines à préciser”.</td><td>Business › Sub-business › Site hierarchy managed only by Super Admins; Super users with multi-site scopes; site administrators defined at site creation.</td></tr>
+<tr><td>Work order statuses</td><td>En retard, Planifié, En cours, En attente pièces, Terminé.</td><td>Workflow Requested → Scheduled → In progress → Completed. “Overdue” is computed; “Waiting” is a flag (with a reason, e.g. spare parts) that coexists with any open status.</td></tr>
+<tr><td>Work order creation</td><td>Single form (3 blocks).</td><td>4-step wizard: Essentials → Checklists → People → Details. Quick intervention (2 steps) for immediate breakdowns. Intervention requests for non-maintenance reporters.</td></tr>
+<tr><td>Checklists</td><td>Linear list of tasks.</td><td>Typed steps (inputs, actions, spare parts, consumables), required skills, duration, mobile assets, conditional rules and a workflow view.</td></tr>
+<tr><td>Execution</td><td>“Contenu de la fiche pendant l’exécution à finir”.</td><td>Focused intervention mode: one step at a time, pause/resume, chat docked, review &amp; close, stock deduction, actual costs.</td></tr>
+<tr><td>People</td><td>Teams &amp; Users not specified.</td><td>Users, teams, skills with levels, weekly shifts, absences, hourly rate, roles &amp; permission matrix, Financial permission.</td></tr>
+<tr><td>Spare parts</td><td>V2 / Core.</td><td>Included: replacement parts and consumables, storage areas, suppliers, GTIN, stock movements, reservations on work orders.</td></tr>
+<tr><td>Asset hierarchy</td><td>Up to 5 levels: Location/Production line → Area/Asset → Machine → Subassembly → Component.</td><td>Plant › Zone › Line › Step, assets attached to a Step. Storage areas are Steps flagged as storage. Sub-assemblies/components remain possible as child assets (see §7.12).</td></tr>
+<tr><td>Notifications</td><td>Bell + badge, centre “à définir / à retirer du MVP”.</td><td>Typed catalogue (category × importance), three delivery levels (activity / bell / pop-up), email/push, personal preferences, quiet hours, alert rules.</td></tr>
+<tr><td>Communication</td><td>Not present.</td><td>Unified chat: direct messages, team channels, site channel, one discussion per work order, @mentions, references to objects.</td></tr>
+<tr><td>Costs</td><td>Not present.</td><td>Intervention cost = labor (user hourly rate) + spare parts + consumables + external services + equipment &amp; rental. Visible only with the Financial permission.</td></tr>
+<tr><td>Site configuration</td><td>“Administration — à préciser”.</td><td>Schema-driven reference data per site, custom fields with units, plant hierarchy, skills, maturity levels.</td></tr>
+</tbody>
+</table>
+<h3>1.3 Conventions used in this document</h3>
+<ul>
+<li><b>Required</b> fields are marked “Yes” in the tables and with a red asterisk in forms. A form cannot be saved (or a wizard step cannot be left with “Next step”) while a required field is empty or invalid.</li>
+<li>Field types: <code>uuid</code>, <code>string(n)</code>, <code>text</code>, <code>int</code>, <code>decimal(p,s)</code>, <code>bool</code>, <code>date</code>, <code>datetime</code> (UTC, displayed in the site time zone), <code>enum(…)</code>, <code>json</code>, <code>fk → table</code>.</li>
+<li>Table names are singular <code>snake_case</code>; every table has <code>id</code> (uuid, PK), <code>created_at</code>, <code>created_by</code>, <code>updated_at</code>, <code>updated_by</code> unless stated otherwise (not repeated in each table).</li>
+<li>Site-scoped tables carry <code>site_id fk → site</code> (required). Organization-level tables (businesses, sites, users, super-user scopes) are not site-scoped.</li>
+<li>Reference data is never hard-deleted while in use: it is deactivated (<code>active=false</code>) and kept for history. Deletion is refused with a usage message when referenced.</li>
+<li>Human-readable identifiers (WO-…, R-…, asset codes, part references) are unique per site and immutable once created, except where stated.</li>
+<li>“Site configuration” is the in-app name of v1 “Administration”. “Work order” (WO) is the v1 “Ordre de travail / Intervention”. “Intervention” in Relix designates the <i>execution</i> of a work order.</li>
+</ul>
+
+<h2>2. Glossary and maintenance strategies</h2>
+<h3>2.1 Maintenance strategies (preserved from v1 §1)</h3>
+<p>The type describes the purpose of the work; the sub-type (strategy) describes how it is triggered or performed. Relix keeps this reference. Each Relix work order type maps to one or several v1 strategies; the strategy can be recorded on the work order as <code>work_order.strategy</code>.</p>
+<table>
+<thead><tr><th>v1 type</th><th>Sub-type / strategy</th><th>Definition</th><th>Example</th><th>Relix work order type</th></tr></thead>
+<tbody>
+<tr><td>Corrective</td><td>Palliative</td><td>Temporary restart after a breakdown or defect.</td><td>Temporary fix.</td><td>Corrective</td></tr>
+<tr><td>Corrective</td><td>Curative</td><td>Definitive repair after a breakdown or defect.</td><td>Replace a bearing.</td><td>Corrective</td></tr>
+<tr><td>Preventive</td><td>Systematic</td><td>Triggered by a date, a duration, a meter or cycles.</td><td>Oil change every 5,000 h.</td><td>Preventive (calendar or meter maintenance plan)</td></tr>
+<tr><td>Preventive</td><td>Condition-based (CBM)</td><td>Triggered by a measured state or a threshold.</td><td>Vibration threshold exceeded.</td><td>Predictive (alert rules / live monitoring)</td></tr>
+<tr><td>Preventive</td><td>Predictive (PdM)</td><td>Anticipated from the forecast evolution of degradation.</td><td>Failure expected within three weeks.</td><td>Predictive</td></tr>
+<tr><td>Improvement</td><td>Continuous improvement</td><td>Modification to durably improve reliability.</td><td>Change a sensor mounting.</td><td>Improvement</td></tr>
+<tr><td>Proactive</td><td>RCA / FMEA</td><td>Identification and removal of root causes.</td><td>Fix a misalignment.</td><td>Corrective with root cause analysis (<code>rca</code>) or Improvement</td></tr>
+<tr><td>Prescriptive</td><td>Decision optimisation</td><td>Recommendation of the optimal action given risks, costs and constraints.</td><td>Reduce load before shutdown.</td><td>Advanced features (planning optimisation) — in development</td></tr>
+<tr><td>Opportunity</td><td>Opportunistic intervention</td><td>Work done during a stop that is already required.</td><td>Replacement during the annual shutdown.</td><td>Any type, scheduled on a shutdown slot</td></tr>
+<tr><td>Autonomous</td><td>TPM</td><td>Simple operations performed by operators to maintain and detect anomalies.</td><td>Cleaning, inspection, lubrication.</td><td>Inspection / Preventive with <code>maintenance_mode = autonomous</code> (§7.20)</td></tr>
+</tbody>
+</table>
+<h3>2.2 Main terms</h3>
+<table>
+<thead><tr><th style="width:24%">Term</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td>Organization</td><td>The company using Relix (one tenant). Contains businesses, sub-businesses and sites.</td></tr>
+<tr><td>Business / Sub-business</td><td>Structural levels above sites. A sub-business always belongs to a business. A site belongs to a business or to a sub-business.</td></tr>
+<tr><td>Site (plant)</td><td>Operational unit with its own assets, stock, planning, teams, configuration and units. All operational data is site-scoped.</td></tr>
+<tr><td>Plant hierarchy</td><td>Physical breakdown of a site: Plant › Zone › Line › Step. Assets are located on a Step.</td></tr>
+<tr><td>Asset</td><td>Fixed equipment or mobile asset (tool, lift, crane, measuring instrument). Mobile assets can be reserved for work orders.</td></tr>
+<tr><td>Work order (WO)</td><td>A maintenance job on one asset, identified by its title “Asset — Task” and secondarily by its ID (WO-xxxxxxx).</td></tr>
+<tr><td>Intervention</td><td>Execution of a work order in focused mode, step by step, by its assigned users.</td></tr>
+<tr><td>Intervention request</td><td>A lightweight issue report (asset, short description, optional photo, people/teams notified). Not a work order until accepted.</td></tr>
+<tr><td>Quick intervention</td><td>Immediate start of an intervention on a breakdown: creates a work order flagged “Information incomplete”.</td></tr>
+<tr><td>Checklist</td><td>Reusable ordered set of typed steps executed during an intervention.</td></tr>
+<tr><td>Part (of a checklist)</td><td>Consecutive steps requiring the same skills. Each part is assigned to one person.</td></tr>
+<tr><td>Maintenance plan</td><td>Rule (calendar or meter) generating preventive work orders automatically.</td></tr>
+<tr><td>Spare part / item</td><td>Stock item of kind “Replacement part” (whole units) or “Consumable” (amounts or percentage of a unit).</td></tr>
+<tr><td>Supplier / provider</td><td>Company supplying parts, external services and/or equipment rental, with rates.</td></tr>
+<tr><td>Assigned users</td><td>People who perform the work. Never called “participants”.</td></tr>
+<tr><td>Included in follow-up</td><td>People who are not assigned but follow the work order (chat + updates).</td></tr>
+<tr><td>Financial permission</td><td>Additional permission giving access to sensitive money values.</td></tr>
+<tr><td>Super Admin / Super user</td><td>Organization-level administrator / user with an access scope wider than one site.</td></tr>
+<tr><td>Maturity level</td><td>Per-site level (1 Essential, 2 Advanced, 3 Expert) for each Relix concept.</td></tr>
+</tbody>
+</table>
+
+<h2>3. Application architecture</h2>
+<h3>3.1 Navigation (updates v1 §2.1)</h3>
+<table>
+<thead><tr><th>Order</th><th>Entry</th><th>Destination / sub-menu</th><th>Module key (permissions)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Home</td><td>Personal dashboard</td><td>— (always visible)</td></tr>
+<tr><td>2</td><td>Site dashboard</td><td>Tabs Overview / Work orders / Equipment / Spare parts</td><td>— (always visible)</td></tr>
+<tr><td>3</td><td>Assets</td><td>Views List / Hierarchy (tree) / Plant layout (map); asset detail</td><td><code>assets</code></td></tr>
+<tr><td>4</td><td>Work orders</td><td>List / Board (Kanban); work order detail</td><td><code>workorders</code></td></tr>
+<tr><td>5</td><td>Planning</td><td>Day / Week / Month calendar with backlog</td><td><code>planning</code></td></tr>
+<tr><td>6</td><td>Spare parts</td><td>List / Catalog, filter by item type</td><td><code>parts</code></td></tr>
+<tr><td>7</td><td>Maintenance setup</td><td>Sub-menu: Maintenance plans, Checklists (clicking the entry only expands/collapses the sub-menu)</td><td><code>plans</code></td></tr>
+<tr><td>8</td><td>Documents</td><td>Document library</td><td><code>documents</code></td></tr>
+<tr><td>Secondary</td><td>Teams &amp; users</td><td>Tabs Users / Teams / Roles &amp; permissions</td><td><code>teams</code></td></tr>
+<tr><td>Secondary</td><td>Suppliers</td><td>Suppliers and external providers</td><td><code>suppliers</code></td></tr>
+<tr><td>Secondary</td><td>Site configuration</td><td>Reference data, plant hierarchy, skills, units, custom fields, maturity levels</td><td><code>admin</code></td></tr>
+<tr><td>Secondary</td><td>Super Admin</td><td>Organization, Super users, Super Admins (only for Super Admins)</td><td><code>superadmin</code></td></tr>
+</tbody>
+</table>
+<p>The menu can be collapsed (icons only with tooltips); the state is stored per user. The intervention (execution) page is a focused mode without the menu.</p>
+<h3>3.2 Top bar (updates v1 §2.2)</h3>
+<ul>
+<li>Relix logo and name.</li>
+<li>Global search (shortcut Ctrl/Cmd+K) across equipment, work orders, spare parts, people, sites and locations; results grouped by category, recent items when empty. A site result switches the current site.</li>
+<li>Current site selector: lists only the sites the user can access (§9.6), grouped by business path, with local time and overdue indicator.</li>
+<li>Help menu (“?”), language selector (UI only).</li>
+<li>Notification bell with unread counter and notification centre (§7.15); on-screen pop-ups for “pop-up” level notifications.</li>
+<li>Profile menu: My profile, Notification settings, Super Admin (Super Admins only), “Preview access as” (administrators), Sign out.</li>
+<li>Indicators: “View only” when the current module is read-only for the user; “Previewing as …” when an administrator previews another user’s access.</li>
+</ul>
+<h3>3.3 Cross-cutting behaviors (updates v1 §2.3 and §19)</h3>
+<ul>
+<li>Every page fits the screen height: header and toolbars stay fixed; only content regions scroll. Lists scroll internally with sticky column headers and a pagination footer (page size selectable).</li>
+<li>Lists provide search, filters, per-row actions (“…” menu) and pagination. Row click opens the object; explicit buttons perform actions (e.g. Start intervention).</li>
+<li>Creation and edition open in a right-side panel or wizard without leaving the context.</li>
+<li>Status indicators always combine a label with a visual cue; color is never the only carrier of information.</li>
+<li>Destructive actions require a confirmation. Deleting referenced data is refused with an explanation (usage check); deactivation is proposed instead.</li>
+<li>Dates must be consistent (e.g. desired date ≥ request date, request date not in the future); invalid input is blocked.</li>
+<li>Statuses, priorities, types and categories come from controlled reference lists (system or site configuration).</li>
+<li>Every object change that matters is historised (work order history, asset history, maturity log).</li>
+<li>Every page has a Back button returning to the previous page (fallback: Home).</li>
+<li>Deep links: work order (with optional chat and message), chat conversation, intervention request, asset detail tab, Site configuration section, Teams &amp; users tab.</li>
+</ul>
+<h2>4. Organization, sites and site context</h2>
+<h3>4.1 Organization hierarchy</h3>
+<ul>
+<li>One organization (tenant) contains <b>businesses</b> (level 1), optional <b>sub-businesses</b> (level 2, parent = a business) and <b>sites</b> attached to a business or to a sub-business. Deeper levels are not allowed.</li>
+<li>The organization structure is managed <b>only</b> in the Super Admin area. Site configuration does not contain any organization or site management.</li>
+<li>A business or sub-business cannot be deleted while it contains sub-businesses or sites. A business with sub-businesses cannot become a sub-business.</li>
+<li>A site cannot be deleted when it holds data (assets, work orders, stock); it is set <b>inactive</b> instead. Inactive sites disappear from all site switchers but keep their history. The site currently open cannot be deleted.</li>
+<li>Names are unique among businesses/sub-businesses; site codes (3–4 letters, uppercase) are unique in the organization and immutable.</li>
+</ul>
+<h3>4.2 Site creation (Super Admin)</h3>
+<p>New site is a 3-step flow; each step must be valid before “Next step”.</p>
+<ol>
+<li><b>Identity</b> — Site name*, Code* (3–4 letters, unique), Business*, Sub-business (optional, filtered by business).</li>
+<li><b>Location</b> — Country*, City, Latitude* (−90…90, decimal degrees WGS 84), Longitude* (−180…180), Time zone (proposed from the country).</li>
+<li><b>Site administrators</b> — at least one administrator is required so the site is manageable from day one: existing users (searched across the organization) and/or invitations (full name + email; email must not already exist).</li>
+</ol>
+<p>On “Create site”: the site is created with the default site configuration (§10.2); each chosen user receives the <b>Administrator</b> role on this site (<code>user_site_role</code>) and the site is added to their site access; invited administrators are created with status Invited and receive an invitation email. Administrators can then invite the team, create teams, define the plant hierarchy and adapt the configuration.</p>
+<h3>4.3 Current site</h3>
+<ul>
+<li>Each user works on one current site at a time (stored per user, restored at sign-in). Switching site reloads site-scoped data; all lists, KPIs, planning and configuration show the current site only.</li>
+<li>The Site dashboard shows the business path of the site, local time and site KPIs (overdue work orders and critical ones, stopped equipment, preventive compliance, parts out of stock / low, work due today and done).</li>
+<li>The site’s maturity levels (§7.21) and units (§7.18) are those of the current site.</li>
+</ul>
+
+<h2>5. Data model overview</h2>
+<h3>5.1 Domains and main relationships</h3>
+<table>
+<thead><tr><th style="width:22%">Domain</th><th style="width:32%">Tables</th><th>Main relationships</th></tr></thead>
+<tbody>
+<tr><td>Organization</td><td>business, site</td><td>business 1–n business (parent); business 1–n site.</td></tr>
+<tr><td>Access</td><td>app_user, role, role_permission, user_site, user_site_role, super_user_scope, super_admin (flag on app_user)</td><td>app_user n–n site (user_site); app_user n–n site with role (user_site_role); role 1–n role_permission (one per module); super_user_scope n–1 app_user.</td></tr>
+<tr><td>People</td><td>team, team_member, skill, user_skill, user_shift, user_absence, user_profile</td><td>team n–n app_user (team_member, lead flag); app_user n–n skill with level; app_user 1–n shift/absence.</td></tr>
+<tr><td>Plant &amp; assets</td><td>plant_node, asset, asset_spec, asset_history, meter_reading, asset_reservation</td><td>plant_node tree (parent); asset n–1 plant_node (Step); asset 1–n meter_reading; mobile asset 1–n asset_reservation n–1 work_order.</td></tr>
+<tr><td>Work</td><td>work_order, wo_assignment, wo_follower, wo_checklist, wo_part, wo_tool, wo_cost_line, wo_history, wo_document</td><td>work_order n–1 asset; n–1 maintenance_plan (optional); n–1 intervention_request (optional); 1–n assignments, followers, parts, tools, cost lines, history.</td></tr>
+<tr><td>Execution</td><td>intervention, intervention_step_result, intervention_usage</td><td>work_order 1–n intervention (normally 1); intervention 1–n step results; usage lines n–1 spare_part.</td></tr>
+<tr><td>Requests</td><td>intervention_request, request_notify</td><td>request n–1 asset; n–1 work_order (when accepted); request n–n user/team (notified).</td></tr>
+<tr><td>Checklists</td><td>checklist, checklist_step, step_rule, step_option, step_part, step_tool, step_skill, step_media</td><td>checklist 1–n steps (ordered); step 1–n rules, options, parts (n–1 spare_part), tools (n–1 mobile asset), skills (n–1 skill), media/documents.</td></tr>
+<tr><td>Preventive</td><td>maintenance_plan, plan_asset, plan_generation</td><td>plan n–n asset; plan n–1 checklist; plan 1–n generations 1–n work_order.</td></tr>
+<tr><td>Stock</td><td>spare_part, part_asset, stock_movement, part_reservation</td><td>spare_part n–1 plant_node (storage Step); n–1 supplier; n–n asset; 1–n stock movements; reservations n–1 work_order.</td></tr>
+<tr><td>Suppliers</td><td>supplier, supplier_rate</td><td>supplier 1–n rate; referenced by spare parts and work order cost lines.</td></tr>
+<tr><td>Documents</td><td>document, document_link</td><td>document n–n asset / work_order / checklist_step / spare_part (document_link).</td></tr>
+<tr><td>Communication</td><td>chat_channel, chat_channel_member, chat_message, chat_read</td><td>channel kinds: direct, team (1–1 team), site (1–1 site), work order (1–1 work_order).</td></tr>
+<tr><td>Notifications</td><td>notification, notification_pref, alert_rule, alert_rule_recipient</td><td>notification n–1 app_user (recipient), optional link to object; prefs 1–1 app_user.</td></tr>
+<tr><td>Configuration</td><td>asset_type, criticality, wo_type, failure_category, priority, wo_status, part_category, cost_center, custom_field, custom_value, quantity, site_unit, label_format, maturity_level, maturity_log, site_setting</td><td>All site-scoped except system catalogues (§10.1).</td></tr>
+</tbody>
+</table>
+<h3>5.2 Identifiers</h3>
+<table>
+<thead><tr><th>Object</th><th>Display identifier</th><th>Rule</th></tr></thead>
+<tbody>
+<tr><td>Work order</td><td><code>WO-</code> + 7 digits (e.g. WO-1339859)</td><td>Sequential per organization, never reused. Shown as secondary information (lists, breadcrumb with copy chip, chat, notifications). The primary label is the title “Asset — Task”.</td></tr>
+<tr><td>Intervention request</td><td><code>R-</code> + number (e.g. R-1048)</td><td>Sequential per site.</td></tr>
+<tr><td>Site</td><td>Code, 3–4 uppercase letters (e.g. THO)</td><td>Unique in the organization, immutable.</td></tr>
+<tr><td>Plant node</td><td>Code built from the parent code (e.g. MEL, MEL-BH, MEL-BH-MX)</td><td>Unique per site.</td></tr>
+<tr><td>Asset</td><td>Asset code (e.g. P-101, CV-L3)</td><td>Unique per site; encoded in the asset QR code (link to the asset detail).</td></tr>
+<tr><td>Spare part</td><td>Reference (e.g. BRG-6205), optional item code and GTIN</td><td>Reference unique per site; GTIN validated by check digit.</td></tr>
+<tr><td>User</td><td>Initials-based key (e.g. GD) + email</td><td>Email unique in the organization.</td></tr>
+</tbody>
+</table>
+
+<h2>6. Tables</h2>
+<p>Common columns (<code>id</code>, <code>created_at/by</code>, <code>updated_at/by</code>) are omitted. “Req.” = required. Defaults apply on creation.</p>
+
+<h3>6.1 Organization</h3>
+<h4>business</h4>
+<p>Business or sub-business of the organization.</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td>Unique (case-insensitive) in the organization.</td></tr>
+<tr><td>level</td><td>enum(business, sub)</td><td>Yes</td><td>business</td><td><code>sub</code> requires a parent.</td></tr>
+<tr><td>parent_id</td><td>fk → business</td><td>If sub</td><td>null</td><td>Parent must be of level <code>business</code>.</td></tr>
+</tbody></table>
+<h4>site</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>code</td><td>string(4)</td><td>Yes</td><td></td><td>3–4 letters A–Z, unique, immutable.</td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>business_id</td><td>fk → business</td><td>Yes</td><td></td><td>Business or sub-business.</td></tr>
+<tr><td>country</td><td>string(80)</td><td>Yes</td><td></td><td>Drives default time zone and default units.</td></tr>
+<tr><td>city</td><td>string(80)</td><td>No</td><td></td><td></td></tr>
+<tr><td>latitude / longitude</td><td>decimal(8,4)</td><td>Yes</td><td></td><td>−90…90 / −180…180.</td></tr>
+<tr><td>time_zone</td><td>string(40)</td><td>Yes</td><td>from country</td><td>IANA name (e.g. Europe/Paris).</td></tr>
+<tr><td>active</td><td>bool</td><td>Yes</td><td>true</td><td>Inactive = hidden from switchers, data kept.</td></tr>
+</tbody></table>
+
+<h3>6.2 Access</h3>
+<h4>app_user</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>user_key</td><td>string(8)</td><td>Yes</td><td>from initials</td><td>Unique; used for avatars and @mention lookup.</td></tr>
+<tr><td>first_name / last_name</td><td>string(60)</td><td>Yes</td><td></td><td>Display name = first + last.</td></tr>
+<tr><td>email</td><td>string(160)</td><td>Yes</td><td></td><td>Valid format, unique in the organization.</td></tr>
+<tr><td>handle</td><td>string(40)</td><td>Yes</td><td>first name</td><td>Used for @mentions; unique.</td></tr>
+<tr><td>role_id</td><td>fk → role</td><td>Yes</td><td>Technician</td><td>Default (home) role, applied on the user’s sites unless overridden by <code>user_site_role</code> or a super-user scope.</td></tr>
+<tr><td>status</td><td>enum(Invited, Active, Deactivated)</td><td>Yes</td><td>Invited</td><td>Deactivated users cannot sign in; their open work orders must be reassigned.</td></tr>
+<tr><td>financial</td><td>bool</td><td>Yes</td><td>false</td><td>Financial permission (cumulative).</td></tr>
+<tr><td>super_admin</td><td>bool</td><td>Yes</td><td>false</td><td>At least one active Super Admin must always exist.</td></tr>
+<tr><td>hourly_rate</td><td>decimal(8,2)</td><td>No</td><td>null</td><td>€/h (organization currency), ≥ 0. Used for labor cost. Visible/editable only with Financial.</td></tr>
+<tr><td>language</td><td>string(5)</td><td>No</td><td>EN</td><td>UI language.</td></tr>
+<tr><td>current_site_id</td><td>fk → site</td><td>No</td><td>first accessible</td><td>Restored at sign-in.</td></tr>
+<tr><td>last_active_at</td><td>datetime</td><td>No</td><td></td><td></td></tr>
+</tbody></table>
+<h4>user_site</h4>
+<p>Sites a user has direct access to. PK (user_id, site_id). At least one site is required for a user (except Super Admins).</p>
+<h4>user_site_role</h4>
+<p>Role given to a user on a specific site; overrides the default role on that site. PK (user_id, site_id). Used for site administrators created with a new site.</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>user_id</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td>Also implies a <code>user_site</code> row.</td></tr>
+<tr><td>role_id</td><td>fk → role</td><td>Yes</td><td></td><td></td></tr>
+</tbody></table>
+<h4>role</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>code</td><td>string(20)</td><td>Yes</td><td></td><td>System roles: admin, manager, planner, tech, req.</td></tr>
+<tr><td>name</td><td>string(60)</td><td>Yes</td><td></td><td>Renamable except Administrator.</td></tr>
+<tr><td>description</td><td>string(200)</td><td>No</td><td></td><td></td></tr>
+<tr><td>system</td><td>bool</td><td>Yes</td><td>false</td><td>System roles cannot be deleted. Administrator is locked to Full on all modules.</td></tr>
+</tbody></table>
+<p>Roles are defined at organization level (one shared matrix) so that a user’s role means the same on every site. A custom role cannot be deleted while users hold it.</p>
+<h4>role_permission</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>role_id</td><td>fk → role</td><td>Yes</td><td></td><td>Unique (role_id, module).</td></tr>
+<tr><td>module</td><td>enum(assets, workorders, plans, planning, parts, suppliers, documents, teams, admin)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>level</td><td>enum(F, E, V, -)</td><td>Yes</td><td>V</td><td>F Full · E Edit · V View · - None (module hidden). See §9.</td></tr>
+</tbody></table>
+<h4>super_user_scope</h4>
+<p>Access wider than one site, resolved dynamically (sites added later inside the scope are included automatically).</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>user_id</td><td>fk → app_user</td><td>Yes</td><td></td><td>Not a Super Admin (they already see everything).</td></tr>
+<tr><td>scope_type</td><td>enum(business, sub, country, sites)</td><td>Yes</td><td>business</td><td></td></tr>
+<tr><td>scope_values</td><td>json (array of ids / country names)</td><td>Yes</td><td></td><td>At least one value.</td></tr>
+<tr><td>role_id</td><td>fk → role</td><td>Yes</td><td>manager</td><td>Role applied on every covered site unless a <code>user_site_role</code> exists for that site.</td></tr>
+<tr><td>note</td><td>string(200)</td><td>No</td><td></td><td>E.g. “Regional maintenance director”.</td></tr>
+</tbody></table>
+
+<h3>6.3 People</h3>
+<h4>team</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td>current</td><td></td></tr>
+<tr><td>name</td><td>string(80)</td><td>Yes</td><td></td><td>Unique per site.</td></tr>
+<tr><td>description</td><td>string(200)</td><td>No</td><td></td><td>Trades or area covered.</td></tr>
+<tr><td>icon / color</td><td>string</td><td>No</td><td>groups / Grey</td><td>Presentation only.</td></tr>
+<tr><td>lead_user_id</td><td>fk → app_user</td><td>No</td><td></td><td>Must be a member.</td></tr>
+</tbody></table>
+<h4>team_member</h4>
+<p>PK (team_id, user_id). A user can belong to several teams. Creating a team creates its team chat channel; members are kept in sync with the channel members.</p>
+<h4>skill</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td>Catalogue edited in Site configuration › Skills.</td></tr>
+<tr><td>code</td><td>string(4)</td><td>Yes</td><td></td><td>Unique per site (e.g. ELE, MEC).</td></tr>
+<tr><td>name</td><td>string(80)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>category</td><td>enum(Trade, Technique, Certification)</td><td>Yes</td><td>Trade</td><td></td></tr>
+<tr><td>active</td><td>bool</td><td>Yes</td><td>true</td><td>Deletion refused while used by checklist steps or profiles.</td></tr>
+</tbody></table>
+<h4>user_skill</h4>
+<p>PK (user_id, skill_id). <code>level</code> int 1–3 (1 Basic, 2 Qualified, 3 Expert), required. Certifications may carry <code>valid_until</code> (date).</p>
+<h4>user_shift</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>user_id</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>weekday</td><td>int 0–6</td><td>Yes</td><td></td><td>0 = Sunday. One row per working day.</td></tr>
+<tr><td>start_hour / end_hour</td><td>decimal(4,2)</td><td>Yes</td><td>8 / 16</td><td>end &gt; start.</td></tr>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td>home site</td><td>A user can work on another site on given weekdays.</td></tr>
+</tbody></table>
+<h4>user_absence</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>user_id</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>date_from</td><td>date</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>date_to</td><td>date</td><td>No</td><td>= date_from</td><td>≥ date_from.</td></tr>
+<tr><td>hour_from / hour_to</td><td>decimal(4,2)</td><td>No</td><td></td><td>Both set = part-day absence.</td></tr>
+<tr><td>label</td><td>string(80)</td><td>Yes</td><td></td><td>Holiday, Training, Medical appointment…</td></tr>
+</tbody></table>
+<h4>user_profile</h4>
+<p>1–1 with app_user: phone, extension, languages (json), joined (year), manager, status message, bio, certificates (json [name, valid_until]). Statistics shown on the profile (completed work orders, average duration, first-time fix, on-time rate, hours, open work orders, top assets) are computed, not stored.</p>
+<h3>6.4 Plant hierarchy and assets</h3>
+<h4>plant_node</h4>
+<p>Physical hierarchy of a site. Kinds are ordered: <code>plant</code> (one per site, root) › <code>zone</code> › <code>line</code> › <code>step</code>.</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>kind</td><td>enum(plant, zone, line, step)</td><td>Yes</td><td>child of parent kind</td><td>A node’s kind is always the next level after its parent.</td></tr>
+<tr><td>parent_id</td><td>fk → plant_node</td><td>Yes (except plant)</td><td></td><td></td></tr>
+<tr><td>code</td><td>string(20)</td><td>Yes</td><td>parent code + “-”</td><td>Unique per site (e.g. MEL-BH-MX).</td></tr>
+<tr><td>name</td><td>string(100)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>storage</td><td>bool</td><td>Yes</td><td>false</td><td>Step only. Storage areas hold spare parts (storerooms map to them).</td></tr>
+<tr><td>bay</td><td>bool</td><td>Yes</td><td>false</td><td>Step only. Parking bay for mobile assets.</td></tr>
+<tr><td>sort</td><td>int</td><td>Yes</td><td>last</td><td></td></tr>
+</tbody></table>
+<p>Constraints: a node with children or assets cannot be deleted; the plant node cannot be deleted. Plant nodes have no active flag (unused nodes are deleted). Default zones for a glass plant template: MEL Melting, FOR Fiberizing &amp; Forming, UTL Utilities, WHS Warehousing (§10.2).</p>
+<h4>asset</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>code</td><td>string(30)</td><td>Yes</td><td></td><td>Unique per site (v1 “Code*”).</td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td>(v1 “Nom*”).</td></tr>
+<tr><td>asset_class</td><td>enum(fixed, mobile)</td><td>Yes</td><td>fixed</td><td>Equipment or Mobile asset.</td></tr>
+<tr><td>asset_type_id</td><td>fk → asset_type</td><td>Yes</td><td></td><td>Must belong to the same class.</td></tr>
+<tr><td>location_id</td><td>fk → plant_node</td><td>Yes</td><td></td><td>Must be a Step. Mobile assets: home location (often a bay).</td></tr>
+<tr><td>parent_asset_id</td><td>fk → asset</td><td>No</td><td></td><td>Sub-assembly / component of another asset (v1 levels 4–5).</td></tr>
+<tr><td>status</td><td>enum(In service, Stopped, Out of service)</td><td>Yes</td><td>In service</td><td>v1 “En service / En arrêt / Hors service”.</td></tr>
+<tr><td>criticality_id</td><td>fk → criticality</td><td>Yes</td><td>from asset type</td><td></td></tr>
+<tr><td>owner_user_id</td><td>fk → app_user</td><td>No</td><td></td><td>Responsible person (v1 “Responsable”).</td></tr>
+<tr><td>manufacturer / model / serial_number</td><td>string(80)</td><td>No</td><td></td><td></td></tr>
+<tr><td>year</td><td>int</td><td>No</td><td></td><td>Manufacturing year.</td></tr>
+<tr><td>commissioned_on</td><td>date</td><td>No</td><td></td><td>v1 “Mise en service”.</td></tr>
+<tr><td>description</td><td>text</td><td>No</td><td></td><td></td></tr>
+<tr><td>photo</td><td>file (image)</td><td>No</td><td></td><td>Resized on upload.</td></tr>
+<tr><td>cost_center_code</td><td>fk → cost_center</td><td>No</td><td></td><td>Default for its work orders.</td></tr>
+<tr><td>decommissioned</td><td>json {reason, date, note}</td><td>No</td><td>null</td><td>Set by the Decommission action; status becomes Out of service.</td></tr>
+<tr><td>meter_unit</td><td>string(30)</td><td>No</td><td></td><td>E.g. operating hours, cycles, km. Enables meter plans.</td></tr>
+</tbody></table>
+<p>Custom field values are stored in <code>custom_value</code> (entity Asset). “Specifications” in the asset wizard are custom fields applicable to the asset type, plus free key/value pairs in <code>asset_spec</code>.</p>
+<h4>asset_spec</h4>
+<p>Free specifications: asset_id (fk), key string(80), value string(200), sort int.</p>
+<h4>asset_history</h4>
+<p>Append-only: asset_id, at, by_user_id, field (Name, Status, Location, Criticality, Owner, Type…) or <code>what</code> (Created, Created by import, Decommissioned · reason, Reinstated), from, to. Written automatically on every save.</p>
+<h4>meter_reading</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>asset_id</td><td>fk → asset</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>value</td><td>decimal(12,2)</td><td>Yes</td><td></td><td>Must be ≥ previous reading.</td></tr>
+<tr><td>read_at</td><td>datetime</td><td>Yes</td><td>now</td><td></td></tr>
+<tr><td>source</td><td>enum(manual, intervention, live)</td><td>Yes</td><td>manual</td><td></td></tr>
+</tbody></table>
+<p>The average daily rate is computed from readings and used to estimate the due date of meter plans.</p>
+<h4>asset_reservation</h4>
+<p>Reservation of a mobile asset for a time window.</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>asset_id</td><td>fk → asset</td><td>Yes</td><td></td><td>Mobile asset only.</td></tr>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>No</td><td></td><td>Null for manual reservations.</td></tr>
+<tr><td>start_at / end_at</td><td>datetime</td><td>Yes</td><td></td><td>end &gt; start.</td></tr>
+<tr><td>user_id</td><td>fk → app_user</td><td>No</td><td></td><td>Person using it.</td></tr>
+<tr><td>label</td><td>string(160)</td><td>No</td><td>WO title</td><td></td></tr>
+</tbody></table>
+<p>Constraint: two reservations of the same asset cannot overlap.</p>
+
+<h3>6.5 Documents</h3>
+<h4>document</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>name</td><td>string(200)</td><td>Yes</td><td>file name</td><td></td></tr>
+<tr><td>category</td><td>enum(Plan, Manual, Procedure, Datasheet, Certificate, Photo, Report, Other)</td><td>Yes</td><td>Other</td><td>v1 categories, “Drawing” renamed <b>Plan</b>.</td></tr>
+<tr><td>file_type</td><td>string(8)</td><td>Yes</td><td>from file</td><td>PDF, DOCX, XLSX, JPG, PNG, DWG, MP4…</td></tr>
+<tr><td>file</td><td>file</td><td>Yes</td><td></td><td>Size stored.</td></tr>
+<tr><td>version</td><td>string(20)</td><td>No</td><td>1.0</td><td>New upload of the same document = new version; previous versions kept.</td></tr>
+<tr><td>valid_until</td><td>date</td><td>No</td><td></td><td>Certificates.</td></tr>
+<tr><td>description / tags</td><td>text / json</td><td>No</td><td></td><td></td></tr>
+<tr><td>favorite</td><td>per-user flag</td><td>No</td><td></td><td>Stored per user.</td></tr>
+</tbody></table>
+<h4>document_link</h4>
+<p>document_id (fk) + target_type enum(asset, work_order, checklist_step, spare_part, maintenance_plan) + target_id. Unique (document_id, target_type, target_id). One document can be linked to many objects; detaching never deletes the document.</p>
+
+<h3>6.6 Spare parts and stock</h3>
+<h4>spare_part</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>ref</td><td>string(30)</td><td>Yes</td><td>category code + “-”</td><td>Unique per site, uppercase.</td></tr>
+<tr><td>name</td><td>string(160)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>kind</td><td>enum(part, consumable)</td><td>Yes</td><td>part</td><td>Replacement part (whole units) or Consumable.</td></tr>
+<tr><td>usage_mode</td><td>enum(count, amount, percent)</td><td>Yes</td><td>count (part) / amount (consumable)</td><td>Parts are always <code>count</code>.</td></tr>
+<tr><td>unit</td><td>string(12)</td><td>Yes</td><td>from category</td><td>Stock unit (pcs, kit, set, pair, cartridge, pack, tube, roll, can, L, mL, m, cm, kg, g).</td></tr>
+<tr><td>use_unit</td><td>string(12)</td><td>No</td><td>= unit</td><td>Consumables in <code>amount</code> mode can be recorded in a sub-unit (mL→L, g→kg, cm→m) and are converted.</td></tr>
+<tr><td>default_use</td><td>decimal(10,3)</td><td>No</td><td></td><td>Proposed amount in UsageInput.</td></tr>
+<tr><td>category_id</td><td>fk → part_category</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>code</td><td>string(40)</td><td>No</td><td></td><td>Item / article code.</td></tr>
+<tr><td>gtin</td><td>string(14)</td><td>No</td><td></td><td>GTIN-8/12/13/14, check digit validated.</td></tr>
+<tr><td>description</td><td>text</td><td>No</td><td></td><td></td></tr>
+<tr><td>image</td><td>file (image)</td><td>No</td><td></td><td>Resized on upload.</td></tr>
+<tr><td>storage_id</td><td>fk → plant_node</td><td>Yes</td><td>first storage</td><td>A Step with <code>storage=true</code>.</td></tr>
+<tr><td>bin</td><td>string(20)</td><td>No</td><td>—</td><td>Shelf / bin.</td></tr>
+<tr><td>qty</td><td>decimal(12,3)</td><td>Yes</td><td>0</td><td>Fractional for percent/amount consumables. Changed only through stock movements.</td></tr>
+<tr><td>qty_reserved</td><td>decimal(12,3)</td><td>Yes</td><td>0</td><td>Sum of open reservations. Available = qty − reserved.</td></tr>
+<tr><td>min_qty / max_qty</td><td>decimal(12,3)</td><td>Yes / No</td><td>0 / 3×min</td><td>max ≥ min.</td></tr>
+<tr><td>unit_cost</td><td>decimal(10,2)</td><td>No</td><td></td><td>Cost per stock unit; ≥ 0. Financial only.</td></tr>
+<tr><td>supplier_id</td><td>fk → supplier</td><td>No</td><td></td><td>Preferred supplier.</td></tr>
+<tr><td>supplier_ref</td><td>string(40)</td><td>No</td><td></td><td></td></tr>
+<tr><td>cost_center_code</td><td>fk → cost_center</td><td>No</td><td></td><td></td></tr>
+<tr><td>active</td><td>bool</td><td>Yes</td><td>true</td><td></td></tr>
+</tbody></table>
+<p>Stock status (computed): <b>Out of stock</b> if qty ≤ 0, <b>Low stock</b> if qty &lt; min, otherwise <b>In stock</b>. Percent consumables display stock as whole units plus the opened one (e.g. “3 rolls + 1 opened (65%)”).</p>
+<h4>part_asset</h4>
+<p>PK (part_id, asset_id): equipment on which the part is used (“Spare parts for this asset”).</p>
+<h4>stock_movement</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>part_id</td><td>fk → spare_part</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>kind</td><td>enum(receipt, consumption, adjustment, transfer, return)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>qty</td><td>decimal(12,3)</td><td>Yes</td><td></td><td>Signed, in stock unit.</td></tr>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>No</td><td></td><td>Required for consumption.</td></tr>
+<tr><td>note</td><td>string(200)</td><td>No</td><td></td><td></td></tr>
+</tbody></table>
+<h4>part_reservation</h4>
+<p>part_id, work_order_id, qty (stock unit), status enum(open, consumed, released). Created when parts are required on a work order; consumed at intervention completion; released when the work order is cancelled or the part removed.</p>
+
+<h3>6.7 Suppliers</h3>
+<h4>supplier</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td>Unique per site.</td></tr>
+<tr><td>types</td><td>set(parts, service, rental)</td><td>Yes</td><td>parts</td><td>Spare parts &amp; consumables · External services · Equipment rental.</td></tr>
+<tr><td>category</td><td>string(60)</td><td>No</td><td></td><td></td></tr>
+<tr><td>status</td><td>enum(Active, Inactive)</td><td>Yes</td><td>Active</td><td>Inactive providers are not offered in cost lines.</td></tr>
+<tr><td>contact_name / email / phone / website / address</td><td>string</td><td>No</td><td></td><td></td></tr>
+<tr><td>account_number</td><td>string(40)</td><td>No</td><td></td><td></td></tr>
+<tr><td>payment_terms</td><td>string(40)</td><td>No</td><td>60 days</td><td></td></tr>
+<tr><td>lead_days</td><td>int</td><td>No</td><td></td><td>Delivery lead time.</td></tr>
+<tr><td>rating</td><td>int 1–5</td><td>No</td><td>3</td><td></td></tr>
+<tr><td>hourly_rate</td><td>decimal(8,2)</td><td>No</td><td></td><td>Services only. Financial.</td></tr>
+<tr><td>travel_fee</td><td>decimal(8,2)</td><td>No</td><td></td><td>Per visit: call-out (services) or delivery &amp; pick-up (rental). Financial.</td></tr>
+<tr><td>notes</td><td>text</td><td>No</td><td></td><td></td></tr>
+</tbody></table>
+<h4>supplier_rate</h4>
+<p>supplier_id (fk), name string(120) required, unit enum(h, visit, day, fixed) required, price decimal(10,2) required ≥ 0 (Financial). Examples: “Compressor annual service · fixed”, “Crane 50 t · per day”.</p>
+<h3>6.8 Work orders</h3>
+<h4>work_order</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes / constraints</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td>current</td><td></td></tr>
+<tr><td>number</td><td>string(10)</td><td>Yes</td><td>next WO-</td><td>Display ID, unique, immutable.</td></tr>
+<tr><td>asset_id</td><td>fk → asset</td><td>Yes</td><td></td><td>v1 “Équipement*”. Location is derived from the asset.</td></tr>
+<tr><td>task</td><td>string(160)</td><td>Yes</td><td></td><td>v1 “Titre*”. Display title = “{asset.name} — {task}”.</td></tr>
+<tr><td>description</td><td>text</td><td>Yes</td><td></td><td>v1 “Description*”. May be empty only on quick interventions until completion.</td></tr>
+<tr><td>wo_type_id</td><td>fk → wo_type</td><td>Yes</td><td>Corrective</td><td>v1 “Type d’intervention*”.</td></tr>
+<tr><td>strategy</td><td>string(40)</td><td>No</td><td>from type</td><td>v1 sub-type (§2.1).</td></tr>
+<tr><td>maintenance_mode</td><td>enum(standard, autonomous)</td><td>Yes</td><td>standard</td><td>§7.20.</td></tr>
+<tr><td>priority_id</td><td>fk → priority</td><td>Yes</td><td>Medium</td><td>Quick intervention: empty until completed.</td></tr>
+<tr><td>status</td><td>enum(Requested, Scheduled, In progress, Completed)</td><td>Yes</td><td>Requested (no date) / Scheduled (date)</td><td>Workflow §7.1. “Overdue” is never stored.</td></tr>
+<tr><td>waiting</td><td>enum(parts, paused, dependency, access, approval, supplier) | null</td><td>No</td><td>null</td><td>Waiting flag (§7.1.3).</td></tr>
+<tr><td>waiting_note</td><td>string(200)</td><td>No</td><td></td><td></td></tr>
+<tr><td>requested_at</td><td>datetime</td><td>Yes</td><td>now</td><td>v1 “Date de demande*”. Not in the future (back-dating allowed).</td></tr>
+<tr><td>desired_at</td><td>datetime</td><td>No</td><td></td><td>v1 “Date et heure souhaitées”. ≥ requested_at.</td></tr>
+<tr><td>planned_start</td><td>datetime</td><td>No</td><td></td><td>Set by scheduling; drives Scheduled status and overdue.</td></tr>
+<tr><td>estimated_hours</td><td>decimal(6,2)</td><td>No</td><td>Σ checklist minutes / 60</td><td>v1 “Durée estimée”.</td></tr>
+<tr><td>failure_category_id</td><td>fk → failure_category</td><td>No</td><td></td><td>Required to complete a quick intervention.</td></tr>
+<tr><td>production_stop</td><td>bool</td><td>No</td><td>false</td><td>v1 “Arrêt de production Oui/Non”.</td></tr>
+<tr><td>assignee_id</td><td>fk → app_user</td><td>No</td><td>first assignment</td><td>Main responsible (= first assigned user).</td></tr>
+<tr><td>cost_center_code</td><td>fk → cost_center</td><td>No</td><td>asset default</td><td></td></tr>
+<tr><td>plan_id</td><td>fk → maintenance_plan</td><td>No</td><td></td><td>Set for generated preventive work orders.</td></tr>
+<tr><td>request_id</td><td>fk → intervention_request</td><td>No</td><td></td><td>Origin request.</td></tr>
+<tr><td>parent_wo_id</td><td>fk → work_order</td><td>No</td><td></td><td>Follow-up work order.</td></tr>
+<tr><td>quick</td><td>bool</td><td>Yes</td><td>false</td><td>Created by Quick intervention (“Information incomplete” until completed).</td></tr>
+<tr><td>rca</td><td>json {cause, why[], action}</td><td>No</td><td></td><td>Root cause analysis (Corrective).</td></tr>
+<tr><td>completed_at</td><td>datetime</td><td>No</td><td></td><td></td></tr>
+<tr><td>completion</td><td>json</td><td>No</td><td></td><td>Report: summary, actual minutes, by, logged (true when recorded after the fact).</td></tr>
+<tr><td>actual_ms</td><td>bigint</td><td>No</td><td></td><td>Actual working time of the intervention.</td></tr>
+<tr><td>stock_done</td><td>bool</td><td>Yes</td><td>false</td><td>Stock already deducted (guarantees a single deduction).</td></tr>
+</tbody></table>
+<p>Indexes: (site_id, status), (site_id, planned_start), (asset_id), (plan_id), (assignee_id).</p>
+<h4>wo_assignment</h4>
+<p>One row per checklist part assigned to a person (multiple assignees).</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>user_id</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>skills</td><td>json (skill codes)</td><td>No</td><td>[]</td><td>Skills required by the part.</td></tr>
+<tr><td>minutes</td><td>int</td><td>Yes</td><td></td><td>Duration of the part.</td></tr>
+<tr><td>offset_min</td><td>int</td><td>Yes</td><td>0</td><td>Start offset from the work order start (parts are sequential).</td></tr>
+<tr><td>label</td><td>string(40)</td><td>Yes</td><td></td><td>“Step 1”, “Steps 2–6”.</td></tr>
+</tbody></table>
+<h4>wo_follower</h4>
+<p>PK (work_order_id, user_id), role enum(Follow-up, Maintenance manager, Supervisor, Specialist). Followers are “Included in follow-up”: chat + updates, not assigned.</p>
+<h4>wo_checklist</h4>
+<p>work_order_id, checklist_id, sort. A snapshot of the checklist version is kept at intervention start.</p>
+<h4>wo_part</h4>
+<p>Required spare parts and consumables: work_order_id, part_id, qty (planned, in use unit), source enum(checklist, manual). Parts removed by the user while coming from a checklist are kept in <code>dismissed</code> (restorable).</p>
+<h4>wo_tool</h4>
+<p>Required mobile assets: work_order_id, asset_id (mobile), source enum(checklist, manual).</p>
+<h4>wo_cost_line</h4>
+<p>Manual cost lines (automatic lines are computed, §7.13).</p>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>category</td><td>enum(consumables, services, rentals)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>part_id</td><td>fk → spare_part</td><td>If consumables</td><td></td><td></td></tr>
+<tr><td>supplier_id / rate</td><td>fk → supplier / string</td><td>If services/rentals</td><td></td><td>rate = <code>hourly</code>, <code>travel</code> or a supplier_rate id.</td></tr>
+<tr><td>qty</td><td>decimal(10,3)</td><td>Yes</td><td>1</td><td>Hours, visits, days or units.</td></tr>
+<tr><td>unit_price</td><td>decimal(10,2)</td><td>Yes</td><td>from rate</td><td>Copied at entry (price history preserved).</td></tr>
+<tr><td>note</td><td>string(200)</td><td>No</td><td></td><td></td></tr>
+</tbody></table>
+<h4>wo_history</h4>
+<p>Append-only audit trail: work_order_id, at, by (user or <code>system</code>), field (Status, Priority, Assigned to, Planned date, Waiting, Type, Title, Asset) with from/to, or <code>what</code> (Created, Generated from maintenance plan, Quick intervention started, Completed, Completed (recorded after the fact), Reopened…).</p>
+
+<h3>6.9 Interventions (execution)</h3>
+<h4>intervention</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>Yes</td><td></td><td>One active intervention per work order.</td></tr>
+<tr><td>mode</td><td>enum(running, paused, review, done)</td><td>Yes</td><td>running</td><td></td></tr>
+<tr><td>current_step_id</td><td>fk → checklist_step</td><td>No</td><td>first step</td><td></td></tr>
+<tr><td>started_at / ended_at</td><td>datetime</td><td>Yes / No</td><td>now</td><td></td></tr>
+<tr><td>worked_ms</td><td>bigint</td><td>Yes</td><td>0</td><td>Excludes paused time.</td></tr>
+<tr><td>pause_reason</td><td>string(200)</td><td>No</td><td></td><td>Sets the work order waiting flag <code>paused</code> (or <code>parts</code>).</td></tr>
+<tr><td>started_by</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+</tbody></table>
+<h4>intervention_step_result</h4>
+<p>intervention_id, step_id, value (json: answer, number, choices, text), photos (files), files, flagged bool (answer matches <code>flag_when</code> or out of range), done_by, done_at, skipped bool (step bypassed by a rule).</p>
+<h4>intervention_usage</h4>
+<p>Actual usage of parts and consumables: intervention_id, part_id, amount (in use unit), amount_stock (converted), step_id (optional). On completion, usages become stock movements of kind consumption (once, <code>stock_done</code>).</p>
+
+<h3>6.10 Intervention requests</h3>
+<h4>intervention_request</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>number</td><td>string(8)</td><td>Yes</td><td>next R-</td><td></td></tr>
+<tr><td>asset_id</td><td>fk → asset</td><td>Yes</td><td></td><td>Search or QR scan.</td></tr>
+<tr><td>text</td><td>text</td><td>Yes</td><td></td><td>Short description of the issue.</td></tr>
+<tr><td>photo</td><td>file</td><td>No</td><td></td><td></td></tr>
+<tr><td>reported_by</td><td>fk → app_user</td><td>Yes</td><td>me</td><td></td></tr>
+<tr><td>status</td><td>enum(pending, accepted, rejected)</td><td>Yes</td><td>pending</td><td>Displayed Pending / Accepted / Not retained.</td></tr>
+<tr><td>decided_by / decided_at</td><td>fk → app_user / datetime</td><td>No</td><td></td><td></td></tr>
+<tr><td>note</td><td>string(200)</td><td>No</td><td></td><td>Reason shared with the reporter (rejection).</td></tr>
+<tr><td>work_order_id</td><td>fk → work_order</td><td>No</td><td></td><td>Set when a work order is created from it.</td></tr>
+</tbody></table>
+<h4>request_notify</h4>
+<p>request_id + target_type enum(user, team) + target_id. Team targets expand to all team members.</p>
+
+<h3>6.11 Checklists</h3>
+<h4>checklist</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td>v1 “Nom de la checklist*”.</td></tr>
+<tr><td>description</td><td>text</td><td>No</td><td></td><td></td></tr>
+<tr><td>status</td><td>enum(draft, published, archived)</td><td>Yes</td><td>draft</td><td>Only published checklists can be added to work orders and plans.</td></tr>
+<tr><td>version</td><td>int</td><td>Yes</td><td>1</td><td>Incremented at each publish.</td></tr>
+<tr><td>estimated_minutes</td><td>int</td><td>No</td><td>Σ step minutes</td><td></td></tr>
+<tr><td>source</td><td>enum(manual, generated)</td><td>Yes</td><td>manual</td><td>Generated from a document (advanced, AI) = saved as draft.</td></tr>
+</tbody></table>
+<h4>checklist_step</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>checklist_id</td><td>fk → checklist</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>sort</td><td>int</td><td>Yes</td><td>last</td><td>Order in the checklist view.</td></tr>
+<tr><td>title</td><td>string(200)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>type</td><td>enum(yesno, single, multi, number, text, comment, instruction, confirm, photo, file, parts, consumables)</td><td>Yes</td><td>confirm</td><td>§7.6.</td></tr>
+<tr><td>description</td><td>text</td><td>No</td><td></td><td>Instructions (one line per sub-instruction for <code>instruction</code>).</td></tr>
+<tr><td>required</td><td>bool</td><td>Yes</td><td>false</td><td>Step must be answered to go on.</td></tr>
+<tr><td>minutes</td><td>int</td><td>No</td><td></td><td>Estimated duration.</td></tr>
+<tr><td>expected / unit / min / max</td><td>string / string / decimal / decimal</td><td>No</td><td></td><td><code>number</code> steps; unit from site units.</td></tr>
+<tr><td>out_of_range</td><td>enum(warn, block)</td><td>No</td><td>warn</td><td>Behavior when a number is out of min/max.</td></tr>
+<tr><td>flag_when</td><td>string</td><td>No</td><td></td><td>Answer that flags an anomaly.</td></tr>
+<tr><td>min_photos / min_chars</td><td>int</td><td>No</td><td></td><td></td></tr>
+<tr><td>conditional</td><td>bool</td><td>Yes</td><td>false</td><td>Step reached only through a rule (excluded from parts/assignment).</td></tr>
+<tr><td>after / after_target</td><td>enum(next, goto, finish) / fk → step</td><td>Yes</td><td>next</td><td>Default flow after the step.</td></tr>
+</tbody></table>
+<p>Child tables: <b>step_option</b> (step_id, label, sort) for single/multi/confirm; <b>step_rule</b> (step_id, when string, action enum(goto, require, finish), target_step_id, need enum(photo, comment)); <b>step_skill</b> (step_id, skill_id); <b>step_tool</b> (step_id, asset_id mobile); <b>step_part</b> (step_id, part_id, qty) for parts/consumables steps; <b>step_media</b> (step_id, kind enum(image, video, pdf), document_id or file).</p>
+
+<h3>6.12 Maintenance plans</h3>
+<h4>maintenance_plan</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td>v1 “Nom du plan*”. Becomes the task of generated work orders.</td></tr>
+<tr><td>description</td><td>text</td><td>No</td><td></td><td></td></tr>
+<tr><td>wo_type_id</td><td>fk → wo_type</td><td>Yes</td><td>Preventive</td><td>Preventive, Inspection or Predictive.</td></tr>
+<tr><td>kind</td><td>enum(maintenance, inspection, calibration)</td><td>Yes</td><td>maintenance</td><td>Inspection / calibration plans feed the Home “Reminders”.</td></tr>
+<tr><td>trigger</td><td>enum(time, meter)</td><td>Yes</td><td>time</td><td>v1 “Fréquence”.</td></tr>
+<tr><td>every</td><td>decimal(10,2)</td><td>Yes</td><td></td><td>&gt; 0.</td></tr>
+<tr><td>unit</td><td>enum(days, weeks, months, years) | meter unit</td><td>Yes</td><td>months</td><td>Meter: operating hours, cycles, km…</td></tr>
+<tr><td>last_done</td><td>date</td><td>Time</td><td>today</td><td>Reference date.</td></tr>
+<tr><td>last_meter</td><td>decimal(12,2)</td><td>Meter</td><td>current reading</td><td>Reference meter value.</td></tr>
+<tr><td>lead_days</td><td>int</td><td>Yes</td><td>3</td><td>Work orders are generated this many days before due.</td></tr>
+<tr><td>checklist_id</td><td>fk → checklist</td><td>Yes</td><td></td><td>v1 “Checklist associée*”.</td></tr>
+<tr><td>estimated_duration</td><td>time (hh:mm)</td><td>No</td><td>from checklist</td><td></td></tr>
+<tr><td>default_assignee_id</td><td>fk → app_user</td><td>No</td><td></td><td></td></tr>
+<tr><td>active</td><td>bool</td><td>Yes</td><td>true</td><td>Active plans generate work orders (v1 rule).</td></tr>
+<tr><td>source</td><td>enum(manual, manufacturer)</td><td>Yes</td><td>manual</td><td>Generated from a manufacturer manual (advanced).</td></tr>
+</tbody></table>
+<p><b>plan_asset</b>: PK (plan_id, asset_id), at least one asset (v1 “Équipements*”). <b>plan_generation</b>: plan_id, due date, generated_at, manual bool, work_order ids (json).</p>
+<h3>6.13 Communication and notifications</h3>
+<h4>chat_channel</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>kind</td><td>enum(direct, team, site, work_order)</td><td>Yes</td><td></td><td>One site channel per site, one channel per team, one per work order, one per pair of users.</td></tr>
+<tr><td>team_id / work_order_id</td><td>fk</td><td>By kind</td><td></td><td>Unique per kind.</td></tr>
+<tr><td>title</td><td>string(160)</td><td>Computed</td><td></td><td>Team name, site name, work order title, other person’s name.</td></tr>
+</tbody></table>
+<p><b>chat_channel_member</b>: derived — team members (team), all site users (site), assigned users + followers (work order), the two users (direct). <b>chat_read</b>: (channel_id, user_id, last_read_message_id) for unread counters.</p>
+<h4>chat_message</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>channel_id</td><td>fk → chat_channel</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>author_id</td><td>fk → app_user | null</td><td>No</td><td></td><td>Null = system message (e.g. “Intervention paused at step 3 of 6”).</td></tr>
+<tr><td>text</td><td>text</td><td>Yes</td><td></td><td>@handle mentions parsed into <code>mentions</code> (json user ids).</td></tr>
+<tr><td>tag</td><td>enum(Help, Missing part, Handover, Reassignment) | null</td><td>No</td><td></td><td>Tagged messages trigger notifications.</td></tr>
+<tr><td>ref_type / ref_id</td><td>enum(asset, work_order, spare_part, intervention) / uuid</td><td>No</td><td></td><td>Reference card to an object.</td></tr>
+<tr><td>attachments</td><td>files</td><td>No</td><td></td><td>Photos, files.</td></tr>
+<tr><td>sent_at</td><td>datetime</td><td>Yes</td><td>now</td><td></td></tr>
+</tbody></table>
+<h4>notification</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>recipient_id</td><td>fk → app_user</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>type</td><td>enum (catalogue §7.15)</td><td>Yes</td><td></td><td>Determines category, importance and default level.</td></tr>
+<tr><td>importance</td><td>enum(crit, imp, info)</td><td>Yes</td><td>from type</td><td>Critical / Important / Informational.</td></tr>
+<tr><td>title / subtitle</td><td>string</td><td>Yes / No</td><td></td><td></td></tr>
+<tr><td>link</td><td>string</td><td>Yes</td><td></td><td>Deep link to the object or message.</td></tr>
+<tr><td>dedup_key</td><td>string</td><td>No</td><td></td><td>Prevents duplicates (e.g. plan × due date, rule × asset × day).</td></tr>
+<tr><td>read_at</td><td>datetime</td><td>No</td><td></td><td></td></tr>
+<tr><td>delivered</td><td>set(activity, bell, toast, email, push)</td><td>Yes</td><td></td><td>Resolved from preferences at creation.</td></tr>
+</tbody></table>
+<h4>notification_pref</h4>
+<p>1–1 with app_user: channels {email, push}, quiet_hours bool (default true), digest bool (default false), scope per category (wo, int, eq, parts, plan, chat: <code>involved</code> | <code>team</code> | <code>site</code>), per type override {level, email, push}.</p>
+<h4>alert_rule / alert_rule_recipient</h4>
+<table><thead><tr><th style="width:20%">Field</th><th style="width:16%">Type</th><th style="width:6%">Req.</th><th style="width:12%">Default</th><th>Notes</th></tr></thead><tbody>
+<tr><td>site_id</td><td>fk → site</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>name</td><td>string(120)</td><td>Yes</td><td></td><td></td></tr>
+<tr><td>trigger</td><td>enum(recurring, overdue, stopped, control)</td><td>Yes</td><td></td><td>§7.15.4.</td></tr>
+<tr><td>n / days</td><td>int</td><td>By trigger</td><td></td><td>Threshold count / window or delay.</td></tr>
+<tr><td>scope</td><td>enum(all, asset, owner, zone, crit)</td><td>Yes</td><td>all</td><td>With scope values (json).</td></tr>
+<tr><td>active</td><td>bool</td><td>Yes</td><td>true</td><td></td></tr>
+</tbody></table>
+<p>Recipients: (rule_id, user_id), at least one.</p>
+
+<h3>6.14 Site configuration (reference data)</h3>
+<p>All tables below are site-scoped and share: <code>name</code> string(80) required, <code>code</code> string(12) required and unique per site, <code>active</code> bool default true, <code>sort</code> int. <code>system=true</code> rows cannot be deleted or renamed in their code.</p>
+<table><thead><tr><th style="width:18%">Table</th><th style="width:34%">Specific fields</th><th>Usage</th></tr></thead><tbody>
+<tr><td>asset_type</td><td>asset_class enum(fixed, mobile), icon, default_criticality</td><td>Asset wizard (type tiles), filters, custom fields applicability.</td></tr>
+<tr><td>criticality</td><td>response_time string (e.g. “&lt; 2 h”), system</td><td>Assets, alert rule scope, prioritisation.</td></tr>
+<tr><td>wo_type</td><td>icon, color, strategy (text)</td><td>Work orders, plans, filters, KPIs.</td></tr>
+<tr><td>failure_category</td><td>—</td><td>Corrective work orders, quick intervention completion, recurring-failure analysis.</td></tr>
+<tr><td>priority</td><td>target_delay string (e.g. “4 h”), system</td><td>Work orders; Critical/High = urgent.</td></tr>
+<tr><td>wo_status</td><td>stage enum(Open, Computed, Flag, Closed), system</td><td>Labels of the system workflow (codes fixed, labels editable).</td></tr>
+<tr><td>part_category</td><td>icon, default_unit</td><td>Spare parts (reference prefix, unit).</td></tr>
+<tr><td>cost_center</td><td>owner_user_id, zone_id, annual_budget decimal (Financial), description</td><td>Assets, parts, work orders (<code>cost_center_code</code>).</td></tr>
+<tr><td>custom_field</td><td>entity enum(Asset, Work order, Spare part), type enum(decimal, integer, text, choice, date, boolean), quantity (code), unit, decimals, min, max, options (json), required, asset_types (json)</td><td>§7.18.</td></tr>
+<tr><td>custom_value</td><td>custom_field_id, entity_type, entity_id, value (string)</td><td>Values; numbers stored in the site unit of the quantity at entry.</td></tr>
+<tr><td>quantity</td><td>units (json)</td><td>Custom quantities added to the system catalogue.</td></tr>
+<tr><td>site_unit</td><td>quantity code, unit</td><td>One unit per quantity per site.</td></tr>
+<tr><td>label_format</td><td>size string (e.g. “50 × 50 mm”), is_default</td><td>QR label printing; exactly one default.</td></tr>
+<tr><td>maturity_level</td><td>concept enum (10 concepts), level int 1–3</td><td>§7.21. PK (site_id, concept).</td></tr>
+<tr><td>maturity_override</td><td>feature id, on bool</td><td>Custom mode (§7.21). PK (site_id, feature).</td></tr>
+<tr><td>maturity_log</td><td>concept, from, to, by, at</td><td>History of maturity changes.</td></tr>
+<tr><td>site_setting</td><td>advanced_features bool (default true), other site flags</td><td>Feature flags.</td></tr>
+</tbody></table>
+
+<h2>7. Business rules</h2>
+<h3>7.1 Work order lifecycle</h3>
+<h4>7.1.1 Statuses (replaces v1 status list)</h4>
+<table><thead><tr><th style="width:16%">Status</th><th style="width:12%">Stage</th><th>Meaning</th><th style="width:30%">v1 equivalent</th></tr></thead><tbody>
+<tr><td>Requested</td><td>Open</td><td>Exists, not yet scheduled (no planned date). Includes work orders created from accepted requests and quick-intervention drafts.</td><td>— (new)</td></tr>
+<tr><td>Scheduled</td><td>Open</td><td>Has a planned date/time and assigned people.</td><td>Planifié</td></tr>
+<tr><td>In progress</td><td>Open</td><td>An intervention has been started.</td><td>En cours</td></tr>
+<tr><td>Completed</td><td>Closed</td><td>Intervention closed (Review &amp; close) or completion recorded after the fact.</td><td>Terminé</td></tr>
+<tr><td>Overdue</td><td>Computed</td><td>Not a stored status: an open work order whose planned date (or desired date when not planned) is in the past. Shown with “N d late”.</td><td>En retard</td></tr>
+<tr><td>Waiting</td><td>Flag</td><td>Flag with a reason that coexists with any open status (§7.1.3).</td><td>En attente pièces (reason <code>parts</code>)</td></tr>
+</tbody></table>
+<h4>7.1.2 Transitions</h4>
+<table><thead><tr><th style="width:22%">From → To</th><th style="width:12%">Allowed</th><th>Rule</th></tr></thead><tbody>
+<tr><td>Requested → Scheduled</td><td>Yes</td><td>Approve and schedule: a planned date is set (Planning drop, slot dialog, edition). Note “set the date in Planning” when moved on the board.</td></tr>
+<tr><td>Scheduled → Requested</td><td>Yes</td><td>Removed from the plan (planned date cleared).</td></tr>
+<tr><td>Requested/Scheduled → In progress</td><td>Only by starting</td><td>A work order becomes In progress <b>only</b> when its intervention is started (Start intervention). Moving a card to In progress proposes “Start intervention” (“Approve &amp; start” from Requested).</td></tr>
+<tr><td>In progress → Requested/Scheduled</td><td>No</td><td>Once started, the work order stays In progress. To stop working, pause the intervention: it remains In progress and is flagged Waiting (“Mark as waiting”).</td></tr>
+<tr><td>In progress → Completed</td><td>Only by closing</td><td>Only through Review &amp; close of the intervention (“Resume intervention” is proposed).</td></tr>
+<tr><td>Requested/Scheduled → Completed</td><td>No / special</td><td>Refused on the board (“the intervention has not started”). Allowed only through “Complete without intervention” (work done on site, recorded afterwards): requires actual time, report and performer; history entry “Completed (recorded after the fact)”.</td></tr>
+<tr><td>Completed → any</td><td>No</td><td>A completed work order cannot be moved. Reopen from the work order detail (Full access) if more work is needed; a follow-up work order is preferred.</td></tr>
+</tbody></table>
+<h4>7.1.3 Waiting flag</h4>
+<p>Reasons: <code>parts</code> Waiting for spare parts · <code>paused</code> Intervention paused · <code>dependency</code> Waiting for another job · <code>access</code> Waiting for equipment access · <code>approval</code> Waiting for approval · <code>supplier</code> Waiting for external provider. Optional note. While <code>parts</code> is set and the required parts are not available, Start is disabled for assignees (“Waiting” indicator); it becomes available when parts arrive (stock receipt clears the flag automatically if all required parts are available).</p>
+<h4>7.1.4 Identification and display</h4>
+<ul>
+<li>A work order is identified by its title “Asset — Task”; the WO ID is shown as secondary information.</li>
+<li>Overdue items are highlighted with “N d late”. Urgent = Critical or High priority (marked as urgent); other priorities are shown as normal text.</li>
+<li>Row click opens the work order; explicit Start / Resume buttons run the intervention.</li>
+</ul>
+<h4>7.1.5 History</h4>
+<p>Every change of status, priority, assignee, planned date, waiting flag, type, title or asset is appended to the work order history with author and time; creation, generation from a plan, quick start and completion are recorded as events. History is visible in the work order “History” section.</p>
+<h4>7.1.6 Follow-up and root cause</h4>
+<p>From a completed work order, a follow-up work order can be created (link <code>parent_wo_id</code>, notification <code>wo-followup</code>). Corrective work orders can carry a root cause analysis (cause, 5 whys, corrective action).</p>
+
+<h3>7.2 Work order creation</h3>
+<p>Creating a work order from anywhere (Home, Work orders, Asset detail, Planning slot, request, chat) opens the same right-side 4-step wizard. Links to “new work order” are intercepted to open the wizard. Creation is refused for users without Work orders Edit access (they are invited to send an intervention request).</p>
+<table><thead><tr><th style="width:16%">Step</th><th>Fields and rules</th></tr></thead><tbody>
+<tr><td>1. Essentials*</td><td>Asset* (prefilled from context), Type*, Task (title)*, Priority*. “Next step” is disabled until mandatory fields are filled.</td></tr>
+<tr><td>2. Checklists</td><td>Select published checklists (optional). Required spare parts/consumables and mobile assets of the selected checklists are added automatically (tag “From checklist”); estimated duration = Σ step minutes.</td></tr>
+<tr><td>3. People</td><td>Assigned users (one per checklist part, suggestions by skill and availability, §7.7) and Include in follow-up. Never “Participants”.</td></tr>
+<tr><td>4. Details</td><td>Request date* (back-dating allowed, never in the future), Desired date (≥ request date), Description*, Failure category, Production stop, Cost center (default from asset), Required parts (add/remove; dismissed checklist parts restorable), Required equipment (mobile assets), External services/rentals (cost estimate), custom fields for Work order, documents. Creation is blocked while a required mobile asset is reserved at the chosen time (§7.10).</td></tr>
+</tbody></table>
+<p>Footer: Cancel / Previous, “Next step” (disabled until the step is valid), “Create work order” on the last step only; option “Create another”. On creation: number generated, status Requested (no date) or Scheduled (date + assignee), history “Created”, event <code>wo-created</code>, notifications to assignees (<code>wo-assigned</code>), work order chat channel created with assigned users and followers. If created from a request, the request becomes Accepted and is linked.</p>
+
+<h3>7.3 Quick intervention</h3>
+<ul>
+<li>For an immediate breakdown. Same right-side panel shell as the wizard, 2 steps: <b>Equipment</b> (search or QR scan) → <b>Issue</b> (short description, type). Footer Cancel/Previous + Next step → <b>Start intervention</b>.</li>
+<li>Creates a work order with <code>quick=true</code>, status In progress, assignee = current user, and opens the intervention immediately. The work order shows “Information incomplete” until Priority, Description and Failure category are completed (required at Review &amp; close).</li>
+</ul>
+
+<h3>7.4 Intervention requests</h3>
+<ul>
+<li>Any signed-in user, including Requesters and production operators, can send a request: asset* (search/QR), short description*, optional photo, people and/or teams to notify. A request is <b>not</b> a work order.</li>
+<li>Lifecycle: Report issue → Notify → Review (<b>Pending</b> → <b>Accepted</b> or <b>Not retained</b>) → Create work order if needed.</li>
+<li>Notified users and members of notified teams receive a <code>wo-request</code> notification. A request is relevant to a user if they reported it, were notified, or one of their teams was notified.</li>
+<li>Decision: by a notified user (or any Work orders Full user) with Work orders Edit access. “Not retained” accepts an optional reason shared with the reporter. “Create work order” opens the wizard prefilled (asset, title from the description, description + “From intervention request R-… · reported by …”, type Corrective, followers = decider + reporter); on creation the request becomes Accepted and links the work order.</li>
+<li>Home shows the block “Intervention requests” with To review / All views; the block is <b>hidden entirely</b> when nothing is pending for the user.</li>
+</ul>
+
+<h3>7.5 Intervention (execution)</h3>
+<ul>
+<li>Entry: Work order detail “Start intervention” / “Resume intervention”, Home to-do Start/Resume, quick intervention. Only assigned users (or Work orders Full users) can start or resume. Unassigned viewers get “Ask” (opens the work order chat).</li>
+<li>Focused mode without the menu: one step at a time, “Step N of M”, Previous/Next, Pause, “Review &amp; close”. The work order chat is permanently docked on the right.</li>
+<li>Each assigned user executes the checklist parts assigned to them; parts of others are shown read-only with the person in charge.</li>
+<li>Required steps block “Next” until answered; rules (§7.6) can skip steps, require a photo/comment or finish the checklist.</li>
+<li>Pause: stores progress (current step, answers, worked time) and sets the waiting flag (<code>paused</code>, or <code>parts</code> when paused for a missing part); a system message is posted in the chat; followers receive <code>int-paused</code>. Progress summary is visible elsewhere (e.g. “3 of 7 steps”).</li>
+<li>Review &amp; close: summary of answers and flagged anomalies, actual time, parts and consumables used (UsageInput), photos, report; quick interventions must complete missing information. On close: status Completed, <code>completed_at</code>, actual time, usages recorded on the work order, <b>stock deducted once</b> (<code>stock_done</code>), part reservations consumed, actual costs computed, history “Completed”, notification <code>int-completed</code> to followers, asset history updated, meter reading proposed for meter-based assets.</li>
+<li>Flagged anomalies can create a follow-up work order directly.</li>
+</ul>
+<h3>7.6 Checklists and workflow execution</h3>
+<h4>7.6.1 Step types (system catalogue)</h4>
+<table><thead><tr><th style="width:14%">Code</th><th style="width:18%">Label</th><th style="width:10%">Group</th><th>Behavior during execution</th></tr></thead><tbody>
+<tr><td>yesno</td><td>Yes / No</td><td>Input</td><td>Answer Yes or No; can drive rules and flag an anomaly.</td></tr>
+<tr><td>single</td><td>Single choice</td><td>Input</td><td>One option among the step options.</td></tr>
+<tr><td>multi</td><td>Multiple choice</td><td>Input</td><td>Several options.</td></tr>
+<tr><td>number</td><td>Number</td><td>Input</td><td>Measured value with unit, expected value, min/max; out of range = warning or block (<code>out_of_range</code>), flagged.</td></tr>
+<tr><td>text</td><td>Text</td><td>Input</td><td>Free text, optional minimum length.</td></tr>
+<tr><td>comment</td><td>Comment</td><td>Input</td><td>Optional remark.</td></tr>
+<tr><td>instruction</td><td>Instruction</td><td>Action</td><td>Read and confirm instructions (with media).</td></tr>
+<tr><td>confirm</td><td>Checkbox</td><td>Action</td><td>Tick each option (e.g. safety checks); all required when the step is required.</td></tr>
+<tr><td>photo</td><td>Take photo</td><td>Action</td><td>Minimum number of photos.</td></tr>
+<tr><td>file</td><td>Attachment</td><td>Action</td><td>Attach a file.</td></tr>
+<tr><td>parts</td><td>Spare parts</td><td>Action</td><td>Confirm parts used (quantities, whole units).</td></tr>
+<tr><td>consumables</td><td>Consumables</td><td>Action</td><td>Record amounts or percentage used (UsageInput).</td></tr>
+</tbody></table>
+<h4>7.6.2 Rules and flow</h4>
+<ul>
+<li>Default flow: next step in order. A step can define <code>after</code> = next / goto step / finish.</li>
+<li>Rules per answer: <b>goto</b> a step, <b>require</b> a photo or comment, <b>finish</b> the checklist. Conditional steps are reached only through a rule; skipped steps are recorded as skipped.</li>
+<li><code>flag_when</code> marks an answer as an anomaly (shown at review, can trigger a follow-up).</li>
+<li>Two editing views share the same model: <b>Checklist view</b> (ordered list, expandable step editor, quick-add) and <b>Workflow view</b> (Start and End fixed, palette of step types, automatic layout, connections drawn between steps, insert zones, side-panel step editor). Each rule is a connection in the workflow view.</li>
+<li>Consistency checks on publish: every goto target exists, no step unreachable (except conditional steps reached by a rule), at least one path to End, required options defined for choice steps.</li>
+<li>Preview mode runs the checklist in the intervention screen without creating data.</li>
+<li>A checklist used by work orders keeps a version snapshot per work order: editing a published checklist does not alter running interventions.</li>
+</ul>
+<h4>7.6.3 Skills, duration, equipment and parts on steps</h4>
+<ul>
+<li>Each step can carry required <b>skills</b>, estimated <b>minutes</b>, required <b>mobile assets</b> (tools) and, for parts/consumables steps, <b>spare parts</b> with quantities.</li>
+<li>Consecutive steps with the same skills form a <b>part</b> (steps without skills join the previous part). Conditional steps are excluded. Parts are sequential: offset = Σ previous part durations.</li>
+<li>Required parts of a work order = aggregation of its checklists’ parts/consumables steps (partsOf), plus manual additions, minus dismissed.</li>
+</ul>
+
+<h3>7.7 Skills and assignment (multiple assignees)</h3>
+<ul>
+<li>Skills catalogue per site (Site configuration › Skills): Trade, Technique, Certification. Users hold skills with a level 1 Basic / 2 Qualified / 3 Expert.</li>
+<li>Assignment is per checklist part: one person per part (the same person can take several parts). The work order <code>assignee</code> is the first assigned user. A work order without checklist has one or more assigned users for the whole duration.</li>
+<li>Suggestions rank people by: has all required skills (mandatory to be “matching”), available at the planned time (§7.8), sum of skill levels, free hours that day. Auto-assign keeps the same person on consecutive parts when possible.</li>
+<li>People selection fields everywhere (wizard, work order edit): <b>Assigned users</b> (perform the work; parts derived by skill) and <b>Include in follow-up</b> (not assigned; chat + updates; follower role “Follow-up”). A person cannot be both.</li>
+<li>Assigning someone without the required skill is allowed only with an explicit warning; assigning someone unavailable shows the reason (off, absent, other site, outside shift).</li>
+</ul>
+
+<h3>7.8 User availability</h3>
+<ul>
+<li>Availability for a time window on a date at a site: not working that weekday → unavailable “Not working that day”; shift at another site → “At {site}”; full-day absence (or part-day absence overlapping the window) → absence label; window outside shift hours → “Works hh:mm–hh:mm”; otherwise available.</li>
+<li>Capacity of a day = shift hours minus part-day absence; free hours = capacity minus planned work.</li>
+<li>Current status on profiles: absent, off today, at another site, on shift until hh:mm, or shift hours.</li>
+<li>Users edit their own profile (skills require manager validation if configured); managers and administrators edit profiles of their site users.</li>
+</ul>
+
+<h3>7.9 Planning and scheduling</h3>
+<ul>
+<li>Views Day / Week / Month (v1 §11), navigation previous/next/today, filters (technician, team, type, priority). Planning day 0 is Monday; weekends are non-working by default.</li>
+<li><b>Backlog</b>: open work orders without planned date (Requested), with their parts per skill (<code>segs</code> [{skills, hours, who}]). Dropping a backlog item on a slot splits it into one event per part/person.</li>
+<li>Slots where nobody qualified and available exists are striped and refuse drops; Day view shades off-shift and absence hours.</li>
+<li>Slots where a required mobile asset is already reserved are striped (equipment) and refuse drops; drops on reservations created by other work orders are refused with the next free slot proposed.</li>
+<li>Scheduling sets <code>planned_start</code>, status Scheduled, creates mobile asset reservations for the event duration, and notifies the assignees (<code>plan-change</code> on move/reassign).</li>
+<li>Home “Not scheduled” cards open a slot dialog (Today / Tomorrow / Thursday / Friday, “All day” or free slots of the assignee computed from shift, absences and already planned work).</li>
+<li>Preventive work orders generated by plans are loaded in Planning with their due date.</li>
+<li>Workload KPIs: scheduled, overdue, critical, planned hours, average load rate (planned hours / capacity).</li>
+</ul>
+
+<h3>7.10 Mobile assets and reservations</h3>
+<ul>
+<li>Mobile assets (cranes, lifts, forklifts, measuring instruments, tool kits) are assets of class <code>mobile</code>; they have a home location and can be reserved.</li>
+<li>Checklist steps reference required mobile assets; work orders store <code>wo_tool</code> (automatic from checklists, editable).</li>
+<li>Reservation conflicts: two reservations of the same mobile asset cannot overlap. Work order creation and edition are <b>blocked</b> while a required mobile asset is reserved at the chosen time; the next free slot is proposed.</li>
+<li>Asset detail of a mobile asset has a Reservations tab (in use now / upcoming / past). Internal equipment time is costed at the internal hourly rate of the asset type or asset (§7.13).</li>
+</ul>
+
+<h3>7.11 Spare parts and consumables</h3>
+<ul>
+<li>The Spare parts module is the single source of truth for items: kind <b>Replacement part</b> (whole units) or <b>Consumable</b>.</li>
+<li>Consumable usage modes: <b>amount</b> (in stock unit or a sub-unit mL/g/cm converted to L/kg/m) or <b>percent</b> (percentage of one unit: stock becomes fractional, shown as “3 rolls + 1 opened (65%)”).</li>
+<li>One adaptive input (UsageInput) is used everywhere a quantity is entered: stepper (parts), amount field with unit (amount), slider (percent) — in step editor, work order panel and intervention.</li>
+<li>Required parts on a work order create reservations; available stock = qty − reserved. A required part out of stock notifies the assignees (<code>part-unavailable</code>) and can set the waiting flag <code>parts</code>.</li>
+<li>Stock decreases only through stock movements: consumption at intervention completion (once), manual adjustment (with reason), receipt, transfer between storage areas, return.</li>
+<li>Low stock (qty &lt; min) notifies stock followers (<code>part-low</code>); KPIs: references, stock value (Financial), low stock, out of stock.</li>
+<li>Each part is stored in a storage area (a plant Step flagged storage) + bin; links to equipment (where used), preferred supplier and supplier reference, cost center, GTIN (validated), item code, image, custom fields.</li>
+<li>Export (CSV) of the filtered list; the Unit cost column is empty without the Financial permission.</li>
+<li>Deletion of a part referenced by checklists or open work orders is refused; it can be deactivated.</li>
+</ul>
+
+<h3>7.12 Plant hierarchy and assets</h3>
+<ul>
+<li>Hierarchy Plant › Zone › Line › Step, edited in Site configuration › Plant hierarchy (add zone/line/step, rename, delete when empty). Storage areas = Steps with <code>storage</code>.</li>
+<li>Assets are attached to a Step. Sub-assemblies and components (v1 levels 4–5) are modeled as child assets (<code>parent_asset_id</code>).</li>
+<li>Assets page views: <b>List</b> (zone cards + filters; flat list or “By location” accordion Zone › Line › Step › assets), <b>Hierarchy</b> (searchable tree + node chart with zoom and selected-node card) and <b>Plant layout</b> (map, to be fitted later on the real plant drawing). The chosen view is remembered.</li>
+<li>Asset wizard (create and edit): Type (Equipment/Mobile + type tiles) → Location (Zone / Line / Step drill-down + search) → Identity → Specifications (custom fields for the type + free specs) → Documents.</li>
+<li>Asset detail tabs: Overview, Work orders, Preventive (plans, meter), Documents, Reservations (mobile), Lifecycle and Live monitoring (advanced). KPIs: open WOs, overdue WOs, active plans, next preventive.</li>
+<li>Actions: edit, QR code (individual or bulk; label formats 50×25, 70×35, 100×50, A4 sheet; PNG download; the QR encodes the asset detail link), decommission (reason, date, note; status Out of service; reinstate possible), delete (only without work orders/history), import (CSV), export.</li>
+<li>Asset status: In service, Stopped, Out of service. Status changes notify (<code>eq-status</code>) and feed alert rules (stopped).</li>
+</ul>
+
+<h3>7.13 Intervention costs</h3>
+<table><thead><tr><th style="width:20%">Category</th><th>Source and computation</th></tr></thead><tbody>
+<tr><td>Labor</td><td>For each assignment: hours × <b>hourly rate of the user</b> (Teams &amp; users). Estimate = part minutes; after completion, hours are scaled by actual time / estimated time and rounded to the quarter hour. Without assignments: assignee × total hours. Fallback when no rate is set: role default rate (configuration).</td></tr>
+<tr><td>Spare parts</td><td>Parts used (or required, before completion) × unit cost.</td></tr>
+<tr><td>Consumables</td><td>Actual usage converted to stock unit × unit cost (e.g. 0.5 L × €8/L); manual consumable lines can be added.</td></tr>
+<tr><td>External services</td><td>Manual lines: provider labour (hours × hourly rate), provider rates (per visit / per day / fixed), travel or call-out fee.</td></tr>
+<tr><td>Equipment &amp; rental</td><td>Internal mobile assets of the work order × intervention hours × internal hourly rate; external rentals (per day / fixed + delivery &amp; pick-up).</td></tr>
+</tbody></table>
+<ul>
+<li>Mode “Estimate” before completion, “Actual” after (based on actual time spent).</li>
+<li>Costs are visible only to users with the Financial permission; others see a locked card. Unit prices are copied on manual lines so later price changes do not alter past work orders.</li>
+<li>Costs roll up by asset, cost center, work order type and period (reports, budgets).</li>
+</ul>
+
+<h3>7.14 Suppliers and external service providers</h3>
+<ul>
+<li>A supplier can provide spare parts &amp; consumables, external services and/or equipment rental. Service providers carry an hourly rate and a travel/call-out fee; rental providers carry daily rates and a delivery fee; any provider can carry named rates (per hour, per visit, per day, fixed).</li>
+<li>Supplier detail: contact, terms, lead time, rating, parts supplied, rates, work orders where used.</li>
+<li>Only Active providers are offered when adding services/rentals to a work order. A supplier referenced by parts or cost lines cannot be deleted (deactivate instead).</li>
+<li>Rates and prices are Financial data (hidden without the permission).</li>
+</ul>
+<h3>7.15 Notifications</h3>
+<h4>7.15.1 Delivery levels and importance</h4>
+<ul>
+<li>Levels: <b>Activity only</b> (Home live activity, no badge) · <b>Notification</b> (bell badge + notification centre) · <b>Pop-up</b> (notification + on-screen pop-up, top right). Email and push are additional channels per type.</li>
+<li>Importance: <b>Critical</b> (pop-ups stay until dismissed; can never be lowered below Notification), <b>Important</b> (pop-up auto-dismissed after ~9 s), <b>Informational</b> (~6 s).</li>
+<li>Notification centre: tabs All / Unread, grouped Today / Earlier, mark as read individually or all, link to the object; footer link to Notification settings.</li>
+<li>Quiet hours (default on): outside the user’s shift, only Critical notifications are pushed/emailed; others wait for the next shift. Digest (default off): daily email summary instead of individual emails.</li>
+<li>Scope per category: <code>involved</code> (only objects I am assigned to / follow / own — default), <code>team</code>, <code>site</code>.</li>
+</ul>
+<h4>7.15.2 Catalogue (system) and default delivery</h4>
+<table><thead><tr><th style="width:15%">Type</th><th style="width:12%">Category</th><th style="width:25%">Label</th><th style="width:10%">Importance</th><th style="width:10%">Default level</th><th>Email / push</th></tr></thead><tbody>
+<tr><td>wo-assigned</td><td>Work orders</td><td>Work order assigned to me</td><td>Important</td><td>Pop-up</td><td>Yes / Yes</td></tr>
+<tr><td>wo-priority</td><td>Work orders</td><td>Priority changed</td><td>Important</td><td>Notification</td><td>No / No</td></tr>
+<tr><td>wo-request</td><td>Work orders</td><td>Intervention request</td><td>Important</td><td>Pop-up</td><td>No / Yes</td></tr>
+<tr><td>wo-created</td><td>Work orders</td><td>New work order in my team</td><td>Info</td><td>Activity</td><td>No / No</td></tr>
+<tr><td>wo-followup</td><td>Work orders</td><td>Follow-up created</td><td>Info</td><td>Notification</td><td>No / No</td></tr>
+<tr><td>int-overdue</td><td>Interventions</td><td>Intervention overdue</td><td>Critical</td><td>Pop-up</td><td>Yes / Yes</td></tr>
+<tr><td>int-paused</td><td>Interventions</td><td>Intervention paused</td><td>Important</td><td>Notification</td><td>No / No</td></tr>
+<tr><td>int-completed</td><td>Interventions</td><td>Intervention completed</td><td>Info</td><td>Activity</td><td>No / No</td></tr>
+<tr><td>eq-critical</td><td>Equipment</td><td>Critical equipment issue</td><td>Critical</td><td>Pop-up</td><td>Yes / Yes</td></tr>
+<tr><td>eq-status</td><td>Equipment</td><td>Equipment status changed</td><td>Info</td><td>Activity</td><td>No / No</td></tr>
+<tr><td>alert-rule</td><td>Equipment</td><td>Alert rules</td><td>Important</td><td>Pop-up</td><td>Yes / No</td></tr>
+<tr><td>part-unavailable</td><td>Spare parts</td><td>Required part unavailable</td><td>Important</td><td>Pop-up</td><td>Yes / No</td></tr>
+<tr><td>part-low</td><td>Spare parts</td><td>Low stock</td><td>Important</td><td>Notification</td><td>No / No</td></tr>
+<tr><td>plan-due</td><td>Planning</td><td>Preventive due soon</td><td>Important</td><td>Notification</td><td>Yes / No</td></tr>
+<tr><td>plan-change</td><td>Planning</td><td>Planning change</td><td>Info</td><td>Notification</td><td>Yes / No</td></tr>
+<tr><td>dm</td><td>Communication</td><td>Direct messages</td><td>Important</td><td>Pop-up</td><td>No / Yes</td></tr>
+<tr><td>mention</td><td>Communication</td><td>Mentions</td><td>Important</td><td>Pop-up</td><td>No / Yes</td></tr>
+<tr><td>reassign</td><td>Communication</td><td>Reassignment request</td><td>Important</td><td>Pop-up</td><td>No / Yes</td></tr>
+<tr><td>wo-message</td><td>Communication</td><td>Messages on my work orders (tagged / photos)</td><td>Info</td><td>Notification</td><td>No / No</td></tr>
+<tr><td>team-message</td><td>Communication</td><td>Team chat messages</td><td>Info</td><td>Activity</td><td>No / No</td></tr>
+</tbody></table>
+<p>Users change level, email and push per type in Notification settings (profile menu or bell footer); “Restore defaults” resets them.</p>
+<h4>7.15.3 Generation rules</h4>
+<ul>
+<li>Notifications are never sent to the user who caused the event.</li>
+<li>Deduplication by key (e.g. plan × due date, alert rule × asset × day).</li>
+<li>Overdue (<code>int-overdue</code>) is evaluated daily for assigned users of open work orders past their planned date.</li>
+<li>Plan generation creates one <code>plan-due</code> notification per generation (several assets grouped).</li>
+</ul>
+<h4>7.15.4 Smart alerts (advanced — maturity “Alerts &amp; notifications” level 3, Notification settings › Smart alerts)</h4>
+<p>The everyday settings stay a list of on/off switches; Smart alerts live in their own tab, shown only when the feature is on. A rule = trigger × asset scope (all, specific assets, owner, zone, criticality) × recipients, active switch, live “matching now” preview. Evaluated on page load; one notification per rule × asset × day (notification type “Smart alerts”, switchable in My notifications).</p>
+<table><thead><tr><th style="width:22%">Trigger</th><th>Condition</th></tr></thead><tbody>
+<tr><td>Too many interventions</td><td>More than N interventions (optionally of one priority) are late / waiting to be accepted / not scheduled / waiting / open / in progress.</td></tr>
+<tr><td>Measurement out of limits</td><td>A measurement point in scope has its last reading outside its limits (requires condition-based maintenance).</td></tr>
+<tr><td>Recurring failures</td><td>N corrective work orders on the same asset within a window of D days.</td></tr>
+<tr><td>Work order overdue</td><td>An open work order passes its planned date by N days.</td></tr>
+<tr><td>Equipment stopped</td><td>An asset in scope is Stopped or Out of service.</td></tr>
+<tr><td>Control / calibration due</td><td>An inspection or calibration plan falls due within N days.</td></tr>
+</tbody></table>
+<p>Scope: all assets, specific assets, assets owned by, plant zone, criticality. Recipients: one or more users. Rules are evaluated at least once a day (and on page load in the prototype); each match notifies once per rule × asset × day (type <code>alert-rule</code>).</p>
+
+<h3>7.16 Chat and communication</h3>
+<ul>
+<li>One chat component everywhere: Home hub, Work order detail (Discussion) and Intervention (docked).</li>
+<li>Channels: <b>direct</b> (between two users, <code>dm-&lt;user&gt;</code>), <b>team</b> (one per team, members = team members), <b>site</b> (all users of the site), <b>work order</b> (assigned users + followers).</li>
+<li>Home hub has two tabs: <b>Activity</b> (live events) and <b>Chat</b> — one unified conversation list (direct, teams, site, work orders) with search, “Unread” filter and “New message”; unread first, then most recent. Opening a conversation shows the thread with a back arrow. Direct conversations offer “All together”: every message exchanged with this person in shared channels.</li>
+<li>Messages support @mentions (by handle), tags (Help, Missing part, Handover, Reassignment), references to assets / work orders / interventions / spare parts, photos and attachments. System messages record pauses, completions and creation.</li>
+<li>Chat notifications (only these): direct messages, @mentions, reassignment requests, and on my work orders only tagged messages or photos. Other messages update unread counters only (team messages appear in Activity if enabled).</li>
+<li>Deep links: work order with <code>chat=1&amp;msg=ID</code>; Home with <code>chat=&lt;channel&gt;&amp;msg=ID</code>.</li>
+<li>Read state per user and channel; opening a thread marks it as read.</li>
+</ul>
+
+<h3>7.17 Documents</h3>
+<ul>
+<li>Library with KPIs, search (document, machine, type), filters (category, asset), categories Plan, Manual, Procedure, Datasheet, Certificate, Photo, Report, Other; preview panel; open, download, favorite.</li>
+<li>A document can be linked to many assets, work orders, checklist steps, spare parts and plans. Uploading a document from an asset or a work order creates the document and the link; detaching removes only the link.</li>
+<li>Versioning: uploading a new file on an existing document creates a new version; the latest version is opened by default, previous versions remain downloadable.</li>
+<li>Certificates with <code>valid_until</code> can feed reminders.</li>
+<li>Deleting a document linked to objects requires confirmation listing the links.</li>
+</ul>
+
+<h3>7.18 Custom fields and units</h3>
+<ul>
+<li>Custom fields are defined per site for entities Asset, Work order and Spare part: type decimal, integer, text, choice, date, yes/no; required flag; min/max; decimals; options for choice; asset-type applicability (asset fields only).</li>
+<li>Numeric fields can be linked to a <b>quantity</b> (temperature, pressure, length, mass, flow, speed, rotation, power, voltage, current, volume, duration, vibration, torque, percentage, or custom quantities); the displayed unit is the <b>site unit</b> of that quantity. Otherwise a free unit can be set.</li>
+<li>Used in: Asset wizard (Specifications), Work order wizard (Details), Work order edit/detail, Spare part form/detail. Values are validated (required, number, whole number, min/max) and formatted with the site unit.</li>
+<li>Deleting a custom field with values requires confirmation (values are archived); deleting a custom quantity used by fields converts them to a free unit.</li>
+</ul>
+
+<h3>7.19 Site configuration</h3>
+<ul>
+<li>Schema-driven CRUD per section: list with search, usage count, activate/deactivate toggle, drawer form, delete confirmation with usage check (“used by N assets…”), “Restore defaults” for seeded sections.</li>
+<li>Sections: <b>Site profile</b> (Maturity levels) · <b>Assets</b> (Asset types, Plant hierarchy, Criticality levels) · <b>Work orders</b> (Work order types, Failure origins, Priorities, Statuses) · <b>Spare parts</b> (Part categories, Cost centers) · <b>Data &amp; units</b> (Custom fields, Units of measure) · <b>People</b> (Skills) · <b>Printing</b> (QR label formats).</li>
+<li>System values (criticality, priorities, statuses) can be renamed but not deleted or deactivated.</li>
+<li>Units of measure: one column per site in the organization only for display; a site edits its own units.</li>
+<li>Header switch “Advanced features” (site setting): shows or hides features in development (§7.22).</li>
+<li>Organization, businesses and sites are <b>not</b> managed here (Super Admin only).</li>
+</ul>
+
+<h3>7.20 Autonomous vs standard maintenance</h3>
+<ul>
+<li><b>Standard maintenance</b> (<code>maintenance_mode = standard</code>): performed by maintenance staff (Technician, Planner, Manager roles) with the full work order lifecycle.</li>
+<li><b>Autonomous maintenance</b> (TPM, v1 strategy “Autonome”): simple routine tasks (cleaning, inspection, lubrication, tightening) performed by production operators. Rules:
+  <ul>
+  <li>Defined by maintenance plans or work orders flagged autonomous, with short checklists (inputs, checkbox, photo; no spare parts beyond consumables).</li>
+  <li>Assigned to operators (typically Requester role) or a production team; the assignment does not require maintenance skills.</li>
+  <li>Executed in the same intervention mode; anomalies flagged during execution create an intervention request for maintenance automatically (not a work order).</li>
+  <li>Not shown in the maintenance workload of Planning unless an assignee belongs to maintenance; reported separately in KPIs (autonomous compliance).</li>
+  </ul></li>
+<li>Requesters need Work orders View plus the capability “Execute autonomous tasks” granted by their assignment; they cannot create standard work orders.</li>
+</ul>
+<blockquote>Autonomous maintenance is specified here as the target rule; the current prototype does not yet expose the <code>maintenance_mode</code> switch (see §11).</blockquote>
+
+<h3>7.21 Maturity levels</h3>
+<ul>
+<li>Each site chooses, for 10 concepts (Work orders, Checklists, Planning, Preventive maintenance, Assets, Spare parts, Maintenance organization, Documents, Notifications, Performance), a level 1 <b>Essential</b> ★, 2 <b>Advanced</b> ★★ or 3 <b>Expert</b> ★★★, each with a short non-technical description and “what you can do”.</li>
+<li>Global score = Σ levels / (10 × 3) (e.g. 18 / 30 ★) with a journey stage: Getting started (&lt; 50 %), Building up (≥ 50 %), Well established (≥ 70 %), Expert site (≥ 90 %). Level 1 is a valid way of running maintenance, not a deficiency.</li>
+<li>Changes are logged (concept, from, to, by, at). New sites start at level 1 everywhere.</li>
+<li>Custom mode: on top of the levels, each catalogued feature can be switched on or off individually (override). Picking a level for a concept resets that concept's overrides. Features may require another feature (e.g. mobile equipment per step requires mobile equipment) and AI features also require the Advanced features switch.</li>
+</ul>
+<h4>7.21.1 Principles</h4>
+<ul>
+<li><b>Levels change complexity, never the availability of fundamentals.</b> At level 1 a site can report an issue, create an intervention, attach and run a simple checklist, assign someone and close the work.</li>
+<li><b>Gating hides interface, never data.</b> Switching a level down never deletes anything. A field that already holds a value stays visible and editable; an existing checklist runs completely in Intervention, whatever its step types (authoring is gated, execution is not).</li>
+<li><b>Progressive disclosure.</b> Optional fields are not displayed by default; they are offered as small “+ Label” chips that add one field at a time. Only chips for features that are on are offered.</li>
+<li><b>Consistency.</b> A feature switched on is usable everywhere it applies (creation wizard, intervention detail and edit, Planning, Intervention); a feature switched off disappears everywhere, including its Site configuration section.</li>
+<li>No artificial third level: where nothing meaningful differs between two levels, the feature is available from the lower one.</li>
+</ul>
+<h4>7.21.2 Rules per concept</h4>
+<table><thead><tr><th style="width:16%">Concept</th><th>Level 1 — Essential</th><th>Level 2 — Advanced</th><th>Level 3 — Expert</th></tr></thead><tbody>
+<tr><td>Interventions</td><td>Essentials only: asset, what to do, type, priority, production stop. Checklists, People and Details steps; “Create now” after Essentials. Details offers chips: Description, Estimated duration, Spare parts, Documents, Request date. Discussion &amp; follow-up (discussion panel, chat during the intervention, “Include in follow-up” people — one feature), quick intervention.</td><td>Chips Failure origin and Additional information (custom fields); change history.</td><td>Complete data entry: description, request date and failure origin shown by default, description required. Costs: cost card, cost center, external services &amp; rentals. Root cause analysis.</td></tr>
+<tr><td>Checklists</td><td>Linear checklists with basic steps: instruction, checkbox list, yes / no, measurement, comment, photo. Per step: required switch, then “+ Help text”, “+ Expected result” and “+ Photos &amp; documents” (pictures, videos, procedures) chips. Anomaly flag per answer.</td><td>All step types (single / multiple choice, short text, attachment, spare parts, consumables). “Photo / comment required” per answer. Chips: Skills &amp; duration, Mobile equipment.</td><td>Branching: “Then go to…” per answer, “+ Next step” (jump / finish), “+ Branch only”; Workflow view; generation from a document (AI).</td></tr>
+<tr><td>Planning</td><td>Calendar, drag &amp; drop scheduling — always available (core, cannot be switched off). Drops are checked only against time rules.</td><td>Workload per technician. Skill, availability and mobile-equipment checks on drop apply when Skills, Shifts &amp; absences and Mobile equipment are on.</td><td>Autonomous maintenance track, schedule optimization (AI).</td></tr>
+<tr><td>Preventive</td><td>Calendar maintenance plans; Home “Reminders” slide.</td><td>Meters and per-asset preventive tab.</td><td>Condition-based maintenance: measurement points with limits on Asset › Preventive; a reading out of limits creates an intervention (once while one is open) or notifies. Plans from manufacturer manuals (AI).</td></tr>
+<tr><td>Assets</td><td>List and sheet, location, QR labels, import from Excel / CSV.</td><td>Hierarchy and plant-layout views; mobile assets (wizard class, reservations, required equipment on interventions); asset history.</td><td>Life-cycle, risk and live monitoring.</td></tr>
+<tr><td>Spare parts</td><td>List and stock; parts on interventions and checklists. Item form without item type, supplier or storeroom (single storage area used by default).</td><td>Consumables (item type, usage rules, consumables categories, consumables step type); storerooms; picture catalog; suppliers.</td><td>Stock forecast (AI).</td></tr>
+<tr><td>Organization</td><td>Users, teams, roles.</td><td>Skills (catalogue, profiles, suggestions); shifts and absences.</td><td>Multi-team / multi-site organization.</td></tr>
+<tr><td>Documents</td><td>Shared library.</td><td>Documents linked to assets, interventions and checklist steps.</td><td>Controlled documentation (planned).</td></tr>
+<tr><td>Notifications</td><td>Bell, badge and the six notification types.</td><td>Personal preferences and email for urgent notifications.</td><td>Smart alerts (Notification settings › Smart alerts): condition rules sent to chosen people.</td></tr>
+<tr><td>Performance</td><td>Home indicators; Home analytics limited to Reminders and Most failures.</td><td>Site dashboard; all Home analytics slides (MTTR, preventive vs corrective, backlog, downtime).</td><td>Full cost control (with Interventions level 3).</td></tr>
+</tbody></table>
+<h4>7.21.3 Site configuration sections</h4>
+<p>Cost centers need Costs per intervention; Custom fields need Analysis fields; Consumables categories need Consumables; QR label formats need QR labels; Skills need Skills. Other sections are always available.</p>
+
+<h3>7.22 Advanced features (in development)</h3>
+<p>Shown only when the site setting “Advanced features” is on (default on in the prototype, recommended off in production until released): planning optimisation, spare parts forecast, checklist generation from a document (saved as draft), maintenance plan generation from a manufacturer manual, asset diagnosis on live data, fleet lifecycle &amp; obsolescence risk, contracts, live monitoring (PLC/EMS/CMS feed). AI-based actions are labeled as such. These features never change data without user confirmation.</p>
+
+<h3>7.23 Home</h3>
+<ul>
+<li>Header: greeting, date, last update with refresh; period selector (Today / This week / This month); filters (plant zones, “Only my teams’ equipment”); actions Request intervention, Quick intervention, New work order.</li>
+<li>KPIs: Overdue, Due today/week/month, In progress (paused count), Not scheduled, Parts out of stock — each links to its context.</li>
+<li>Intervention requests block (hidden when nothing to review).</li>
+<li>To-do: tabs My to-do / Team to-do, type filter. <b>Not scheduled</b> items are shown first as a horizontal row of compact cards (title, type, line, assignee for team, priority) with a calendar icon opening the slot dialog. <b>Scheduled</b> items are grouped Overdue / Today / Tomorrow / Later this week; each work order is a distinct card with time, title, type · line, progress when paused, chat count, assignee (team view) and the action: <b>Start</b>, <b>Resume</b>, <b>Completed</b> (non-clickable) or <b>Waiting</b>. No checkbox.</li>
+<li>Analytics carousel (collapsible; when collapsed, the remaining content uses the space): Reminders (controls &amp; calibrations due within 60 days), Most failures, Preventive vs corrective, Mean time to repair, Created vs completed, Downtime by equipment.</li>
+<li>Hub: Activity and Chat (§7.16).</li>
+</ul>
+<h3>7.24 Maintenance plans (preventive)</h3>
+<ul>
+<li>Trigger <b>time</b> (calendar): next due = last done + every × unit (days, weeks, months, years). Trigger <b>meter</b>: next threshold = last meter value + every; the due date is estimated from the asset’s average daily meter rate; “due now” when the current reading reaches the threshold.</li>
+<li>Lead time: a plan generates its work orders <code>lead_days</code> before the due date. Generation runs at least once a day (on every page load in the prototype) for active plans.</li>
+<li>Generation creates <b>one preventive work order per asset</b> of the plan: task = plan name, type = plan type, status Scheduled, planned start = due date 08:00, checklist = plan checklist, estimated duration, default assignee, description “Generated from maintenance plan …”, <code>plan_id</code>, created by <code>system</code>, history “Generated from maintenance plan”. A <code>plan-due</code> notification is sent. The plan reference (last done / last meter) advances.</li>
+<li>Manual “Generate now” creates the work orders for the next occurrence (due tomorrow if not yet due) and records the generation as manual.</li>
+<li>Deactivating a plan stops generation; already generated work orders remain. A plan with a checklist that is archived cannot be activated.</li>
+<li>Inspection and calibration plans feed the Home <b>Reminders</b> (controls &amp; calibrations due within 60 days; overdue shown first) and the “Control / calibration due” alert rule.</li>
+<li>Plan list: name, assets, frequency, checklist, estimated duration, next due, status; detail shows generation history.</li>
+</ul>
+<h3>7.25 Meters</h3>
+<ul>
+<li>Assets with a meter unit record readings (manual from Asset detail › Preventive, at intervention close, or live feed). A reading lower than the previous one is refused (meter reset must be recorded as such).</li>
+<li>The daily rate (average over recent readings) estimates meter plan due dates.</li>
+</ul>
+
+<h2>8. Module interactions and consistency rules</h2>
+<table><thead><tr><th style="width:24%">Interaction</th><th>Rule</th></tr></thead><tbody>
+<tr><td>Checklist → Work order</td><td>Selecting checklists adds their required parts/consumables (tag “From checklist”) and mobile assets, computes estimated duration and checklist parts for assignment. Removing a checklist removes its non-manual parts and tools.</td></tr>
+<tr><td>Checklist → People</td><td>Step skills define parts; Assigned users must cover the skills of each part (warning otherwise).</td></tr>
+<tr><td>Work order → Planning</td><td>A work order with a planned start appears in Planning; without, it is in the backlog and in Home “Not scheduled”. Scheduling and edition update the same record.</td></tr>
+<tr><td>Work order → Mobile assets</td><td>Required tools reserve the mobile assets for the planned window; conflicts block saving and Planning drops.</td></tr>
+<tr><td>Work order → Spare parts</td><td>Required parts create reservations; completion consumes them once and deducts stock; cancellation releases them.</td></tr>
+<tr><td>Intervention → Work order</td><td>Start sets In progress; pause sets the waiting flag; Review &amp; close sets Completed, actual time, usage, costs and history.</td></tr>
+<tr><td>Intervention → Asset</td><td>Completion appears in the asset work order history; meter reading can be recorded; anomalies can create follow-ups.</td></tr>
+<tr><td>Request → Work order</td><td>Accepting with “Create work order” links both; the request status follows (Accepted). Rejecting never creates a work order.</td></tr>
+<tr><td>Plan → Work order</td><td>Generated work orders carry <code>plan_id</code>; they are standard work orders afterwards (editable, schedulable).</td></tr>
+<tr><td>Teams → Chat / Requests / Home</td><td>Each team has a chat channel with the same members; requests can notify a team (all members); Home “Team to-do” and team filters use team membership; the user’s team appears on profiles and in chat.</td></tr>
+<tr><td>Users → Costs</td><td>Labor cost uses the hourly rate of each assigned user.</td></tr>
+<tr><td>Spare parts ↔ Plant</td><td>Storage areas are plant Steps flagged storage; a storage area holding parts cannot be deleted or un-flagged.</td></tr>
+<tr><td>Spare parts ↔ Checklists</td><td>The checklist part catalogue is a live view of Spare parts (no duplicate item list).</td></tr>
+<tr><td>Suppliers ↔ Costs / Parts</td><td>Service and rental lines use provider rates; parts reference their preferred supplier.</td></tr>
+<tr><td>Configuration → All</td><td>Types, priorities, criticality, failure origins, part categories, cost centers, custom fields and units are read from the current site configuration. Deactivated values are no longer proposed but remain displayed on existing records.</td></tr>
+<tr><td>Access → All</td><td>Menu entries, pages, create buttons, wizards and costs follow the user’s module levels and Financial permission (§9). The site switcher follows site access and super-user scopes.</td></tr>
+<tr><td>Notifications ← All</td><td>Events from all modules produce typed notifications filtered by the recipient’s preferences and scope.</td></tr>
+</tbody></table>
+<p>Global consistency rules:</p>
+<ul>
+<li>All site-scoped references must point to records of the same site (asset, part, checklist, team, cost center…).</li>
+<li>A user assigned to a work order must have access to its site and be Active.</li>
+<li>Deactivating a user requires reassigning their open work orders (warning with the list); they are removed from future assignments but kept in history.</li>
+<li>Deleting is refused for any object referenced elsewhere; deactivation/archiving is offered.</li>
+<li>Dates: requested ≤ now; desired ≥ requested; planned end &gt; planned start; absences date_to ≥ date_from.</li>
+<li>Stock never changes outside stock movements; completion deducts stock exactly once.</li>
+</ul>
+
+<h2>9. Roles and permissions</h2>
+<h3>9.1 Principles</h3>
+<ul>
+<li>Permissions combine: (1) the <b>role</b> of the user on the current site (site role › super-user scope role › default role), giving a level per module; (2) the cumulative <b>Financial</b> permission; (3) organization-level <b>Super Admin</b>; (4) object-level rules (assigned user, notified user, own profile).</li>
+<li>Levels per module: <b>Full</b> (create, edit, delete, configure), <b>Edit</b> (create and edit, no delete), <b>View</b> (read only), <b>None</b> (module hidden).</li>
+<li>Enforcement: modules with None are hidden from the menu and their pages show “No access”; View shows a “View only” indicator and hides create/edit actions; the work order wizard refuses creation without Work orders Edit; the server enforces the same rules on every API call.</li>
+<li>The roles matrix is edited in Teams &amp; users › Roles &amp; permissions by users with Teams &amp; users Full (Administrators). Changes apply immediately after save. Administrator is locked to Full.</li>
+<li>Administrators can <b>preview access as</b> another user (menu, pages, read-only modules, financial values) without changing data.</li>
+</ul>
+<h3>9.2 Default role matrix (system roles)</h3>
+<table><thead><tr><th style="width:28%">Module</th><th>Administrator</th><th>Maintenance manager</th><th>Planner</th><th>Technician</th><th>Requester</th></tr></thead><tbody>
+<tr><td>Assets</td><td>Full</td><td>Full</td><td>View</td><td>View</td><td>View</td></tr>
+<tr><td>Work orders</td><td>Full</td><td>Full</td><td>Full</td><td>Edit</td><td>View</td></tr>
+<tr><td>Maintenance plans &amp; checklists</td><td>Full</td><td>Full</td><td>Edit</td><td>View</td><td>None</td></tr>
+<tr><td>Planning</td><td>Full</td><td>Full</td><td>Full</td><td>View</td><td>None</td></tr>
+<tr><td>Spare parts</td><td>Full</td><td>Full</td><td>View</td><td>Edit</td><td>None</td></tr>
+<tr><td>Suppliers</td><td>Full</td><td>Full</td><td>View</td><td>View</td><td>None</td></tr>
+<tr><td>Documents</td><td>Full</td><td>Full</td><td>Edit</td><td>Edit</td><td>View</td></tr>
+<tr><td>Teams &amp; users</td><td>Full</td><td>Edit</td><td>View</td><td>None</td><td>None</td></tr>
+<tr><td>Site configuration</td><td>Full</td><td>Edit</td><td>None</td><td>None</td><td>None</td></tr>
+</tbody></table>
+<p>Home, Site dashboard, Chat, Intervention requests (create), own profile and own notification settings are available to every active user.</p>
+<h3>9.3 Actions by role (default)</h3>
+<table><thead><tr><th style="width:30%">Action</th><th>Admin</th><th>Manager</th><th>Planner</th><th>Technician</th><th>Requester</th></tr></thead><tbody>
+<tr><td colspan="6"><b>Standard (field) actions</b></td></tr>
+<tr><td>View work orders, assets, documents</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Send an intervention request</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Quick intervention (start on breakdown)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>—</td></tr>
+<tr><td>Create / edit work order</td><td>✓</td><td>✓</td><td>✓</td><td>✓ (Edit)</td><td>—</td></tr>
+<tr><td>Start / resume intervention</td><td>✓</td><td>✓</td><td>✓ if assigned</td><td>✓ if assigned</td><td>Autonomous tasks if assigned</td></tr>
+<tr><td>Complete intervention (Review &amp; close)</td><td>✓</td><td>✓</td><td>✓ if assigned</td><td>✓ if assigned</td><td>Autonomous tasks if assigned</td></tr>
+<tr><td>Complete without intervention (after the fact)</td><td>✓</td><td>✓</td><td>✓</td><td>✓ if assigned</td><td>—</td></tr>
+<tr><td>Record parts / consumables usage</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>Consumables on autonomous tasks</td></tr>
+<tr><td>Chat, mentions, reassignment request</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Edit own profile (bio, availability; skills subject to validation)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td colspan="6"><b>Management actions</b></td></tr>
+<tr><td>Assign / reassign people</td><td>✓</td><td>✓</td><td>✓</td><td>Own work orders (Edit)</td><td>—</td></tr>
+<tr><td>Schedule / reschedule (Planning)</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+<tr><td>Validate intervention requests</td><td>✓</td><td>✓</td><td>✓</td><td>✓ when notified</td><td>—</td></tr>
+<tr><td>Delete / archive work orders</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+<tr><td>Manage checklists &amp; maintenance plans</td><td>✓</td><td>✓</td><td>✓ (no delete)</td><td>—</td><td>—</td></tr>
+<tr><td>Manage assets (create, edit, decommission, QR, import)</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Manage spare parts &amp; stock movements</td><td>✓</td><td>✓</td><td>—</td><td>✓ (no delete)</td><td>—</td></tr>
+<tr><td>Manage suppliers</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Manage documents</td><td>✓</td><td>✓</td><td>✓ (no delete)</td><td>✓ (no delete)</td><td>—</td></tr>
+<tr><td>Reports &amp; analytics (Home, Site dashboard)</td><td>✓</td><td>✓</td><td>✓</td><td>Own / team</td><td>—</td></tr>
+<tr><td colspan="6"><b>Administration / configuration actions</b></td></tr>
+<tr><td>Manage users (invite, edit, deactivate) and teams</td><td>✓</td><td>✓ (no delete)</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Edit roles &amp; permissions matrix</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Manage skills catalogue, edit others’ profiles</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Configure the site (reference data, units, custom fields, plant hierarchy, maturity, alert rules)</td><td>✓</td><td>✓ (no delete)</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Preview access as another user</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody></table>
+<h3>9.4 Financial permission (cumulative)</h3>
+<p>Granted per user (Teams &amp; users, by a user who has it), combinable with any role. Without it, money values display “•••” and cost details are locked. Covered data: employee hourly rates; work order and intervention costs; labor, parts and consumables cost lines; spare part and consumable prices and stock value; supplier prices and rates; external service provider and rental costs; cost center budgets; contract and lifecycle costs (advanced). Exports omit these values. Only users with Financial can see or edit hourly rates and grant the permission.</p>
+<h3>9.5 Super Admin</h3>
+<ul>
+<li>Organization-level, not tied to a site; sees all sites. Only Super Admins access the Super Admin area: Organization (businesses, sub-businesses, sites), Super users (scopes), Super Admins (add/remove; at least one must remain; one cannot remove oneself).</li>
+<li>Defines initial site administrators at site creation (§4.2).</li>
+<li>When previewing another user, Super Admin rights are suspended.</li>
+</ul>
+<h3>9.6 Super users and site access</h3>
+<ul>
+<li>Sites accessible by a user = direct sites ∪ sites with a site role ∪ sites covered by their super-user scopes (all sites for Super Admins).</li>
+<li>Scope types: Business, Sub-business, Country, Selected sites. Resolution is dynamic; inactive sites are excluded.</li>
+<li>Role on a site = site role if defined, else scope role, else default role. Financial remains per user.</li>
+<li>Typical use: regional maintenance director (Business scope, Maintenance manager), reliability engineer for one country (Country scope, Planner).</li>
+</ul>
+<h2>10. Default configuration</h2>
+<h3>10.1 System-level configuration (fixed, identical for all sites)</h3>
+<table><thead><tr><th style="width:26%">Element</th><th>Content</th></tr></thead><tbody>
+<tr><td>Work order workflow</td><td>Requested → Scheduled → In progress → Completed; Overdue computed; Waiting flag reasons parts, paused, dependency, access, approval, supplier; transition rules §7.1.2.</td></tr>
+<tr><td>Intervention modes</td><td>running, paused, review, done.</td></tr>
+<tr><td>Intervention request statuses</td><td>Pending, Accepted, Not retained.</td></tr>
+<tr><td>Checklist statuses and step types</td><td>draft / published / archived; 12 step types (§7.6.1); rule actions goto / require / finish.</td></tr>
+<tr><td>Asset classes and statuses</td><td>Equipment / Mobile asset; In service, Stopped, Out of service.</td></tr>
+<tr><td>Plant node kinds</td><td>Plant › Zone › Line › Step (+ storage, bay flags).</td></tr>
+<tr><td>Item kinds and usage modes</td><td>Replacement part / Consumable; count, amount, percent; unit conversions mL→L, cL→L, g→kg, cm→m, mm→m.</td></tr>
+<tr><td>Supplier types and rate units</td><td>parts, service, rental; per hour, per visit, per day, fixed price.</td></tr>
+<tr><td>Document categories</td><td>Plan, Manual, Procedure, Datasheet, Certificate, Photo, Report, Other.</td></tr>
+<tr><td>Cost categories</td><td>Labor, Spare parts, Consumables, External services, Equipment &amp; rental.</td></tr>
+<tr><td>Permission modules and levels</td><td>9 modules × Full / Edit / View / None; Financial; Super Admin; scope types.</td></tr>
+<tr><td>System roles</td><td>Administrator (locked), Maintenance manager, Planner, Technician, Requester (renamable, matrix editable).</td></tr>
+<tr><td>Notification catalogue</td><td>20 types, 6 categories, 3 importances, 3 levels (§7.15).</td></tr>
+<tr><td>Alert triggers and scopes</td><td>recurring, overdue, stopped, control; all, asset, owner, zone, criticality.</td></tr>
+<tr><td>Quantities catalogue</td><td>15 quantities with allowed units (temperature °C/°F/K, pressure bar/mbar/kPa/MPa/psi, length mm/cm/m/in/ft, mass g/kg/t/lb, flow m³/h/L/min/L/s/gpm, speed m/s/m/min/km/h/ft/min, rotation rpm/Hz, power W/kW/MW/hp, voltage V/kV/mV, current A/mA/kA, volume L/m³/mL/gal, duration s/min/h/days, vibration mm/s/in/s, torque N·m/kN·m/lbf·ft, percentage %).</td></tr>
+<tr><td>Custom field types</td><td>decimal, integer, text, choice, date, yes/no; entities Asset, Work order, Spare part.</td></tr>
+<tr><td>Maturity concepts and levels</td><td>10 concepts × Essential / Advanced / Expert; journey stages.</td></tr>
+<tr><td>Skill levels</td><td>1 Basic, 2 Qualified, 3 Expert; skill categories Trade, Technique, Certification.</td></tr>
+</tbody></table>
+
+<h3>10.2 Default site configuration (seeded when a site is created)</h3>
+<table><thead><tr><th style="width:20%">Section</th><th>Default values (name · code · attributes)</th></tr></thead><tbody>
+<tr><td>Work order types</td><td>Corrective · COR (palliative / curative) · Preventive · PRV (systematic / condition-based) · Predictive · PRD (condition-based) · Inspection · INS (regulatory / routine) · Improvement · IMP (continuous improvement). All active.</td></tr>
+<tr><td>Priorities (system)</td><td>Critical · P1 · 4 h · High · P2 · 24 h · Medium · P3 · 7 days · Low · P4 · 30 days.</td></tr>
+<tr><td>Criticality (system)</td><td>Critical · C1 · &lt; 2 h · High · C2 · &lt; 8 h · Medium · C3 · &lt; 3 days · Low · C4 · &lt; 2 weeks.</td></tr>
+<tr><td>Statuses (system labels)</td><td>Requested REQ · Scheduled SCH · Overdue OVD (computed) · In progress INP · Waiting WAI (flag) · Completed CMP.</td></tr>
+<tr><td>Failure origins</td><td>Mechanical MEC · Electrical ELE · Hydraulic HYD · Pneumatic PNE · Instrumentation INS · Software / PLC PLC · Operator error OPE.</td></tr>
+<tr><td>Asset types — Equipment</td><td>Furnace FUR (Critical) · Conveyor CNV (High) · Pump PMP (High) · Fan FAN (Medium) · Compressor CMP (High) · Robot ROB (High) · Press PRS (High) · Dryer DRY (Medium) · Cutter CUT (Medium) · Mixer MIX (Medium) · Scale SCL (Low) · Cooling tower CTW (High) · Wrapper WRP (Low) · Electrical cabinet ELC (Medium). Default criticality in brackets.</td></tr>
+<tr><td>Asset types — Mobile</td><td>Crane CRN (High) · Lift LFT · Forklift FLK · Measuring instrument MSR · Tool kit TLK (Medium).</td></tr>
+<tr><td>Part categories</td><td>Bearings BRG (pcs) · Belts BLT (pcs) · Filters FLT (pcs) · Sensors SEN (pcs) · Seals &amp; gaskets SEAL (pcs) · Lubricants LUB (cartridge) · Electrical ELE (pcs) · Drives DRV (pcs) · Cleaning CLN (roll) · Adhesives &amp; sealants ADH (tube) · Safety SAF (pair). Lubricants, Cleaning, Adhesives and Safety default to Consumable.</td></tr>
+<tr><td>Skills</td><td>Electrical ELE · Mechanical MEC · Hydraulics HYD · Pneumatics PNE · Automation / PLC PLC · Instrumentation INS (Trade); Welding WLD · Lubrication LUB · Vibration analysis VIB · Thermography THM (Technique); Electrical clearance B2V HAB · Work at height HGT (Certification).</td></tr>
+<tr><td>Units of measure</td><td>Metric defaults: °C, bar, mm, kg, m³/h, m/min, rpm, kW, V, A, L, h, mm/s, N·m, %. Country-specific defaults may override (e.g. US: °F, psi, in, lb, gpm, ft/min, hp, gal, in/s, lbf·ft).</td></tr>
+<tr><td>QR label formats</td><td>Square label SQ-50 50 × 50 mm (default) · Wide label WD-70 70 × 35 mm · Large label LG-100 100 × 50 mm.</td></tr>
+<tr><td>Plant hierarchy</td><td>Plant node only (named after the site). Optional industry template (glass): zones MEL Melting, FOR Fiberizing &amp; Forming, UTL Utilities, WHS Warehousing.</td></tr>
+<tr><td>Cost centers</td><td>None (site-specific; to be created by the site).</td></tr>
+<tr><td>Custom fields</td><td>None active. Proposed templates: Operating temperature (Asset, temperature, Furnace/Dryer), Working pressure (Asset, pressure), ATEX zone (Asset, choice), Measured temperature / Production downtime / Safety permit (Work order), Nominal size / Shelf life (Spare part).</td></tr>
+<tr><td>Teams</td><td>None. Created by the site administrators; each team gets its chat channel.</td></tr>
+<tr><td>Chat</td><td>Site channel created (all site users).</td></tr>
+<tr><td>Notification preferences</td><td>Catalogue defaults (§7.15.2); email and push channels on; quiet hours on; digest off; scope “involved” for every category.</td></tr>
+<tr><td>Alert rules</td><td>Recurring failures (3 corrective WOs in 30 days, all assets) · Critical equipment stopped (criticality Critical) · Regulatory controls &amp; calibrations (due within 14 days). Recipients: site administrators. All active.</td></tr>
+<tr><td>Maturity levels</td><td>Level 1 Essential for all 10 concepts.</td></tr>
+<tr><td>Site settings</td><td>Advanced features: off in production, on in demo sites.</td></tr>
+<tr><td>Access</td><td>Site administrators from the creation flow (Administrator role on the site). Default role for invited users: Technician.</td></tr>
+</tbody></table>
+
+<h3>10.3 What each site can customize later</h3>
+<table><thead><tr><th style="width:30%">Customizable by the site</th><th style="width:35%">Restricted</th><th>Not customizable by sites</th></tr></thead><tbody>
+<tr><td>Asset types, failure origins, part categories, cost centers, custom fields, custom quantities, units, label formats, skills, plant hierarchy, teams, alert rules, maturity levels, advanced features switch, work order types (add/deactivate).</td><td>Priorities, criticality and status <b>labels</b> (codes fixed, no delete); Improvement and other seeded work order types can be deactivated, not deleted while used.</td><td>Workflow and transitions, step types, notification catalogue, permission modules and levels, roles matrix (organization-level, edited by Administrators), organization structure and sites (Super Admin).</td></tr>
+</tbody></table>
+<p>Personal settings (per user): language, collapsed menu, notification preferences, Home view preferences (analytics collapsed, period, filters), Assets view, current site.</p>
+
+<h2>11. Open points and known gaps</h2>
+<table><thead><tr><th style="width:28%">Topic</th><th>Status</th></tr></thead><tbody>
+<tr><td>Autonomous maintenance</td><td>Specified (§7.20); the <code>maintenance_mode</code> switch and request auto-creation from autonomous anomalies are not yet in the prototype.</td></tr>
+<tr><td>Delete restrictions by level</td><td>View hides create actions; delete buttons are not yet systematically restricted to Full in every page of the prototype.</td></tr>
+<tr><td>Maturity-driven feature gating</td><td>Implemented per §7.21. Still to adapt: Documents page and Teams &amp; users at level 1.</td></tr>
+<tr><td>Reopen a completed work order</td><td>Rule defined (Full access, history entry); UI not yet designed.</td></tr>
+<tr><td>Document versioning UI</td><td>v1 open point still open: version list and replace action to design.</td></tr>
+<tr><td>Skill validation workflow</td><td>Whether self-declared skills require manager validation is a site option to confirm.</td></tr>
+<tr><td>Currency</td><td>Single organization currency (€) assumed; multi-currency out of scope.</td></tr>
+<tr><td>Live monitoring, AI features</td><td>Advanced features in development; data sources and contracts to specify.</td></tr>
+<tr><td>Prototype data</td><td>Some demo pages still use fixed sample data (Home to-do, KPIs); production must read the work order store and computed KPIs.</td></tr>
+</tbody></table>
+
+<h2 style="break-before:page">Appendix A — v1 → v2 terminology mapping</h2>
+<table><thead><tr><th>v1 (French)</th><th>Relix (English)</th><th>Note</th></tr></thead><tbody>
+<tr><td>Actifs / Équipement</td><td>Assets / Asset (Equipment or Mobile asset)</td><td></td></tr>
+<tr><td>Interventions (module) / OT</td><td>Work orders / Work order (WO)</td><td>“Intervention” now means the execution.</td></tr>
+<tr><td>Demande d’intervention</td><td>Intervention request</td><td>Separate object, not a work order.</td></tr>
+<tr><td>Préventive (menu)</td><td>Maintenance setup (Maintenance plans, Checklists)</td><td></td></tr>
+<tr><td>Équipes &amp; Utilisateurs</td><td>Teams &amp; users</td><td></td></tr>
+<tr><td>Administration</td><td>Site configuration</td><td>Organization moved to Super Admin.</td></tr>
+<tr><td>Tâches (checklist)</td><td>Steps</td><td>Typed steps.</td></tr>
+<tr><td>En retard / Planifié / En cours / En attente pièces / Terminé</td><td>Overdue (computed) / Scheduled / In progress / Waiting · spare parts (flag) / Completed</td><td>+ Requested.</td></tr>
+<tr><td>Critique / Haute / Moyenne / Basse</td><td>Critical / High / Medium / Low</td><td>Priorities and criticality.</td></tr>
+<tr><td>En service / En arrêt / Hors service</td><td>In service / Stopped / Out of service</td><td></td></tr>
+<tr><td>Corrective / Préventive / Amélioration / Inspection</td><td>Corrective / Preventive / Improvement / Inspection (+ Predictive)</td><td>Sub-types kept as strategy (§2.1).</td></tr>
+<tr><td>Plans; Notices; Procédures; Photos; Rapports; Autres</td><td>Plan; Manual; Procedure; Photo; Report; Other (+ Datasheet, Certificate)</td><td></td></tr>
+<tr><td>Location/Production Line → Area/Asset → Machine → Subassembly → Component</td><td>Plant › Zone › Line › Step › Asset › child assets</td><td></td></tr>
+<tr><td>Responsable</td><td>Owner (asset) / Assignee (work order)</td><td></td></tr>
+<tr><td>Assigné à</td><td>Assigned users</td><td>Multiple, per checklist part.</td></tr>
+</tbody></table>
+
+<h2>Appendix B — Prototype storage → tables</h2>
+<table><thead><tr><th style="width:34%">Prototype key / model</th><th>Tables</th></tr></thead><tbody>
+<tr><td><code>cmms.org.v1</code> (sites-model)</td><td>business, site</td></tr>
+<tr><td><code>cmms.users.v1</code>, <code>cmms.roles.v1</code>, <code>cmms.superusers.v1</code>, <code>cmms.teams.v1</code> (access-model)</td><td>app_user, user_site, user_site_role, role, role_permission, super_user_scope, team, team_member</td></tr>
+<tr><td><code>cmms.skills.v1</code>, <code>cmms.profiles.v1</code> (people-model)</td><td>skill, user_skill, user_shift, user_absence, user_profile</td></tr>
+<tr><td><code>cmms.plant.v1</code>, <code>cmms.assets.v1</code>, <code>cmms.meters.v1</code>, <code>cmms.reservations.v1</code> (plant-model)</td><td>plant_node, asset, asset_spec, asset_history, meter_reading, asset_reservation</td></tr>
+<tr><td><code>cmms.wo.store.v1</code> (collab-model)</td><td>work_order, wo_assignment, wo_follower, wo_checklist, wo_part, wo_tool, wo_cost_line, wo_history</td></tr>
+<tr><td><code>cmms.intervention.v3.&lt;wo&gt;</code></td><td>intervention, intervention_step_result, intervention_usage</td></tr>
+<tr><td><code>cmms.requests.v1</code></td><td>intervention_request, request_notify</td></tr>
+<tr><td><code>cmms.checklists.v1</code> (checklist-model)</td><td>checklist, checklist_step and child tables</td></tr>
+<tr><td><code>cmms.plans.v1</code> (plans-model)</td><td>maintenance_plan, plan_asset, plan_generation</td></tr>
+<tr><td><code>cmms.parts.v2</code>, <code>cmms.suppliers.v1</code> (parts-model)</td><td>spare_part, part_asset, stock_movement, part_reservation, supplier, supplier_rate</td></tr>
+<tr><td><code>cmms.docs.v1</code> (docs-model)</td><td>document, document_link</td></tr>
+<tr><td><code>cmms.chat.v2</code>, <code>cmms.notif.chat.v1</code>, <code>cmms.notif.read</code></td><td>chat_channel, chat_message, chat_read, notification</td></tr>
+<tr><td><code>cmms.notif.prefs.v1</code>, <code>cmms.alert.rules.v1</code></td><td>notification_pref, alert_rule, alert_rule_recipient</td></tr>
+<tr><td><code>cmms.config.v1</code> (config-model)</td><td>asset_type, criticality, wo_type, failure_category, priority, wo_status, part_category, cost_center, custom_field, custom_value, quantity, site_unit, label_format</td></tr>
+<tr><td><code>cmms.maturity.v1</code>, <code>cmms.advanced</code></td><td>maturity_level, maturity_log, site_setting</td></tr>
+<tr><td><code>cmms.site</code>, <code>cmms.lang</code>, <code>cmms.nav.collapsed</code>, <code>cmms.assets.view</code>, <code>cmms.home.analytics</code></td><td>app_user preferences</td></tr>
+</tbody></table>
+<p style="margin-top:18pt;color:#667085;font-size:8.5pt">Relix — Functional &amp; technical specification v2.0 · October 7, 2026.</p>
+</doc-page>
+</x-dc>
+</body>
+</html>

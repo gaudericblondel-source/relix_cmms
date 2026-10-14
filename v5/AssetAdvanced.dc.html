@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:16px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430">
+  <sc-if value="{{ isLife }}" hint-placeholder-val="{{ true }}">
+    <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h2 style="margin:0;font-size:14px;font-weight:600">Lifecycle</h2><span style="font-size:12.5px;color:#667085">In service since {{ lc.year }} · expected service life {{ lc.life }} years for a {{ typeLower }}</span><button onClick="{{ editLife }}" style="margin-left:auto;background:none;border:0;padding:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#800080;cursor:pointer">Edit assumptions</button></div>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0">
+        <sc-for list="{{ stages }}" as="st" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+            <div style="display:flex;align-items:center"><span style="flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:{{ st.bg }};border:2px solid {{ st.ring }};color:{{ st.fg }};font:15px/1 'Material Symbols Outlined'">{{ st.icon }}</span><span style="flex:1;height:2px;margin:0 6px;background:{{ st.line }}"></span></div>
+            <span style="font-weight:{{ st.weight }};color:{{ st.color }};font-size:12.5px;padding-right:8px">{{ st.label }}</span>
+            <span style="font-size:11.5px;color:#98A2B3">{{ st.sub }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="position:relative;height:10px;border-radius:5px;background:#F2F4F7"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ agePct }};border-radius:5px;background:#800080"></span><span style="position:absolute;top:-4px;left:{{ agePct }};width:2px;height:18px;margin-left:-1px;background:#1E2430;border-radius:1px"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#667085"><span>Installed {{ lc.year }}</span><span style="font-weight:600;color:#1E2430">Today · {{ lc.age }} years</span><span>Expected end of life {{ lc.endYear }}</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #F2F4F7;padding-top:12px">
+        <sc-for list="{{ lifeKpis }}" as="k" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:2px;padding:0 16px;border-left:1px solid {{ k.sep }}"><span style="font-size:12px;color:#667085">{{ k.k }}</span><span style="font-size:17px;font-weight:600;color:{{ k.color }}">{{ k.v }}</span><span style="font-size:11.5px;color:#98A2B3">{{ k.sub }}</span></div></sc-for>
+      </div>
+    </section>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Obsolescence risk</h2><span style="font-size:12px;color:#98A2B3">Updated weekly from manufacturer data</span></div>
+        <div style="display:flex;align-items:center;gap:16px;padding:10px 16px 12px">
+          <div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:34px;line-height:1;font-weight:600;color:{{ lvlFg }}">{{ ob.score }}</span><span style="color:#98A2B3;font-weight:500">/ 100</span></div>
+          <span style="height:24px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:12px;background:{{ lvlBg }};color:{{ lvlFg }};font-size:12.5px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ lvlLabel }}</span>
+          <div style="margin-left:auto;display:grid;grid-template-columns:auto auto;column-gap:12px;row-gap:3px;font-size:12px"><span style="color:#667085">End of sale</span><span style="font-weight:600;text-align:right">{{ ob.eol }}</span><span style="color:#667085">End of support</span><span style="font-weight:600;text-align:right;color:{{ eosColor }}">{{ ob.eos }}</span></div>
+        </div>
+        <sc-for list="{{ factors }}" as="f" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;align-items:center;gap:12px;padding:8px 16px;border-top:1px solid #F2F4F7">
+            <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-weight:600">{{ f.k }}</span><span style="font-size:12px;color:#667085;text-wrap:pretty">{{ f.d }}</span></span>
+            <span style="height:6px;border-radius:3px;background:#F2F4F7;overflow:hidden"><span style="display:block;height:100%;width:{{ f.w }};background:{{ f.color }};border-radius:3px"></span></span>
+            <span style="text-align:right;font:600 12px 'IBM Plex Mono',monospace;color:#475467">+{{ f.pts }}</span>
+          </div>
+        </sc-for>
+        <div style="display:flex;gap:8px;padding:12px 16px 14px;border-top:1px solid #F2F4F7">
+          <button onClick="{{ planRepl }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #E2C4E2;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#800080;cursor:pointer" style-hover="background:#FBF5FB"><span style="font:18px/1 'Material Symbols Outlined'">event_upcoming</span>Plan replacement</button>
+          <button onClick="{{ lastBuy }}" style="height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #E2C4E2;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#800080;cursor:pointer" style-hover="background:#FBF5FB"><span style="font:18px/1 'Material Symbols Outlined'">shopping_cart</span>Last-time buy of parts</button>
+        </div>
+      </section>
+
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Maintenance cost vs. replacement</h2></div>
+        <div style="display:flex;align-items:flex-end;gap:14px;height:150px;padding:14px 16px 0">
+          <sc-for list="{{ costBars }}" as="b" hint-placeholder-count="5"><div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px"><span style="font:500 11px 'IBM Plex Mono',monospace;color:#475467">{{ b.v }}</span><span style="width:100%;max-width:44px;height:{{ b.h }};background:{{ b.color }};border-radius:4px 4px 0 0"></span><span style="font-size:11.5px;color:#667085">{{ b.y }}</span></div></sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:14px 16px 0;margin-top:10px;border-top:1px solid #F2F4F7">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:#667085">Cumulative maintenance cost</span><span><b>{{ cumCost }}</b><span style="color:#98A2B3"> of {{ replValue }} replacement value</span></span></div>
+          <div style="height:8px;border-radius:4px;background:#F2F4F7;overflow:hidden"><span style="display:block;height:100%;width:{{ ratioPct }};background:{{ ratioColor }};border-radius:4px"></span></div>
+          <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#475467;text-wrap:pretty">{{ lc.rec }}</p>
+        </div>
+      </section>
+    </div>
+
+    <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600">Warranty &amp; contracts</h2><span style="font-size:12px;color:#98A2B3">{{ contractSummary }}</span><button onClick="{{ addContract }}" style="margin-left:auto;height:30px;display:flex;align-items:center;gap:4px;padding:0 10px 0 8px;background:#fff;border:1px solid #E2C4E2;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#800080;cursor:pointer" style-hover="background:#FBF5FB"><span style="font:17px/1 'Material Symbols Outlined'">add</span>Add contract</button></div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1fr) 110px 130px;gap:12px;padding:0 16px 6px;font-size:11.5px;font-weight:600;color:#98A2B3"><span>Type</span><span>Coverage</span><span>Period</span><span>Cost</span><span>Status</span></div>
+      <sc-for list="{{ contracts }}" as="c" hint-placeholder-count="2">
+        <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1fr) 110px 130px;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid #F2F4F7">
+          <span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="flex:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:#F6EAF6;color:#800080;font:17px/1 'Material Symbols Outlined'">{{ c.icon }}</span><span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ c.kind }}</span><span style="font-size:12px;color:#667085">{{ c.provider }}</span></span></span>
+          <span style="color:#475467;line-height:1.4;text-wrap:pretty">{{ c.cover }}</span>
+          <span style="color:#475467">{{ c.period }}</span>
+          <span style="font-weight:500">{{ c.cost }}</span>
+          <span><span style="height:22px;display:inline-flex;align-items:center;gap:6px;padding:0 8px;border-radius:11px;background:{{ c.stBg }};color:{{ c.stFg }};font-size:12px;font-weight:600;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ c.stLabel }}</span></span>
+        </div>
+      </sc-for>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isLive }}">
+    <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#12A06A;box-shadow:0 0 0 4px #E6F4EE"></span><span style="font-weight:600">Live</span><span style="color:#667085">Updated {{ ago }}</span></span>
+      <span style="width:1px;height:22px;background:#E4E7EC"></span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ sources }}" as="src"><span style="height:24px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border-radius:12px;background:#F2F4F7;color:#344054;font-size:12px;font-weight:500"><span style="font:15px/1 'Material Symbols Outlined';color:#667085">{{ src.icon }}</span>{{ src.label }}</span></sc-for></div>
+      <span style="margin-left:auto;display:flex;align-items:baseline;gap:6px"><span style="color:#667085">Health score</span><span style="font-size:20px;font-weight:600;color:#B54708">{{ live.health }}</span><span style="color:#98A2B3">/ 100</span></span>
+      <button onClick="{{ diagnose }}" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 10px 0 10px;background:#800080;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer" style-hover="background:#660066"><span style="font:18px/1 'Material Symbols Outlined'">troubleshoot</span>Run diagnostic<span style="height:16px;display:inline-flex;align-items:center;padding:0 4px;border-radius:4px;background:#fff;color:#800080;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span></button>
+    </section>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch">
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600">Process parameters</h2><span style="font-size:12px;color:#98A2B3">PLC · SCADA</span></div>
+        <sc-for list="{{ live.proc }}" as="p" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 72px;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid #F2F4F7">
+            <span style="min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.k }}</span><span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:16px;font-weight:600;color:{{ p.color }}">{{ p.v }}</span><span style="font-size:12px;color:#667085">{{ p.unit }}</span></span><span style="font-size:11px;color:#98A2B3">Normal {{ p.range }}</span></span>
+            <svg width="72" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline points="{{ p.pts }}" fill="none" stroke="#800080" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline></svg>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;display:flex;flex-direction:column;padding-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Condition monitoring</h2><span style="font-size:12px;color:#98A2B3">CMS · 4 sensors</span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;padding:6px 16px 8px"><span style="font-size:12px;color:#667085">Vibration RMS (DE)</span><span style="font-size:18px;font-weight:600;color:{{ zoneColor }}">{{ live.vibNow }}</span><span style="font-size:12px;color:#667085">mm/s</span><span style="margin-left:auto;font-size:12px;font-weight:600;color:{{ zoneColor }}">ISO zone {{ zoneLabel }}</span></div>
+        <div style="padding:0 16px">
+          <svg width="100%" height="120" viewBox="0 0 300 110" preserveAspectRatio="none" style="display:block;border-radius:4px">
+            <rect x="0" y="71.5" width="300" height="38.5" fill="#EEF7F2"></rect><rect x="0" y="48.1" width="300" height="23.4" fill="#FEF8EE"></rect><rect x="0" y="12.4" width="300" height="35.7" fill="#FDF1F0"></rect><rect x="0" y="0" width="300" height="12.4" fill="#FBE4E2"></rect>
+            <polyline points="{{ vibPts }}" fill="none" stroke="#800080" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+          </svg>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font:500 10.5px 'IBM Plex Mono',monospace;color:#98A2B3"><span>-48 h</span><span>-24 h</span><span>now</span></div>
+        </div>
+        <div style="display:flex;gap:16px;padding:10px 16px 0;margin-top:8px;border-top:1px solid #F2F4F7;font-size:12px"><span style="color:#667085">Bearing temperature <b style="color:#1E2430">{{ live.btNow }} °C</b></span><span style="color:#667085">Ultrasound <b style="color:#1E2430">31 dB</b></span></div>
+      </section>
+
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;display:flex;flex-direction:column;padding-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Energy</h2><span style="font-size:12px;color:#98A2B3">EMS · sub-meter</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;padding:6px 16px 10px"><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#667085">Power now</span><span style="font-size:18px;font-weight:600">{{ live.kwNow }} <span style="font-size:12px;font-weight:400;color:#667085">kW</span></span></span><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#667085">Today</span><span style="font-size:18px;font-weight:600">{{ live.kwh }} <span style="font-size:12px;font-weight:400;color:#667085">kWh</span></span></span></div>
+        <div style="height:104px;display:flex;align-items:flex-end;gap:3px;padding:0 16px"><sc-for list="{{ kwBars }}" as="b" hint-placeholder-count="24"><span title="{{ b.tip }}" style="flex:1;height:{{ b.h }};background:{{ b.color }};border-radius:2px 2px 0 0"></span></sc-for></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 16px 0;font:500 10.5px 'IBM Plex Mono',monospace;color:#98A2B3"><span>00:00</span><span>12:00</span><span>23:00</span></div>
+        <div style="padding:10px 16px 0;margin-top:8px;border-top:1px solid #F2F4F7;font-size:12px;color:#B54708;display:flex;align-items:center;gap:6px"><span style="font:15px/1 'Material Symbols Outlined'">trending_up</span>+9% energy per tonne vs. 30-day baseline</div>
+      </section>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Failure prediction</h2><span style="height:18px;display:inline-flex;align-items:center;padding:0 5px;border-radius:4px;background:#800080;color:#fff;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span></div>
+        <div style="display:flex;align-items:flex-end;gap:20px;padding:8px 16px 10px">
+          <span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#667085">Remaining useful life</span><span style="font-size:22px;font-weight:600;color:#800080">~{{ live.rul }} days</span><span style="font-size:12px;color:#475467">{{ live.component }}</span></span>
+          <span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#667085">Failure probability · 30 d</span><span style="font-size:22px;font-weight:600;color:#B54708">{{ live.p30 }}%</span><span style="font-size:12px;color:#475467">Model confidence 82%</span></span>
+        </div>
+        <div style="padding:0 16px">
+          <svg width="100%" height="110" viewBox="0 0 300 100" preserveAspectRatio="none" style="display:block">
+            <line x1="0" y1="50" x2="300" y2="50" stroke="#B42318" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"></line>
+            <line x1="0" y1="99.5" x2="300" y2="99.5" stroke="#E4E7EC" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+            <polyline points="{{ probPts }}" fill="none" stroke="#800080" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+          </svg>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font:500 10.5px 'IBM Plex Mono',monospace;color:#98A2B3"><span>Today</span><span style="color:#B42318">50% threshold</span><span>+30 d</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px 0;margin-top:10px;border-top:1px solid #F2F4F7">
+          <span style="flex:1;font-size:12.5px;color:#475467;text-wrap:pretty">Plan bearing replacement before <b style="color:#1E2430">{{ planBy }}</b> to avoid an unplanned stop.</span>
+          <button onClick="{{ planWo }}" style="flex:none;height:34px;display:flex;align-items:center;gap:6px;padding:0 12px 0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">add</span>Create intervention</button>
+        </div>
+      </section>
+
+      <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600">Anomaly detection</h2><span style="height:18px;display:inline-flex;align-items:center;padding:0 5px;border-radius:4px;background:#800080;color:#fff;font:700 10px/1 'IBM Plex Sans',sans-serif;letter-spacing:.03em">AI</span><span style="font-size:12px;color:#98A2B3">Last 14 days</span></div>
+        <sc-for list="{{ anomalies }}" as="an" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 74px 120px;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #F2F4F7">
+            <span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#667085">{{ an.when }}</span>
+            <span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ an.signal }}</span><span style="font-size:12px;color:#667085">{{ an.dev }}</span></span>
+            <span><span style="height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:11px;background:{{ an.sbg }};color:{{ an.sfg }};font-size:12px;font-weight:600">{{ an.sev }}</span></span>
+            <span style="font-size:12px;color:{{ an.stColor }};font-weight:500">{{ an.state }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </sc-if>
+</div>
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#E3A6E3">check_circle</span>{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lifecycle&quot;,&quot;live&quot;],&quot;default&quot;:&quot;lifecycle&quot;,&quot;tsType&quot;:&quot;'lifecycle'|'live'&quot;},&quot;assetId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;FT2-FR-001&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { PM: null, AM: null, t: 0, toast: null };
+  componentDidMount() {
+    Promise.all([import('./plant-model.js'), import('./advanced-model.js')]).then(([PM, AM]) => this.setState({ PM, AM }));
+    this._iv = setInterval(() => { if ((this.props.view || 'lifecycle') === 'live') this.setState(s => ({ t: s.t + 1 })); }, 2500);
+  }
+  componentWillUnmount() { clearInterval(this._iv); clearTimeout(this._t); }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  renderVals() {
+    const s = this.state, PM = s.PM, AM = s.AM, view = this.props.view || 'lifecycle';
+    const base = { isLife: view === 'lifecycle', isLive: view === 'live', toast: s.toast };
+    if (!PM || !AM) return { ...base, lc: {}, ob: { level: [] }, stages: [], lifeKpis: [], factors: [], costBars: [], contracts: [], live: { proc: [], zone: [] }, sources: [], kwBars: [], anomalies: [] };
+    const a = PM.asset(this.props.assetId) || PM.assets()[0];
+    const lc = AM.lifecycleOf(a), ob = AM.obsolescenceOf(a), cs = AM.contractsOf(a), live = AM.liveOf(a, s.t);
+    const maxY = Math.max(...lc.yearly), stageSub = [`${lc.year - 1}`, `${lc.year}`, `${lc.year + 1} – today`, `Planned ${lc.renewal}`, `≈ ${lc.endYear}`];
+    const SEV = { High: ['#FDECEC', '#B42318'], Medium: ['#FEF3E2', '#B54708'], Low: ['#EEF1F4', '#475467'] };
+    const maxKw = Math.max(...live.kw);
+    return {
+      ...base, lc, ob, typeLower: (a.type || 'asset').toLowerCase(),
+      stages: AM.STAGES.map((label, i) => { const done = i < lc.stage, cur = i === lc.stage; return { label, sub: stageSub[i], icon: done ? 'check' : '', bg: done ? '#800080' : '#fff', ring: done || cur ? '#800080' : '#D0D5DD', fg: '#fff', line: i === 4 ? 'transparent' : done ? '#800080' : '#E4E7EC', weight: cur ? 600 : 500, color: cur ? '#800080' : done ? '#344054' : '#98A2B3' }; }),
+      agePct: Math.round(lc.pct * 100) + '%',
+      lifeKpis: [['Age', `${lc.age} years`, `${Math.round(lc.pct * 100)}% of expected life`, '#1E2430'], ['Remaining life', `${lc.remaining} years`, `until ${lc.endYear}`, lc.remaining <= 2 ? '#B42318' : '#1E2430'], ['Planned renewal', String(lc.renewal), lc.stage === 3 ? 'Budget request needed' : 'Indicative', '#800080'], ['Replacement value', AM.eur0(lc.repl), 'Current market estimate', '#1E2430']]
+        .map(([k, v, sub, color], i) => ({ k, v, sub, color, sep: i ? '#F2F4F7' : 'transparent' })),
+      lvlLabel: ob.level[0], lvlBg: ob.level[1], lvlFg: ob.level[2], zoneLabel: live.zone[0], zoneColor: live.zone[1], eosColor: ob.eos <= 2027 ? '#B42318' : '#1E2430',
+      factors: ob.factors.map(f => ({ ...f, w: Math.round(f.pts / f.max * 100) + '%', color: f.pts / f.max > 0.6 ? '#D92D20' : f.pts / f.max > 0.3 ? '#F79009' : '#12A06A' })),
+      costBars: lc.yearly.map((v, i) => ({ v: AM.eur0(v / 1000) + 'k', h: Math.round(v / maxY * 100) + '%', y: lc.years[i], color: i === 4 ? '#800080' : '#D9B3D9' })),
+      cumCost: AM.eur0(lc.cum), replValue: AM.eur0(lc.repl), ratioPct: Math.min(100, Math.round(lc.ratio * 100)) + '%', ratioColor: lc.ratio > 0.55 ? '#D92D20' : lc.ratio > 0.35 ? '#F79009' : '#12A06A',
+      contracts: cs.map(c => ({ ...c, stLabel: c.status[0], stBg: c.status[1], stFg: c.status[2] })), contractSummary: `${cs.filter(c => c.days >= 0).length} active · ${cs.filter(c => c.days >= 0 && c.days <= 90).length} expiring within 90 days`,
+      editLife: () => this.flash('Lifecycle assumptions — coming soon'), planRepl: () => this.flash(`Replacement of ${a.name} added to the ${lc.renewal} renewal plan`), lastBuy: () => this.flash(`Last-time buy request created for ${ob.discontinued || 1} discontinued part${ob.discontinued > 1 ? 's' : ''}`), addContract: () => this.flash('Contract form — coming soon'),
+      live, ago: `${2 + (s.t % 3)} s ago`,
+      sources: [['memory', 'PLC · OPC UA'], ['bolt', 'EMS · Modbus'], ['sensors', 'CMS · vibration ×4']].map(([icon, label]) => ({ icon, label })),
+      vibPts: AM.pts(live.vib, 300, 110, 0, 8), probPts: AM.pts(live.prob, 300, 100, 0, 1),
+      kwBars: live.kw.map((v, i) => ({ h: Math.round(v / maxKw * 100) + '%', color: i === 23 ? '#800080' : '#D9B3D9', tip: `${String(i).padStart(2, '0')}:00 · ${v} kW` })),
+      planBy: 'Nov 15, 2026', planWo: () => window.CMMSCreateWO && window.CMMSCreateWO({ asset: a.name }),
+      anomalies: live.anomalies.map(([when, signal, dev, sev, state]) => ({ when, signal, dev, sev, state, sbg: SEV[sev][0], sfg: SEV[sev][1], stColor: state === 'Open' ? '#B42318' : '#667085' })),
+      diagnose: () => window.RelixAdvanced && window.RelixAdvanced('diagnose', { asset: a.name, id: a.id }),
+    };
+  }
+}
+</script>
+</body>
+</html>

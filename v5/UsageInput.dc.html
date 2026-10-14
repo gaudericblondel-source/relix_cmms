@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ isLg }}" hint-placeholder-val="{{ false }}">
+  <sc-if value="{{ isPct }}">
+    <div style="display:flex;flex-direction:column;gap:8px;width:300px;max-width:100%;font-family:'IBM Plex Sans',system-ui,sans-serif">
+      <div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 20px 'IBM Plex Mono',monospace;color:#1E2430">{{ pct }}%</span><span style="font-size:12.5px;color:#667085">{{ ofLabel }}</span></div>
+      <input type="range" min="5" max="100" step="5" value="{{ pct }}" onInput="{{ setRange }}" style="width:100%;height:28px;accent-color:#0E7490;cursor:pointer" />
+      <div style="display:flex;gap:6px"><sc-for list="{{ chips }}" as="c"><button onClick="{{ c.pick }}" style="flex:1;height:36px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:8px;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ c.label }}</button></sc-for></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isStep }}">
+    <span style="display:flex;align-items:center;border:1px solid #D0D5DD;border-radius:10px;height:48px;background:#fff">
+      <button onClick="{{ dec }}" style="width:48px;height:46px;background:transparent;border:0;color:#475467;cursor:pointer;font:22px/1 'Material Symbols Outlined'">remove</button>
+      <span style="min-width:72px;display:flex;flex-direction:column;align-items:center;line-height:1.1"><input value="{{ txt }}" onInput="{{ setTxt }}" onBlur="{{ blur }}" inputMode="decimal" style="width:68px;border:0;outline:none;background:transparent;text-align:center;font:600 18px 'IBM Plex Mono',monospace;color:#1E2430;padding:0" /><span style="font-size:11px;color:#98A2B3">{{ unit }}</span></span>
+      <button onClick="{{ inc }}" style="width:48px;height:46px;background:transparent;border:0;color:#475467;cursor:pointer;font:22px/1 'Material Symbols Outlined'">add</button>
+    </span>
+  </sc-if>
+</sc-if>
+<sc-if value="{{ isSm }}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{ isPct }}">
+    <span style="display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;background:#fff;font-family:'IBM Plex Sans',system-ui,sans-serif" title="{{ ofLabel }}">
+      <input type="range" min="5" max="100" step="5" value="{{ pct }}" onInput="{{ setRange }}" style="width:96px;accent-color:#0E7490;cursor:pointer" />
+      <span style="min-width:36px;text-align:right;font:600 12.5px 'IBM Plex Mono',monospace;color:#1E2430">{{ pct }}%</span>
+    </span>
+  </sc-if>
+  <sc-if value="{{ isStep }}">
+    <span style="display:flex;align-items:center;border:1px solid #D0D5DD;border-radius:6px;height:32px;background:#fff">
+      <button onClick="{{ dec }}" title="Less" style="width:28px;height:30px;background:transparent;border:0;color:#475467;cursor:pointer;font:16px/1 'Material Symbols Outlined'">remove</button>
+      <input value="{{ txt }}" onInput="{{ setTxt }}" onBlur="{{ blur }}" inputMode="decimal" style="width:40px;border:0;outline:none;background:transparent;text-align:center;font:600 12.5px 'IBM Plex Mono',monospace;color:#1E2430;padding:0" />
+      <sc-if value="{{ showUnit }}"><span style="font-size:11.5px;color:#667085;padding-right:2px">{{ unit }}</span></sc-if>
+      <button onClick="{{ inc }}" title="More" style="width:28px;height:30px;background:transparent;border:0;color:#475467;cursor:pointer;font:16px/1 'Material Symbols Outlined'">add</button>
+    </span>
+  </sc-if>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:340,&quot;height&quot;:140},&quot;itemRef&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;PAP-ROLL&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:35,&quot;tsType&quot;:&quot;number&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sm&quot;,&quot;lg&quot;],&quot;default&quot;:&quot;lg&quot;,&quot;tsType&quot;:&quot;'sm'|'lg'&quot;},&quot;onChange&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(v: number) =&gt; void&quot;}}">
+// Adaptive usage input — Replacement part: [-] 1 [+] · Consumable (amount): [-] 0.5 L [+] · Consumable (percent): slider 35%.
+class Component extends DCLogic {
+  state = { PA: window.RelixParts || null, txt: null };
+  componentDidMount() { if (!this.state.PA) import('./parts-model.js').then(PA => this.setState({ PA })); this._r = () => this.forceUpdate(); window.addEventListener('cmms-parts', this._r); }
+  componentWillUnmount() { window.removeEventListener('cmms-parts', this._r); }
+  renderVals() {
+    const PA = this.state.PA, p = PA ? PA.part(this.props.itemRef) : null, size = this.props.size || 'sm';
+    const u = PA ? PA.usageOf(p) : { mode: 'count', unit: 'pcs', step: 1, min: 1, def: 1 };
+    const raw = this.props.value, v = raw === '' || raw == null || isNaN(+raw) ? u.def : +raw;
+    const r = n => Math.round(n * 1000) / 1000, emit = n => this.props.onChange && this.props.onChange(r(Math.max(u.min, n)));
+    const pct = Math.max(5, Math.min(100, Math.round(v)));
+    return {
+      isLg: size === 'lg', isSm: size !== 'lg', isPct: u.mode === 'percent', isStep: u.mode !== 'percent',
+      unit: u.unit, showUnit: u.mode === 'amount', ofLabel: p ? `of one ${p.unit}` : '',
+      txt: this.state.txt != null ? this.state.txt : String(r(v)),
+      setTxt: e => { const t = e.target.value.replace(',', '.'); this.setState({ txt: t }); if (t !== '' && !isNaN(+t) && +t > 0) this.props.onChange && this.props.onChange(r(u.mode === 'count' ? Math.round(+t) : +t)); },
+      blur: () => this.setState({ txt: null }),
+      inc: () => { this.setState({ txt: null }); emit(v + u.step); }, dec: () => { this.setState({ txt: null }); emit(v - u.step); },
+      pct, setRange: e => emit(+e.target.value),
+      chips: [25, 50, 75, 100].map(n => ({ label: n === 100 ? 'Whole' : n + '%', bg: pct === n ? '#E3F2F6' : '#fff', border: pct === n ? '#0E7490' : '#D0D5DD', color: pct === n ? '#0E7490' : '#344054', pick: () => emit(n) })),
+    };
+  }
+}
+</script>
+</body>
+</html>

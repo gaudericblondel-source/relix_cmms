@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,300..500,0..1,0&amp;display=block" />
+<style>body{margin:0;background:#F6F7F9;color:#1E2430;-webkit-font-smoothing:antialiased}a{color:#C00018;text-decoration:none}a:hover{color:#8E0012}*{box-sizing:border-box}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:56px minmax(0,1fr);height:100vh;min-width:1100px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;color:#1E2430;background:#F6F7F9">
+  <div style="grid-column:1/-1"><dc-import name="TopBar" hint-size="100%,56px"></dc-import></div>
+  <div style="display:flex;min-height:0"><dc-import name="Sidebar" active="assets" style="height:100%" hint-size="232px,100%"></dc-import></div>
+
+  <main style="position:relative;min-height:0;overflow:hidden;padding:16px 28px 0;display:flex;flex-direction:column;gap:14px" data-screen-label="Asset detail">
+    <header style="flex:none;display:flex;align-items:flex-start;gap:14px">
+      <dc-import name="BackButton" fallback="Assets.dc.html" hint-size="34px,34px"></dc-import>
+      <sc-if value="{{ hasPhoto }}"><img src="{{ a.photo }}" alt="" style="flex:none;width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid #E4E7EC" /></sc-if>
+      <sc-if value="{{ noPhoto }}"><button onClick="{{ addPhoto }}" title="Add a photo" style="flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:{{ zbg }};color:{{ zfg }};border:0;cursor:pointer;font:24px/1 'Material Symbols Outlined'">{{ icon }}</button></sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em">{{ a.name }}</h1>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ sbg }};color:{{ sfg }};white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ statusLabel }}</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:#344054"><span style="width:8px;height:8px;border-radius:2px;background:{{ critColor }}"></span>{{ a.crit }} criticality</span>
+          <sc-if value="{{ mobile }}"><span style="height:22px;display:inline-flex;align-items:center;gap:4px;padding:0 8px;border-radius:11px;background:#EAF1FD;color:#2456B8;font-size:12px;font-weight:600;white-space:nowrap"><span style="font:14px/1 'Material Symbols Outlined'">swap_horiz</span>Mobile asset</span></sc-if>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;color:#667085">
+          <span style="flex:none;white-space:nowrap;font:500 12px 'IBM Plex Mono',monospace;padding:2px 6px;background:#F2F4F7;border-radius:4px;color:#475467">{{ a.id }}</span>
+          <span style="font:15px/1 'Material Symbols Outlined';color:#98A2B3;margin-left:4px">{{ locIcon }}</span>
+          <a href="Assets.dc.html" style="color:#475467;white-space:nowrap">Thourotte Plant</a>
+          <sc-for list="{{ crumbs }}" as="c"><span style="color:#C4CAD4">›</span><a href="{{ c.href }}" title="{{ c.level }}" style="color:{{ c.color }};font-weight:{{ c.weight }};white-space:nowrap">{{ c.name }}</a></sc-for>
+        </div>
+      </div>
+      <div style="flex:none;display:flex;gap:8px;white-space:nowrap">
+        <button onClick="{{ edit }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">edit</span>Edit</button>
+        <button data-feature="assets.qr" onClick="{{ toggleQr }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer" style-hover="background:#F9FAFB"><span style="font:18px/1 'Material Symbols Outlined';color:#667085">qr_code_2</span>QR code</button>
+        <button onClick="{{ newWo }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#A30014"><span style="font:20px/1 'Material Symbols Outlined'">add</span>New intervention</button>
+        <div style="position:relative">
+          <button onClick="{{ toggleMenu }}" title="More actions" style="width:36px;height:36px;display:grid;place-items:center;background:{{ menuBg }};border:1px solid #D0D5DD;border-radius:6px;color:#475467;cursor:pointer"><span style="font:20px/1 'Material Symbols Outlined'">more_horiz</span></button>
+          <sc-if value="{{ menuOpen }}">
+            <div onClick="{{ toggleMenu }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;right:0;top:42px;z-index:41;width:240px;padding:6px;background:#fff;border:1px solid #E4E7EC;border-radius:8px;box-shadow:0 12px 32px rgba(16,24,40,.14)">
+              <sc-for list="{{ menuItems }}" as="m"><sc-if value="{{ m.sep }}"><div style="height:1px;background:#EEF0F3;margin:5px 4px"></div></sc-if><button onClick="{{ m.run }}" style="width:100%;height:36px;display:flex;align-items:center;gap:10px;padding:0 10px;background:transparent;border:0;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;color:{{ m.color }};cursor:pointer;text-align:left" style-hover="background:#F2F4F7"><span style="font:18px/1 'Material Symbols Outlined';color:{{ m.color }}">{{ m.icon }}</span>{{ m.label }}</button></sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </header>
+
+    <sc-if value="{{ isDecom }}"><div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#EEF1F4;border-radius:8px;color:#344054"><span style="font:19px/1 'Material Symbols Outlined';color:#475467">block</span><span style="flex:1">{{ decomText }}</span><button onClick="{{ recommission }}" style="height:30px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Recommission</button></div></sc-if>
+    <section style="flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:#fff;border:1px solid #E4E7EC;border-radius:8px;overflow:hidden">
+      <sc-for list="{{ indicators }}" as="k" hint-placeholder-count="4"><button onClick="{{ k.go }}" style="display:flex;align-items:baseline;gap:8px;padding:9px 16px;background:#fff;border:0;border-right:1px solid #EEF0F3;text-align:left;cursor:pointer;font-family:inherit;min-width:0" style-hover="background:#F9FAFB"><span style="font-size:19px;font-weight:600;line-height:24px;color:{{ k.color }};white-space:nowrap">{{ k.value }}</span><span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:12px;font-weight:500;color:#344054">{{ k.label }}</span><span style="font-size:11.5px;color:#98A2B3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.sub }}</span></span></button></sc-for>
+    </section>
+    <div style="flex:none;display:flex;gap:4px;border-bottom:1px solid #E4E7EC">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.select }}" style="position:relative;height:40px;padding:0 10px;background:transparent;border:0;font:{{ t.font }};color:{{ t.color }};cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">{{ t.label }}<sc-if value="{{ t.hasCount }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#F2F4F7;color:#475467;font:600 11px/18px 'IBM Plex Sans',sans-serif;text-align:center">{{ t.count }}</span></sc-if><span style="position:absolute;left:6px;right:6px;bottom:-1px;height:2px;border-radius:2px;background:{{ t.bar }}"></span></button></sc-for>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow:auto;margin:0 -28px;padding:0 28px 28px">
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:start">
+          <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+            <div style="display:flex;align-items:center;padding:14px 16px 6px"><h2 style="margin:0;font-size:14px;font-weight:600">Details</h2><button onClick="{{ editIdentity }}" style="margin-left:auto;background:none;border:0;padding:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">Edit</button></div>
+            <dl style="margin:0;padding:4px 16px 14px;display:grid;grid-template-columns:120px minmax(0,1fr);row-gap:10px;column-gap:12px">
+              <sc-for list="{{ details }}" as="d" hint-placeholder-count="9"><dt style="color:#667085">{{ d.k }}</dt><dd style="margin:0;font-weight:500;color:{{ d.color }};line-height:1.4">{{ d.v }}</dd></sc-for>
+            </dl>
+            <sc-if value="{{ hasDesc }}"><p style="margin:0;padding:10px 16px 14px;border-top:1px solid #F2F4F7;color:#475467;line-height:1.5">{{ a.desc }}</p></sc-if>
+          </section>
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+              <div style="display:flex;align-items:center;padding:14px 16px 4px"><h2 style="margin:0;font-size:14px;font-weight:600">Key specifications</h2><button onClick="{{ editSpecs }}" style="margin-left:auto;background:none;border:0;padding:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">{{ specsCta }}</button></div>
+              <sc-if value="{{ hasSpecs }}"><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px 0 14px"><sc-for list="{{ specs }}" as="p"><div style="display:flex;flex-direction:column;gap:2px;padding:6px 16px;border-left:1px solid {{ p.sep }}"><span style="font-size:12px;color:#667085">{{ p.k }}</span><span style="font-size:15px;font-weight:600">{{ p.v }}</span></div></sc-for></div></sc-if>
+              <sc-if value="{{ noSpecs }}"><div style="padding:6px 16px 16px;color:#98A2B3">No specifications yet. Suggested for a {{ typeLower }}: {{ specHint }}.</div></sc-if>
+            </section>
+            <sc-if value="{{ mobile }}">
+              <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding-bottom:10px">
+                <div style="display:flex;align-items:center;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">Reservations this week</h2><span style="margin-left:8px;min-width:0;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ resSummary }}</span><button onClick="{{ goRes }}" style="margin-left:auto;background:none;border:0;padding:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">View all</button></div>
+                <sc-for list="{{ resRows }}" as="r"><div style="display:flex;align-items:center;gap:10px;padding:7px 16px"><span style="width:62px;font:500 12px 'IBM Plex Mono',monospace;color:#475467">{{ r.day }}</span><span style="width:96px;font:500 12px 'IBM Plex Mono',monospace">{{ r.time }}</span><span style="flex:1;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.wo }}</span><span data-person="{{ r.who }}" style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:{{ r.avBg }};color:{{ r.avFg }};font:600 9px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ r.who }}</span></div></sc-for>
+                <sc-if value="{{ noRes }}"><div style="padding:0 16px 6px;color:#98A2B3">Not reserved this week — available for any intervention.</div></sc-if>
+              </section>
+            </sc-if>
+            <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+              <div style="display:flex;align-items:center;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">Spare parts for this asset</h2><span style="margin-left:8px;font-size:12px;color:#98A2B3">{{ partCount }}</span><a href="SpareParts.dc.html" style="margin-left:auto;font-weight:600;font-size:12.5px">Spare parts</a></div>
+              <sc-for list="{{ partRows }}" as="p"><a href="{{ p.href }}" style="display:grid;grid-template-columns:minmax(0,1fr) 110px 90px;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid #F2F4F7;color:#1E2430" style-hover="background:#F9FAFB"><span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ p.ref }} · {{ p.store }}</span></span><span style="font-size:12.5px;color:#475467">{{ p.cost }}</span><span style="text-align:right;font-weight:600;color:{{ p.stockColor }}">{{ p.stock }}</span></a></sc-for>
+              <sc-if value="{{ noParts }}"><div style="padding:2px 16px 14px;color:#98A2B3">No spare part is linked to this asset yet. Link parts from the Spare parts page.</div></sc-if>
+            </section>
+            <div data-feature="docs.links" style="display:contents"><dc-import name="DocLinks" kind="asset" target="{{ a.id }}" title="Technical documentation" max="{{ 4 }}" empty-text="No documents yet. Link manuals, drawings or procedures so technicians find them from the asset." hint-size="100%,160px"></dc-import></div>
+            <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+              <div style="display:flex;align-items:center;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600;white-space:nowrap">Recent interventions</h2><button onClick="{{ goWo }}" style="margin-left:auto;background:none;border:0;padding:0;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#C00018;cursor:pointer">View all</button></div>
+              <sc-for list="{{ wos }}" as="w"><a href="{{ w.href }}" style="display:grid;grid-template-columns:minmax(0,1fr) 110px 130px 120px;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #F2F4F7;color:#1E2430" style-hover="background:#F9FAFB"><span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.title }}</span><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ w.id }}</span></span><span style="color:#475467">{{ w.type }}</span><span style="color:#475467">{{ w.who }}</span><span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ w.bg }};color:{{ w.fg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ w.status }}</span></span></a></sc-for>
+            </section>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLife }}"><dc-import name="AssetAdvanced" view="lifecycle" asset-id="{{ a.id }}" hint-size="100%,640px"></dc-import></sc-if>
+      <sc-if value="{{ isLive }}"><dc-import name="AssetAdvanced" view="live" asset-id="{{ a.id }}" hint-size="100%,640px"></dc-import></sc-if>
+
+      <sc-if value="{{ isDocs }}">
+        <dc-import name="DocLinks" kind="asset" target="{{ a.id }}" title="Documents linked to this asset" empty-text="No documents linked yet. Link existing documents from the library or upload new ones — the same document can be shared with other assets, interventions and checklist steps." hint-size="100%,300px"></dc-import>
+      </sc-if>
+
+      <sc-if value="{{ isRes }}">
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px"><h2 style="margin:0;font-size:14px;font-weight:600">Week of Sep 28</h2><span style="font-size:12px;color:#667085">Reserved automatically when a scheduled intervention needs this asset</span><a href="Planning.dc.html" style="margin-left:auto;font-weight:600;font-size:12.5px">Open planning</a></div>
+          <div style="display:grid;grid-template-columns:64px minmax(0,1fr);gap:0;font:500 11px 'IBM Plex Mono',monospace;color:#98A2B3"><span></span><span style="display:flex;justify-content:space-between"><sc-for list="{{ hourTicks }}" as="h"><span>{{ h }}</span></sc-for></span></div>
+          <sc-for list="{{ week }}" as="d">
+            <div style="display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center">
+              <span style="font-weight:600;color:{{ d.color }}">{{ d.label }}</span>
+              <div style="position:relative;height:34px;background:{{ d.bg }};border-radius:6px;border:1px solid #EEF0F3">
+                <sc-for list="{{ d.res }}" as="r"><span title="{{ r.tip }}" style="position:absolute;top:3px;bottom:3px;left:{{ r.left }};width:{{ r.width }};display:flex;align-items:center;gap:5px;padding:0 6px;background:#EAF1FD;border:1px solid #C9D8F5;border-left:3px solid #2456B8;border-radius:5px;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#1E3A8A;white-space:nowrap;overflow:hidden">{{ r.time }} · {{ r.wo }}</span></sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isPrev }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-if value="{{ hasMeter }}">
+            <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0;font-size:14px;font-weight:600">Meter · {{ meterUnit }}</h2><span style="font-size:12px;color:#667085">Feeds meter-based maintenance plans</span>
+                <span style="margin-left:auto;display:flex;align-items:center;gap:6px"><input type="number" min="0" value="{{ readingVal }}" onInput="{{ setReading }}" placeholder="{{ readingPh }}" style="width:150px;height:34px;padding:0 10px;border:1px solid {{ readingBorder }};border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /><button onClick="{{ addReading }}" style="height:34px;display:flex;align-items:center;gap:5px;padding:0 12px 0 8px;background:#C00018;border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer"><span style="font:18px/1 'Material Symbols Outlined'">add</span>Add reading</button></span></div>
+              <sc-if value="{{ readingErr }}"><span style="margin-top:-6px;font-size:12px;color:#B42318;text-align:right">{{ readingErr }}</span></sc-if>
+              <div style="display:flex;gap:24px;align-items:baseline"><span style="font-size:24px;font-weight:600">{{ meterNow }}</span><span style="color:#667085">{{ meterSub }}</span></div>
+              <div style="display:flex;flex-direction:column;border-top:1px solid #F2F4F7"><sc-for list="{{ readings }}" as="r"><div style="display:grid;grid-template-columns:110px 140px minmax(0,1fr);gap:10px;padding:7px 0;border-bottom:1px solid #F2F4F7;font-size:12.5px"><span style="font-family:'IBM Plex Mono',monospace;color:#475467">{{ r.at }}</span><span style="font-weight:600">{{ r.v }}</span><span style="color:#667085">{{ r.by }}</span></div></sc-for></div>
+            </section>
+          </sc-if>
+          <sc-if value="{{ cbmOn }}">
+            <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px 10px"><h2 style="margin:0;font-size:14px;font-weight:600">Measurement points</h2><span style="font-size:12px;color:#667085">Condition-based · a reading out of limits creates an intervention</span>
+                <button onClick="{{ cbmAddOpen }}" style="margin-left:auto;height:30px;display:flex;align-items:center;gap:4px;padding:0 10px 0 6px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer"><span style="font:17px/1 'Material Symbols Outlined'">add</span>Measurement point</button></div>
+              <sc-for list="{{ cbmRows }}" as="m">
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 120px 110px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid #F2F4F7">
+                  <span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600">{{ m.name }}</span><span style="font-size:12px;color:#667085">Limit {{ m.limit }} · {{ m.action }}</span></span>
+                  <span style="display:flex;align-items:flex-end;gap:3px;height:28px"><sc-for list="{{ m.trend }}" as="t"><span title="{{ t.tip }}" style="width:10px;height:{{ t.h }};border-radius:2px;background:{{ t.c }}"></span></sc-for></span>
+                  <span style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600;color:{{ m.color }}">{{ m.value }}</span><span style="font-size:11.5px;color:#98A2B3">{{ m.at }}</span></span>
+                  <span style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="display:inline-flex;align-self:flex-start;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;background:{{ m.sBg }};color:{{ m.sFg }};font-size:12px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ m.state }}</span><sc-if value="{{ m.hasWo }}"><a href="{{ m.woHref }}" style="font-size:12px;font-weight:600">{{ m.woLabel }}</a></sc-if></span>
+                  <span style="display:flex;align-items:center;gap:6px"><input type="number" step="any" value="{{ m.input }}" onInput="{{ m.setInput }}" placeholder="{{ m.ph }}" style="width:100px;height:32px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif;outline:none" /><button onClick="{{ m.record }}" style="height:32px;padding:0 10px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:600 12.5px 'IBM Plex Sans',sans-serif;color:#1E2430;cursor:pointer">Record</button><button onClick="{{ m.remove }}" title="Remove measurement point" style="width:30px;height:30px;display:grid;place-items:center;background:transparent;border:0;border-radius:6px;color:#98A2B3;cursor:pointer" style-hover="background:#FEF3F2;color:#B42318"><span style="font:17px/1 'Material Symbols Outlined'">delete</span></button></span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ cbmEmpty }}"><div style="padding:4px 16px 16px;color:#98A2B3">No measurement point yet — add one (vibration, temperature, pressure…) with its limits.</div></sc-if>
+              <sc-if value="{{ cbmAdding }}">
+                <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #F2F4F7;background:#F9FAFB">
+                  <label style="display:flex;flex-direction:column;gap:4px;flex:1 1 180px"><span style="font-size:12px;font-weight:600;color:#667085">Measurement *</span><input value="{{ cbmF.name }}" onInput="{{ cbmSet.name }}" placeholder="e.g. Bearing vibration" style="height:34px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif" /></label>
+                  <label style="display:flex;flex-direction:column;gap:4px;width:90px"><span style="font-size:12px;font-weight:600;color:#667085">Unit *</span><input value="{{ cbmF.unit }}" onInput="{{ cbmSet.unit }}" placeholder="mm/s" style="height:34px;padding:0 10px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif" /></label>
+                  <label style="display:flex;flex-direction:column;gap:4px;width:80px"><span style="font-size:12px;font-weight:600;color:#667085">Min</span><input type="number" step="any" value="{{ cbmF.min }}" onInput="{{ cbmSet.min }}" style="height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif" /></label>
+                  <label style="display:flex;flex-direction:column;gap:4px;width:80px"><span style="font-size:12px;font-weight:600;color:#667085">Max</span><input type="number" step="any" value="{{ cbmF.max }}" onInput="{{ cbmSet.max }}" style="height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;font:13px 'IBM Plex Sans',sans-serif" /></label>
+                  <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:600;color:#667085">Out of limits</span><select value="{{ cbmF.action }}" onChange="{{ cbmSet.action }}" style="height:34px;padding:0 8px;border:1px solid #D0D5DD;border-radius:6px;background:#fff;font:13px 'IBM Plex Sans',sans-serif"><option value="wo">Create an intervention</option><option value="alert">Notify only</option></select></label>
+                  <button onClick="{{ cbmCancel }}" style="height:34px;padding:0 12px;background:#fff;border:1px solid #D0D5DD;border-radius:6px;font:500 13px 'IBM Plex Sans',sans-serif;cursor:pointer">Cancel</button>
+                  <button onClick="{{ cbmSave }}" style="height:34px;padding:0 12px;background:{{ cbmSaveBg }};border:0;border-radius:6px;font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;cursor:pointer">Add</button>
+                </div>
+                <sc-if value="{{ cbmErr }}"><div style="padding:0 16px 10px;background:#F9FAFB;font-size:12px;color:#B42318">{{ cbmErr }}</div></sc-if>
+              </sc-if>
+            </section>
+          </sc-if>
+          <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+            <div style="display:flex;align-items:center;padding:14px 16px 8px"><h2 style="margin:0;font-size:14px;font-weight:600">Maintenance plans for this asset</h2><a href="MaintenancePlans.dc.html" style="margin-left:auto;font-weight:600;font-size:12.5px">All plans</a></div>
+            <sc-for list="{{ planRows }}" as="p"><a href="{{ p.href }}" style="display:grid;grid-template-columns:minmax(0,1.6fr) 140px minmax(0,1fr) 150px 90px;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid #F2F4F7;color:#1E2430;opacity:{{ p.op }}" style-hover="background:#F9FAFB"><span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600">{{ p.name }}</span><span style="font-size:12px;color:#667085">{{ p.type }} · {{ p.gen }}</span></span><span style="display:flex;align-items:center;gap:5px;color:#344054"><span style="font:16px/1 'Material Symbols Outlined';color:#98A2B3">{{ p.icon }}</span>{{ p.freq }}</span><span style="color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.checklist }}</span><span style="display:flex;flex-direction:column"><span style="font-weight:500;color:{{ p.color }}">{{ p.next }}</span><span style="font-size:11.5px;color:#98A2B3">{{ p.sub }}</span></span><span style="font-size:12px;font-weight:600;color:{{ p.stColor }}">{{ p.state }}</span></a></sc-for>
+            <sc-if value="{{ noPlans }}"><div style="padding:6px 16px 16px;color:#98A2B3">No maintenance plan covers this asset yet. <a href="MaintenancePlans.dc.html">Create one</a> to generate preventive interventions automatically.</div></sc-if>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHist }}">
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px;padding:8px 16px">
+          <sc-for list="{{ history }}" as="h"><div style="display:grid;grid-template-columns:28px 130px minmax(0,1fr);gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid #F2F4F7"><span style="width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:{{ h.bg }};color:{{ h.fg }};font:16px/1 'Material Symbols Outlined'">{{ h.icon }}</span><span style="font:12px/28px 'IBM Plex Mono',monospace;color:#667085">{{ h.when }}</span><span style="display:flex;flex-direction:column;gap:1px;padding-top:4px"><span style="font-weight:500">{{ h.text }}</span><sc-if value="{{ h.hasSub }}"><span style="font-size:12px;color:#667085">{{ h.sub }}</span></sc-if></span></div></sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isWo }}">
+        <section style="background:#fff;border:1px solid #E4E7EC;border-radius:8px">
+          <sc-for list="{{ wos }}" as="w"><a href="{{ w.href }}" style="display:grid;grid-template-columns:minmax(0,1fr) 110px 130px 120px;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F2F4F7;color:#1E2430" style-hover="background:#F9FAFB"><span style="min-width:0;display:flex;flex-direction:column"><span style="font-weight:600">{{ w.title }}</span><span style="font:500 11.5px 'IBM Plex Mono',monospace;color:#98A2B3">{{ w.id }} · {{ w.when }}</span></span><span style="color:#475467">{{ w.type }}</span><span style="color:#475467">{{ w.who }}</span><span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;background:{{ w.bg }};color:{{ w.fg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ w.status }}</span></span></a></sc-for>
+        </section>
+      </sc-if>
+    </div>
+  </main>
+</div>
+
+<sc-if value="{{ toast }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1E2430;color:#fff;border-radius:8px;font:500 13px 'IBM Plex Sans',sans-serif;box-shadow:0 8px 24px rgba(16,24,40,.24)"><span style="font:18px/1 'Material Symbols Outlined';color:#4ADE9B">check_circle</span>{{ toast }}</div>
+</sc-if>
+<dc-import name="AssetWizard" hint-size="0px,0px"></dc-import>
+<dc-import name="WorkOrderPanel" hint-size="0px,0px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const ID = new URLSearchParams(location.search).get('id') || 'FT2-FR-001';
+const SB = { Overdue: ['#FDECEC', '#B42318'], 'In progress': ['#E6F4EE', '#0B6B4A'], Scheduled: ['#EAF1FD', '#2456B8'], Completed: ['#EEF1F4', '#475467'] };
+const DAYS = ['Mon 28', 'Tue 29', 'Wed 30', 'Thu 1', 'Fri 2', 'Sat 3', 'Sun 4'];
+const hm = h => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round(h % 1 * 60)).padStart(2, '0')}`;
+function qrPath(seed) { let h = 2166136261; for (const ch of seed) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } const rnd = () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 1000) / 1000; };
+  const N = 25, inF = (x, y) => [[0, 0], [N - 7, 0], [0, N - 7]].some(([a, b]) => x >= a - 1 && x < a + 8 && y >= b - 1 && y < b + 8); let d = '';
+  [[0, 0], [N - 7, 0], [0, N - 7]].forEach(([a, b]) => { d += `M${a} ${b}h7v7h-7zM${a + 1} ${b + 1}v5h5v-5zM${a + 2} ${b + 2}h3v3h-3z`; });
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!inF(x, y) && rnd() > 0.52) d += `M${x} ${y}h1v1h-1z`; return d; }
+const FON = id => !window.RelixMaturity || window.RelixMaturity.on(id);
+class Component extends DCLogic {
+  state = { PM: null, C: null, tab: new URLSearchParams(location.search).get('tab') || 'overview', kind: '', qr: false, toast: null, v: 0 };
+  componentDidMount() { import('./maturity-model.js').then(() => this.forceUpdate()); this._matU = () => this.forceUpdate(); window.addEventListener('cmms-maturity', this._matU); 
+    Promise.all([import('./plant-model.js'), import('./collab-model.js')]).then(([PM, C]) => this.setState({ PM, C }));
+    Promise.all([import('./config-model.js'), import('./parts-model.js'), import('./docs-model.js'), import('./plans-model.js')]).then(([CFG, P, D, PN]) => this.setState({ CFG, P, D, PN }));
+    import('./cbm-model.js').then(CBM => this.setState({ CBM })); window.addEventListener('cmms-cbm', this._cbm = () => this.setState(s => ({ v: s.v + 1 })));
+    this._pl = () => this.setState(s => ({ v: s.v + 1 })); ['cmms-plans', 'cmms-wo'].forEach(k => window.addEventListener(k, this._pl));
+    window.addEventListener('cmms-docs', this._d = () => this.setState(s => ({ v: s.v + 1 })));
+    this._a = () => this.setState(s => ({ v: s.v + 1 })); window.addEventListener('cmms-asset', this._a);
+  }
+  componentWillUnmount() { window.removeEventListener('cmms-cbm', this._cbm); ['cmms-plans', 'cmms-wo'].forEach(k => window.removeEventListener(k, this._pl)); window.removeEventListener('cmms-asset', this._a); window.removeEventListener('cmms-docs', this._d); clearTimeout(this._t); }
+  cbmVals(a) {
+    const s = this.state, CBM = s.CBM, on = !window.RelixMaturity || window.RelixMaturity.on('prev.cbm');
+    if (!CBM || !on) return { cbmOn: false, cbmRows: [] };
+    const LOOK = { ok: ['Within limits', '#E6F4EE', '#0B6B4A', '#1E2430'], warn: ['Close to limit', '#FEF3E2', '#B54708', '#B54708'], alarm: ['Out of limits', '#FDECEC', '#B42318', '#B42318'], none: ['No reading', '#EEF1F4', '#475467', '#98A2B3'] };
+    const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], fd = iso => { const d = new Date(iso + 'T12:00'); return `${MO[d.getMonth()]} ${d.getDate()}`; };
+    const inp = s.cbmIn || {}, f = s.cbmF;
+    const rows = CBM.pointsOf(a.id).map(p => { const st = CBM.statusOf(p), L = LOOK[st.state], wo = CBM.openWoOf(p.id), top = Math.max(p.max ?? 0, ...st.trend.map(r => r.v), 1);
+      return { name: p.name, limit: CBM.limitLabel(p), action: p.action === 'wo' ? 'creates an intervention' : 'notifies', value: st.value == null ? '—' : `${st.value} ${p.unit}`, at: st.at ? fd(st.at) : '', color: L[3], state: L[0], sBg: L[1], sFg: L[2],
+        trend: st.trend.map(r => { const k = CBM.stateOf(p, r.v); return { h: Math.max(3, Math.round(r.v / top * 28)) + 'px', c: k === 'alarm' ? '#B42318' : k === 'warn' ? '#E3A008' : '#98A2B3', tip: `${fd(r.at)} · ${r.v} ${p.unit}` }; }),
+        hasWo: !!wo, woHref: wo ? s.C.woHref(wo.key) : '', woLabel: wo ? `Intervention ${s.C.displayId(wo.key)} · ${wo.status}` : '',
+        input: inp[p.id] ?? '', ph: p.unit, setInput: e => { const v = e.target.value; this.setState(z => ({ cbmIn: { ...(z.cbmIn || {}), [p.id]: v } })); },
+        record: () => { const v = inp[p.id]; if (v === '' || v == null || isNaN(+v)) return; const r = CBM.addReading(p.id, +v); this.setState(z => ({ cbmIn: { ...(z.cbmIn || {}), [p.id]: '' } }));
+          this.flash(r.state === 'alarm' ? (r.woKey ? `Out of limits — intervention ${s.C.displayId(r.woKey)} created` : 'Out of limits — people notified') : 'Reading recorded'); },
+        remove: () => { CBM.removePoint(p.id); this.flash(`${p.name} removed`); } }; });
+    const set = k => e => { const v = e.target.value; this.setState(z => ({ cbmF: { ...z.cbmF, [k]: v }, cbmErr: '' })); };
+    return { cbmOn: true, cbmRows: rows, cbmEmpty: !rows.length && !f, cbmAdding: !!f, cbmF: f || {}, cbmSet: { name: set('name'), unit: set('unit'), min: set('min'), max: set('max'), action: set('action') }, cbmErr: s.cbmErr || '',
+      cbmSaveBg: f && f.name && f.unit && (f.min !== '' || f.max !== '') ? '#C00018' : '#D0D5DD',
+      cbmAddOpen: () => this.setState({ cbmF: { name: '', unit: '', min: '', max: '', action: 'wo' }, cbmErr: '' }), cbmCancel: () => this.setState({ cbmF: null, cbmErr: '' }),
+      cbmSave: () => { if (!f) return; if (!f.name.trim() || !f.unit.trim()) return this.setState({ cbmErr: 'Name and unit are required' }); if (f.min === '' && f.max === '') return this.setState({ cbmErr: 'Set at least a minimum or a maximum' });
+        if (f.min !== '' && f.max !== '' && +f.min >= +f.max) return this.setState({ cbmErr: 'Minimum must be lower than maximum' });
+        CBM.savePoint({ assetId: a.id, name: f.name.trim(), unit: f.unit.trim(), min: f.min === '' ? null : +f.min, max: f.max === '' ? null : +f.max, action: f.action, seed: [] }); this.setState({ cbmF: null }); this.flash('Measurement point added'); } };
+  }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600); }
+  advVals() {
+    if (!this._advL) { this._advL = () => this.forceUpdate(); window.addEventListener('cmms-advanced', this._advL); }
+    let adv = true; try { adv = localStorage.getItem('cmms.advanced') !== '0'; } catch (e) {}
+    const open = k => () => window.RelixAdvanced && window.RelixAdvanced(k);
+    return { adv, advOptimize: open('optimize'), advForecast: open('forecast'), advChecklist: open('checklist'), advPlan: open('plan'), advFleet: open('fleet'),
+      toggleAdv: () => { try { localStorage.setItem('cmms.advanced', adv ? '0' : '1'); } catch (e) {} window.dispatchEvent(new CustomEvent('cmms-advanced', { detail: { on: !adv } })); },
+      advSub: adv ? 'Shown in purple across the app' : 'Hidden on all pages', advTrack: adv ? '#800080' : '#D0D5DD', advKnob: adv ? '18px' : '2px', advBorder: adv ? '#E2C4E2' : '#D0D5DD' };
+  }
+  renderVals() {
+    const s = this.state, PM = s.PM, C = s.C;
+    if (!PM || !C) return { indicators: [], menuItems: [], history: [], planRows: [], readings: [], a: {}, crumbs: [], tabs: [], details: [], specs: [], docsTop: [], docsAll: [], docKinds: [], wos: [], resRows: [], week: [], hourTicks: [], isOverview: true };
+    const a = PM.asset(ID) || PM.assets()[0], z = PM.zoneOf(a.loc), [zi, zfg, zbg] = PM.ZONE_LOOK[z.id], mobile = a.cls === 'mobile', p = C.person(a.owner);
+    const res = mobile ? PM.reservationsOf(a.id) : [], now = res.find(r => r.day === 1 && r.from <= 10.4 && r.to > 10.4);
+    const [sbg, sfg] = now ? ['#EAF1FD', '#2456B8'] : PM.STATUS[a.status];
+    const docView = d => { const [icon, fg, bg] = PM.DOC_KINDS[d.kind] || PM.DOC_KINDS.Manual; return { ...d, icon, fg, bg }; };
+    const addFiles = e => { const fs = [...(e.target.files || [])]; if (!fs.length) return; const guess = nm => /manual/i.test(nm) ? 'Manual' : /drawing|diagram|p&id/i.test(nm) ? 'Plan' : /procedure/i.test(nm) ? 'Procedure' : /cert/i.test(nm) ? 'Certificate' : 'Datasheet';
+      PM.saveAsset(a.id, { docs: [...a.docs, ...fs.map(x => ({ name: x.name.replace(/\.[^.]+$/, ''), kind: guess(x.name), size: x.size > 1e6 ? (x.size / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(x.size / 1e3)) + ' KB', added: 'Today' }))] }); e.target.value = ''; this.flash(`${fs.length} document${fs.length > 1 ? 's' : ''} attached to ${a.name}`); };
+    const wos = [['WO-1339859', `${a.name} — ${a.cls === 'mobile' ? 'Annual inspection' : 'Corrective repair'}`, 'Corrective', 'Pierre Leroy', 'Overdue', '2 days ago'], ['WO-1339851', `${a.name} — Sensor replacement`, 'Corrective', 'Sophie Martin', 'In progress', 'Yesterday'], ['WO-1339843', `${a.name} — Periodic inspection`, 'Inspection', 'Marc Dupont', 'Completed', 'Sep 12']]
+      .map(([id, title, type, who, status, when]) => ({ id, title, type, who, status, when, bg: SB[status][0], fg: SB[status][1], href: 'WorkOrder.dc.html?' + new URLSearchParams({ wo: id, task: title.split(' — ')[1], asset: a.name, loc: PM.lineOf(a.loc).name, type, prio: 'High', status }).toString() }));
+    const PN = s.PN, MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], fd = iso => { if (!iso) return ''; const d = new Date(iso.slice(0, 10) + 'T12:00'); return `${MO[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; };
+    const store = C.createdWos().filter(w => w.assetCode === a.id || w.asset === a.name);
+    const storeWos = store.map(w => { const st = w.status !== 'Completed' && w.due && w.due.slice(0, 10) < '2026-09-29' ? 'Overdue' : (SB[w.status] ? w.status : 'Scheduled'); return { id: C.displayId(w.key), title: `${w.asset} — ${w.task}`, type: w.type, who: w.assignee ? C.person(w.assignee).name : 'Unassigned', status: st, when: w.due ? fd(w.due) : 'Not scheduled', bg: SB[st][0], fg: SB[st][1], href: C.woHref(w.key) }; });
+    wos.unshift(...storeWos);
+    const plans = PN ? PN.forAsset(a.id) : [], activePlans = plans.filter(p => p.active), nexts = activePlans.map(p => ({ p, nd: PN.nextDue(p) })).filter(x => x.nd.iso).sort((x, y) => x.nd.days - y.nd.days), M = PM.meterOf(a.id);
+    const openN = wos.filter(w => w.status !== 'Completed').length, overN = wos.filter(w => w.status === 'Overdue').length;
+    const hist = [];
+    (a.history || []).forEach(h => hist.push({ t: h.at, icon: h.field ? 'edit_note' : /Decommission/.test(h.what || '') ? 'block' : /import/i.test(h.what || '') ? 'upload_file' : 'history', text: h.field ? `${h.field} changed` : h.what, sub: h.field ? `${h.from || '—'} → ${h.to || '—'}` : '', who: h.by }));
+    if (a.commissioned) hist.push({ t: new Date(a.commissioned + 'T08:00').getTime(), icon: 'rocket_launch', text: 'Commissioned', sub: `${a.manufacturer || ''} ${a.model || ''}`.trim() });
+    if (M) M.readings.forEach(r => hist.push({ t: new Date(r.at + 'T09:00').getTime(), icon: 'speed', text: `Meter reading · ${r.v.toLocaleString('en-US')} ${PM.meterShort(M.unit)}`, sub: r.by }));
+    store.forEach(w => { hist.push({ t: w.createdAt || 0, icon: w.generatedBy ? 'event_repeat' : 'add_task', text: `${w.generatedBy ? 'Preventive intervention generated' : 'Intervention created'} · ${w.task}`, sub: C.displayId(w.key) }); if (w.completion) hist.push({ t: w.completion.loggedAt || w.createdAt || 0, icon: 'task_alt', text: `Intervention completed · ${w.task}`, sub: C.displayId(w.key) }); });
+    hist.push({ t: new Date('2026-09-12T15:00').getTime(), icon: 'task_alt', text: 'Intervention completed · Periodic inspection', sub: 'WO-1339843 · Marc Dupont' });
+    const LOOK = { block: ['#EEF1F4', '#475467'], task_alt: ['#E6F4EE', '#0B6B4A'], event_repeat: ['#EAF1FD', '#2456B8'], speed: ['#F3EEFC', '#6941C6'], rocket_launch: ['#FEF3E2', '#B54708'] };
+    const history = hist.sort((x, y) => y.t - x.t).map(h => { const d = new Date(h.t), [bg, fg] = LOOK[h.icon] || ['#F2F4F7', '#475467']; return { icon: h.icon, bg, fg, text: h.text, sub: [h.sub, h.who && h.who !== 'GD' ? h.who : h.who === 'GD' ? 'Gaudéric Durand' : ''].filter(Boolean).join(' · '), hasSub: !!(h.sub || h.who), when: `${MO[d.getMonth()]} ${d.getDate()}, ${d.getFullYear() === 2026 ? String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') : d.getFullYear()}` }; });
+    const act = (k, extra) => window.RelixAssetActions && window.RelixAssetActions(k, [a.id], extra);
+    const rv = s.reading, rErr = rv !== '' && rv != null && M && +rv < M.value ? `Must be ≥ last reading (${M.value.toLocaleString('en-US')})` : '';
+    const kinds = Object.keys(PM.DOC_KINDS);
+    const CFG = s.CFG, P = s.P, site = CFG && CFG.currentSite ? CFG.currentSite() : null;
+    const cc = CFG ? (CFG.get('costCenters', a.costCenter) || (!a.costCenter && CFG.list('costCenters').find(c => c.zone === z.id))) : null;
+    const cfs = CFG ? CFG.fieldsFor('Asset', { type: a.type }).map(f => { const v = (a.custom || {})[f.code]; return { k: f.name, v: v === '' || v == null ? 'Not set' : CFG.fmt(f, v, site), color: v === '' || v == null ? '#98A2B3' : '#1E2430' }; }) : [];
+    const lp = P ? P.parts().filter(x => (x.assets || []).includes(a.id)) : [];
+    const adv = this.advVals().adv;
+    const docN = s.D ? s.D.linkedTo('asset', a.id).length : a.docs.length;
+    return {
+      hasPhoto: !!a.photo, noPhoto: !a.photo, addPhoto: () => window.RelixAssetWizard && window.RelixAssetWizard(a.id, { step: 2 }),
+      isDecom: !!a.decommissioned, decomText: a.decommissioned ? `Decommissioned on ${fd(a.decommissioned.date)} · ${a.decommissioned.reason}${a.decommissioned.note ? ' — ' + a.decommissioned.note : ''}` : '',
+      recommission: () => { PM.saveAsset(a.id, { status: 'In service', decommissioned: null }); this.flash(`${a.name} recommissioned`); },
+      menuOpen: !!s.menu, menuBg: s.menu ? '#F2F4F7' : '#fff', toggleMenu: () => this.setState({ menu: !s.menu }),
+      menuItems: [['edit', 'Edit asset', () => PM.openWizard(a.id)], ...(FON('assets.qr') ? [['qr_code_2', 'Display / print QR code', () => act('qr')]] : []), ...(a.decommissioned ? [['restart_alt', 'Recommission', () => PM.saveAsset(a.id, { status: 'In service', decommissioned: null }), 1]] : [['block', 'Decommission', () => act('decommission', { openWos: 2 }), 1]]), ['delete', 'Delete asset', () => act('delete', { wos: 3 }), 0, 1]]
+        .map(([icon, label, fn, sep, danger]) => ({ icon, label, sep: !!sep, color: danger ? '#B42318' : '#1E2430', run: () => { this.setState({ menu: false }); fn(); } })),
+      indicators: [['Open interventions', openN, openN ? 'to do on this asset' : 'none', '#1E2430', 'wo'], ['Overdue interventions', overN, overN ? 'past their date' : 'none', overN ? '#B42318' : '#1E2430', 'wo'], ['Active preventive plans', activePlans.length, plans.length > activePlans.length ? `${plans.length - activePlans.length} inactive` : 'covering this asset', '#1E2430', 'prev'], ['Next preventive', nexts[0] ? nexts[0].nd.label : '—', nexts[0] ? `${nexts[0].p.name} · ${nexts[0].nd.sub}` : 'no active plan', nexts[0] && nexts[0].nd.overdue ? '#B42318' : '#1E2430', 'prev']]
+        .map(([label, value, sub, color, tab]) => ({ label, value, sub, color, go: () => this.setState({ tab }) })),
+      isPrev: s.tab === 'prev', isHist: s.tab === 'hist', history, ...this.cbmVals(a),
+      planRows: plans.map(p => { const nd = PN.nextDue(p); return { name: p.name, type: p.type || 'Preventive', gen: `${PN.wosOf(p.id).length} intervention${PN.wosOf(p.id).length === 1 ? '' : 's'} generated`, icon: p.trig === 'meter' ? 'speed' : 'event_repeat', freq: PN.freqLabel(p), checklist: p.checklist, next: nd.label, sub: nd.sub, color: nd.overdue ? '#B42318' : '#1E2430', state: p.active ? 'Active' : 'Inactive', stColor: p.active ? '#0B6B4A' : '#98A2B3', op: p.active ? 1 : 0.6, href: 'MaintenancePlans.dc.html?plan=' + p.id }; }), noPlans: !plans.length,
+      hasMeter: !!M || mobile === false, meterUnit: M ? M.unit : 'operating hours', meterNow: M ? `${M.value.toLocaleString('en-US')} ${PM.meterShort(M.unit)}` : 'No reading yet', meterSub: M ? `last read ${fd(M.at)} · ~${M.rate} ${PM.meterShort(M.unit)} / day` : 'Add the first reading to enable meter-based plans',
+      readings: M ? M.readings.slice().reverse().slice(0, 6).map(r => ({ at: fd(r.at), v: `${r.v.toLocaleString('en-US')} ${PM.meterShort(M.unit)}`, by: r.by + (r.note ? ' · ' + r.note : '') })) : [],
+      readingVal: rv ?? '', setReading: e => this.setState({ reading: e.target.value }), readingPh: M ? `New reading (${PM.meterShort(M.unit)})` : 'Reading (h)', readingErr: rErr, readingBorder: rErr ? '#F04438' : '#D0D5DD',
+      addReading: () => { if (rv === '' || rv == null || rErr || isNaN(+rv)) return; PM.addReading(a.id, +rv); this.setState({ reading: '' }); const g = PN ? PN.runDue() : []; this.flash(`Reading saved${g.length ? ` · ${g.length} preventive intervention${g.length > 1 ? 's' : ''} generated` : ''}`); },
+      a, icon: PM.typeIcon(a.type), zfg, zbg, mobile, sbg, sfg, statusLabel: now ? `Reserved until ${hm(now.to)}` : a.status, critColor: PM.CRIT[a.crit], locIcon: zi,
+      crumbs: PM.chain(a.loc).map((n, i, arr) => ({ name: n.name, level: ['Zone', 'Line', 'Step'][i], href: 'Assets.dc.html?loc=' + n.id, color: i === arr.length - 1 ? '#1E2430' : '#475467', weight: i === arr.length - 1 ? 600 : 400 })),
+      tabs: [['overview', 'Overview'], ['wo', 'Interventions', wos.length], ['prev', 'Preventive', plans.length], ['docs', 'Documents', docN], ['hist', 'History'], ...(mobile ? [['res', 'Reservations', res.length]] : []), ...(adv ? [['lifecycle', 'Lifecycle', null, 1], ['live', 'Live monitoring', null, 1]] : [])].filter(([k]) => FON(({ prev: 'prev.meters', docs: 'docs.links', hist: 'assets.history', res: 'assets.mobile', lifecycle: 'assets.risk', live: 'assets.risk' })[k] || '')).map(([k, label, count, x]) => ({ label, count, hasCount: count != null, font: s.tab === k ? "600 13px 'IBM Plex Sans',sans-serif" : "500 13px 'IBM Plex Sans',sans-serif", color: x ? '#800080' : s.tab === k ? '#1E2430' : '#667085', bar: s.tab === k ? (x ? '#800080' : '#C00018') : 'transparent', select: () => this.setState({ tab: k }) })),
+      isOverview: s.tab === 'overview' || (!adv && (s.tab === 'lifecycle' || s.tab === 'live')), isLife: adv && s.tab === 'lifecycle', isLive: adv && s.tab === 'live', isDocs: s.tab === 'docs', isRes: s.tab === 'res', isWo: s.tab === 'wo',
+      details: [['Type', a.type], ['Class', mobile ? 'Mobile asset · reservable' : 'Fixed equipment'], [mobile ? 'Home location' : 'Location', PM.pathOf(a.loc)], ['Manufacturer', a.manufacturer], ['Model', a.model], ['Serial number', a.serial], ['Year installed', a.year], ['Commissioning date', fd(a.commissioned)], ['Owner', p.name], ['Criticality', a.crit], ['Cost center', cc ? `${cc.code} · ${cc.name}` : '']]
+        .map(([k, v]) => ({ k, v: v || 'Not set', color: v ? '#1E2430' : '#98A2B3' })).concat(cfs),
+      hasDesc: !!a.desc, hasSpecs: a.specs.length > 0, noSpecs: !a.specs.length, specsCta: a.specs.length ? 'Edit' : 'Add specifications',
+      specs: a.specs.map((x, i) => ({ k: x[0], v: x[1] || '—', sep: i % 4 ? '#F2F4F7' : 'transparent' })), typeLower: a.type.toLowerCase(), specHint: (PM.SPEC_SUGGEST[a.type] || ['Power']).join(', '),
+      edit: () => PM.openWizard(a.id), editIdentity: () => window.RelixAssetWizard(a.id, { step: 2 }), editSpecs: () => window.RelixAssetWizard(a.id, { step: 3 }),
+      docCount: a.docs.length ? `${a.docs.length} files` : '', docsTop: a.docs.slice(0, 3).map(docView), goDocs: () => this.setState({ tab: 'docs' }), addFiles,
+      docKinds: [['', 'All', 'folder_open'], ...kinds.map(k => [k, k, PM.DOC_KINDS[k][0]])].map(([k, label, icon]) => { const on = s.kind === k; return { label, icon, count: k ? a.docs.filter(d => d.kind === k).length : a.docs.length, bg: on ? '#1E2430' : '#fff', border: on ? '#1E2430' : '#D0D5DD', color: on ? '#fff' : '#344054', select: () => this.setState({ kind: k }) }; }),
+      docsAll: a.docs.filter(d => !s.kind || d.kind === s.kind).map(d => ({ ...docView(d), remove: () => { PM.saveAsset(a.id, { docs: a.docs.filter(x => x !== d) }); this.flash(`${d.name} detached`); } })), noDocs: !a.docs.length,
+      partCount: lp.length || '', noParts: !lp.length, partRows: lp.slice(0, 5).map(x => ({ name: x.name, ref: x.ref, store: (PM.node(x.store) || { name: x.store }).name, cost: x.cost != null && window.RelixAccess && window.RelixAccess.canFinance() ? '€' + (+x.cost).toFixed(2) + ' / ' + x.unit : '', stock: x.qty + ' ' + x.unit, stockColor: x.qty <= (x.min || 0) ? '#B42318' : '#0B6B4A', href: 'SpareParts.dc.html?ref=' + encodeURIComponent(x.ref) })),
+      wos, goWo: () => this.setState({ tab: 'wo' }), newWo: () => window.CMMSCreateWO && window.CMMSCreateWO({ asset: a.name }),
+      resSummary: now ? `In use now · ${now.wo}` : 'Available now', goRes: () => this.setState({ tab: 'res' }), noRes: !res.length,
+      resRows: res.slice(0, 4).map(r => { const q = C.person(r.who); return { day: DAYS[r.day], time: `${hm(r.from)}–${hm(r.to)}`, wo: r.wo, who: r.who, avBg: q.avBg, avFg: q.avFg }; }),
+      hourTicks: ['07:00', '09:00', '11:00', '13:00', '15:00', '17:00'],
+      week: DAYS.map((label, i) => ({ label, color: i === 1 ? '#C00018' : i > 4 ? '#98A2B3' : '#344054', bg: i > 4 ? '#FAFAFB' : '#fff',
+        res: res.filter(r => r.day === i).map(r => ({ left: ((r.from - 7) / 11 * 100) + '%', width: ((r.to - r.from) / 11 * 100) + '%', time: `${hm(r.from)}–${hm(r.to)}`, wo: r.wo, tip: `${r.wo} · ${C.person(r.who).name}` })) })),
+      toggleQr: () => act('qr'),
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
